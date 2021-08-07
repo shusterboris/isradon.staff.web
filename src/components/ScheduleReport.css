@@ -1,0 +1,63 @@
+
+.datatable-style-sched-repo .flaw {
+    font-weight: 700;
+    color: #FFA726;
+}
+
+.datatable-style-sched-repo .overtime {
+    font-weight: 700;
+    color: #FF5252;
+}
+
+.datatable-style-sched-repo .row-example {
+    background-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+.datatable-style-sched-repo .row-rest {
+    background-color: #afebcd !important;
+}
+
+.datatable-style-sched-repo .row-day-off {
+    background-color: #d3fae7 !important;
+}
+
+.datatable-style-sched-repo .row-holiday {
+    background-color: #fac3c3 !important;
+}
+
+.datatable-style-sched-repo .row-sick-leave {
+    background-color: #d4f1f8 !important;
+}
+
+.p-datatable .p-datatable-tbody .row-hooky {
+    color: #a00909e7 !important;
+}
+ 
+.p-datatable .p-datatable-tbody .row-shift {
+    background-color: #f4f5ef !important;
+}
+
+.p-datatable .p-datatable-tbody .positive-dif {
+    color: #52d368 !important;
+}
+
+.p-datatable .p-datatable-tbody .negative-dif {
+    color: #c51a1a !important;
+}
+
+.p-datatable .p-datatable-tbody .boldText {
+    font-weight: 700 !important;
+}
+
+body .p-datatable .p-datatable-tbody > tr > td .times{
+    width: 5em;
+    font-style: italic;   
+    border: 1px solid;
+}
+
+body .p-datatable .p-datatable-thead > tr > th {
+    font-weight: 700;
+    text-align: center;
+    text-overflow: clip;
+    border: 1px solid #d8d8d8 !important;
+}

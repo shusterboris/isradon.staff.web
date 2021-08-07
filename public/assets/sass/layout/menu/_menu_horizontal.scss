@@ -1,0 +1,193 @@
+@media screen and (min-width: $mobileBreakpoint + 1) {
+    .layout-menu-horizontal {
+        .layout-menubutton {
+            display: none;
+        }
+
+        .layout-logo {
+            margin-right: 2em;
+        }
+
+        .layout-menu-container {
+            position: static;
+            display: block;
+            z-index: auto;
+            width: auto;
+            height: auto;
+            overflow: visible;
+            transition: none;
+            box-shadow: none;
+        }
+
+        .layout-menu {
+            padding: 0;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+
+            > li {
+                display: inline-block;
+                position: relative;
+
+                > a,
+                > .p-link {
+                    display: block;
+                    padding: 1em;
+                    font-weight: 500;
+                    position: relative;
+                    cursor: pointer;
+                    user-select: none;
+                    border-top: 4px solid transparent;
+                    border-bottom: 4px solid transparent;
+                    @include border-radius(0);
+
+                    .menuitem-text {
+                        margin: 0 .5em;
+                    }
+
+                    i {
+                        font-size: 16px;
+
+                        &.layout-submenu-toggler {
+                            position: static;
+                        }
+
+                        &:first-child {
+                            margin-right: 0;
+                        }
+                    }
+                }
+
+                > .layout-submenu-container {
+                    position: absolute;
+                    min-width: 250px;
+                    z-index: 999;
+                    padding: .75em;
+                    overflow: auto;
+                    max-height: 500px;
+                    @include shadow($horizontalOverlaySubmenuShadow);
+
+                    &.layout-submenu-container-enter,
+                    &.layout-submenu-container-exit {
+                        max-height: 500px;
+                    }
+
+                    &.layout-submenu-container-enter-active,
+                    &.layout-submenu-container-exit-active {
+                        overflow: auto;
+                        transition: none;
+                    }
+
+                    > .layout-megamenu {
+                        max-height: none;
+                        width: auto;
+                        display: flex;
+                        display: -webkit-box;
+                        display: -ms-flexbox;
+
+                        > li {
+                            flex-grow: 1;
+
+                            > .layout-submenu-container {
+                                min-width: 200px;
+
+                                a,
+                                .p-link {
+                                    padding-left: .75em;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            li {
+                .layout-submenu-toggler {
+                    @include transition(transform $transitionDuration);
+                }
+
+                &.active-menuitem {
+                    > a,
+                    > .p-link {
+                        .layout-submenu-toggler {
+                            @include rotate(-180deg);
+                        }
+                    }
+                }
+            }
+
+            .layout-submenu {
+                li {
+                    a,
+                    .p-link {
+                        display: block;
+                        position: relative;
+                        padding: .75em;
+                        @include border-radius($menuitemBorderRadius);
+
+                        .menuitem-text {
+                            vertical-align: middle;
+                        }
+
+                        i {
+                            vertical-align: middle;
+                            font-size: 16px;
+
+                            &.layout-submenu-toggler {
+                                position: absolute;
+                                right: .75em;
+                            }
+
+                            &:first-child {
+                                margin-right: 7px;
+                            }
+                        }
+                    }
+
+                    li {
+                        a,
+                        .p-link {
+                            padding-left: 1.75em;
+                        }
+
+                        li {
+                            a,
+                            .p-link {
+                                padding-left: 2.75em;
+                            }
+
+                            li {
+                                a,
+                                .p-link {
+                                    padding-left: 3.75em;
+                                }
+
+                                li {
+                                    a,
+                                    .p-link {
+                                        padding-left: 4.75em;
+                                    }
+
+                                    li {
+                                        a,
+                                        .p-link {
+                                            padding-left: 5.75em;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        .layout-mask,
+        &.layout-top-small .layout-mask {
+            display: none;
+            top: 0;
+            left: 0;
+        }
+    }
+}
+
