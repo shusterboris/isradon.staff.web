@@ -14,8 +14,25 @@ export default class AppSets{
     static user = AppSets.getCurrentUser()
     
     static getCurrentUser(){
-        const user = new User('lara')
+        const user = new User('hr')
         return user;
+    }
+
+    static getHolydays(){
+        const holyStr = '2021-09-07, 2021-09-08,2021-09-16,2021-09-21,2021-09-28';
+        let result = [];
+        if (! holyStr)
+            return [];
+        let holyStrList = holyStr.split(",")
+        for(let i=0; i < holyStrList.length; i++){
+            try{
+                let current = new Date(holyStrList[i]);
+                result.push(current);
+            }catch{
+                console.error("Неправильный формат даты одного из праздников")
+            }
+        }
+        return result;
     }
     
     static getOrgUnits(_this) {

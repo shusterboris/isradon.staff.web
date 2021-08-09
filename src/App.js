@@ -10,6 +10,7 @@ import EmployeeView from './components/EmployeeView';
 import OrgUnitView from './components/OrgUnitsView';
 import DayOffForm from './components/DayOffForm';
 import MonthCalendar from './components/MonthCalendar'
+import SchedulePlan from './components/SchedulePlan';
 import PrimeReact from 'primereact/api';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -34,19 +35,19 @@ const App = () => {
     PrimeReact.ripple = true;
 
     const menu = [
-        {label: 'Сводка', icon: 'dashboard', to: '/'},
+        {label: 'Сводка', icon: 'pi pi-th-large', to: '/'},
         {
-            label: 'График работы', icon: 'list',
+            label: 'График работы', icon: 'pi pi-list',
             items: [
-                {label: 'Текущий', icon: 'desktop_mac', to: '/shed-fact'},
-                {label: 'След.месяц', icon: 'input', to: '/shed-plan'},
+                {label: 'По подразделениям', icon: 'pi pi-sitemap', to: '/shed-plan-orgunit'},
+                {label: 'По сотрудникам', icon: 'pi pi-users', to: '/shed-plan'},
             ]
         },
-        {label: 'Настройки', icon: 'build', 
+        {label: 'Настройки', icon: 'pi pi-cog', 
             items: [
-                {label: 'Настройки приложения', icon:'settings', to: '/app-settings'},
-                {label: 'Сотрудники', icon: 'face', to: '/employees-all'},
-                {label: 'Подразделения', icon: 'home', to: '/orgunit-list'},
+                {label: 'Настройки приложения', icon:'pi pi-cog', to: '/app-settings'},
+                {label: 'Сотрудники', icon: 'pi pi-user-edit', to: '/employees-all'},
+                {label: 'Подразделения', icon: 'pi pi-home', to: '/orgunit-list'},
             ]
         },
     ];
@@ -203,6 +204,7 @@ const App = () => {
     const routers = [
         {path: "/" , component: ScheduleReportHR, exact:true },
 		{path: "/shed-plan", component: MonthCalendar },
+        {path: "/shed-plan-orgunit", component: SchedulePlan},
 		{path: "/shed-fact", component: EmptyPage},
 		{path: "/app-settings", component: EmptyPage},
 		{path: "/employees-all", component: EmployeeView},

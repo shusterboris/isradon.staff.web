@@ -1,13 +1,17 @@
 import React from 'react';
 import { Button } from 'primereact/button';
-import { useHistory } from 'react-router-dom';
+import { useHistory} from 'react-router-dom';
 
-export const Error = () => {
+export const Error = (props) => {
 
 	const history = useHistory();
 
 	const goDashboard = () => {
 		history.push('/');
+	}
+
+	const goBack = () => {
+		history.goBack();
 	}
 
 	return <div className="exception-body  error">
@@ -17,10 +21,10 @@ export const Error = () => {
 			</div>
 
 			<div className="exception-detail">
-				<h1>ERROR OCCURED</h1>
-				<p>Something went wrong.</p>
-				<Button label="GO TO DASHBOARD" onClick={goDashboard} />
+				<h1>Ошибка вышла!</h1>
+				<p>{props.reason}</p>
+				<Button label="На главную страницу" onClick={goDashboard} />
+				<Button label="Назад" onClick={goBack} style={{margin:'0 0 0 1em'}}/></div>
 			</div>
 		</div>
-	</div>
 }

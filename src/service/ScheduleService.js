@@ -53,6 +53,32 @@ export default class ScheduleService {
             });
     }
 
+    getMonthCalendarCommon(start, end, _this) {
+        if (!start){
+            return [];
+        }
+        const server = AppSets.host;
+        const url = server + '/calendar/'+start+"/"+end
+        return axios.get(url)
+            .then(res => res.data)
+            .then(data => {
+                if (_this){
+                    _this.setState({ days: data });
+                }
+                return data;
+            })
+            .catch(err => {
+                let errMsg = "";
+                if (err.toString().includes(': Network')){
+                    errMsg = 'Планирование рабочего времени. Сервер не отвечает.'
+                }else{
+                    errMsg = 'Планирование рабочего времени. Данные не получены';
+                }
+            _this.messages.show({ severity: 'warn', summary: errMsg});
+            });
+    }
+
+
     getMonthCalendarByPersonInt(month, person, _this) {
         if (!person || (month < 0)){
             return [];
@@ -261,8 +287,9 @@ export default class ScheduleService {
         const moment = require('moment');
         const formattedStart = moment(_this.state.start).format('YYYY-MM-DD')+" "+AppSets.minStartTime;
         const formattedEnd = moment(_this.state.end).format('YYYY-MM-DD')+" "+AppSets.maxEndTime;
-        const rowType = _this.state.eventType === 'Отпуск за свой счет' ? 3 : 
-                        _this.state.eventType === 'Плановый отпуск' ? 2 : 4;
+        const rowType = _this.state.eventType.code === 'DAY_OFF' ? 3 : 
+                        _this.state.eventType.code === 'REST' ? 2 : 
+                        _this.state.eventType.code === 'SICK_LEAVE' ? 4 : 0;
 
         axios.post(url, 
             {"employeeId" : _this.state.employee.id, "comingPlan":formattedStart, "leavingPlan":formattedEnd, "reason": _this.state.reason, "rowType": rowType}, 
