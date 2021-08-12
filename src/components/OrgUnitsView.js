@@ -211,14 +211,14 @@ export default class OrgUnitView extends Component {
                 <Messages ref={(el) => this.messages = el}/>
             <div className='p-fluid p-grid'>
                 <div className="p-col-12 p-md-4">
-                    <DataTable value={this.state.orgUnits} scrollable scrollHeight="800px" emptyMessage='Нет сведений'
+                    <DataTable value={this.state.orgUnits} scrollable emptyMessage='Нет сведений'
                                 selectionMode="single" selection={this.state.selectedRow} dataKey="id"
                                 onSelectionChange={e => {
                                     this.onRowSelect(e.value)}} >
-                        <Column header='Список подразделений' field='name'/>
+                        <Column header='Список подразделений' field='name' style={{margin: '1em 0 0 0' }}/>
                         <Column body={this.actionBodyTemplate} 
-                            headerStyle={{width: '3.5em', textAlign: 'center'}} 
-                            bodyStyle={{textAlign: 'center', overflow: 'visible'}} />
+                            headerStyle={{width: '4.5em', textAlign: 'center'}} 
+                            bodyStyle={{padding: '2px 0 0 0'}} />
 
                     </DataTable>
                 </div>
@@ -254,107 +254,105 @@ export default class OrgUnitView extends Component {
                         <Button id="btnCreateShift" icon="pi pi-check" className="p-button-rounded" style={{margin: '0 0 0 1em'}}
                             onClick={this.onCreateShift} tooltip='Создание новой смены'/>
                     </div>
-                    <div className="p-grid ">
+                    <div className="p-grid form-group">
                         <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Вс</div>
                         <InputMask id='dow0Start' mask='99:99'
-                                style={{width:'4em'}} 
+                                style={{width:'5em'}} 
                                 value={this.state.start1} 
                                 onChange={(e) => this.setState({start1:e.target.value, shiftChanged: true})}/>
                             
                         <InputMask id='dow0End' mask='99:99' 
-                                style={{margin:'0 0 0 1em', width:'4em'}}
+                                style={{margin:'0 0 0 1em', width:'5em'}}
                                 value={this.state.end1} 
                                 onChange={(e) => this.setState({end1:e.target.value, shiftChanged: true})}/>
                     </div>                        
                             
-                    <div className="p-grid" style={{padding:'2em 0 0 0'}}>
+                    <div className="p-grid  form-group" style={{padding:'1em 0 0 0'}}>
                         <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Пн</div>
                         <InputMask id='dow1Start' mask='99:99' 
-                            style={{width:'4em'}} 
+                            style={{width:'5em'}} 
                             value={this.state.start2} 
                             onChange={(e) => this.setState({start2:e.target.value, shiftChanged: true})}/>
                         <InputMask id='dow1End' mask='99:99' 
-                            style={{margin:'0 0 0 1em', width:'4em'}} 
+                            style={{margin:'0 0 0 1em', width:'5em'}} 
                             value={this.state.end2} 
                             onChange={(e) => this.setState({end2:e.target.value, shiftChanged: true})}/>
                     </div>
                             
-                    <div className="p-grid " style={{padding:'2em 0 0 0'}}>
+                    <div className="p-grid  form-group" style={{padding:'1em 0 0 0'}}>
                         <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Вт</div>
                         <InputMask id='dow2Start' mask='99:99' 
-                            style={{width:'4em'}} 
+                            style={{width:'5em'}} 
                             value={this.state.start3} 
                             onChange={(e) => this.setState({start3:e.target.value, shiftChanged: true})}/>
                         <InputMask id='dow2End' mask='99:99'
-                            style={{margin:'0 0 0 1em', width:'4em'}} 
+                            style={{margin:'0 0 0 1em', width:'5em'}} 
                             value={this.state.end3} 
                             onChange={(e) => this.setState({end3:e.target.value, shiftChanged: true})}/>
                     </div>
                             
-                    <div className="p-grid form-group" style={{padding:'2em 0 0 0'}}>
+                    <div className="p-grid form-group" style={{padding:'1em 0 0 0'}}>
                     <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Ср</div>
                         <InputMask id='dow3Start' mask='99:99' 
-                            style={{width:'4em'}} 
+                            style={{width:'5em'}} 
                             value={this.state.start4} 
                             onChange={(e) => this.setState({start4:e.target.value, shiftChanged: true})}/>
                         <InputMask id='dow3End' mask='99:99'
-                            style={{margin:'0 0 0 1em', width:'4em'}} 
+                            style={{margin:'0 0 0 1em', width:'5em'}} 
                             value={this.state.end4} 
                             onChange={(e) => this.setState({end4:e.target.value, shiftChanged: true})}/>
                     </div>
 
-                        <div className="p-grid form-group" style={{padding:'2em 0 0 0'}}>
+                        <div className="p-grid form-group" style={{padding:'1em 0 0 0'}}>
                         <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Чт</div>
                             <InputMask id='dow4Start' mask='99:99' 
-                                style={{width:'4em'}} 
+                                style={{width:'5em'}} 
                                 value={this.state.start5} 
                                 onChange={(e) => this.setState({start5:e.target.value, shiftChanged: true})}/>
                             <InputMask id='dow4End' mask='99:99'
-                                style={{margin:'0 0 0 1em', width:'4em'}} 
+                                style={{margin:'0 0 0 1em', width:'5em'}} 
                                 value={this.state.end5} 
                                 onChange={(e) => this.setState({end5:e.target.value, shiftChanged: true})}/>
                         </div>
 
-                        <div className="p-grid form-group" style={{padding:'2em 0 0 0'}}>
+                        <div className="p-grid form-group" style={{padding:'1em 0 0 0'}}>
                             <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Пт</div>
                             <InputMask id='dow5Start' mask='99:99' 
-                                style={{width:'4em'}} 
+                                style={{width:'5em'}} 
                                 value={this.state.start6} 
                                 onChange={(e) => this.setState({start6:e.target.value, shiftChanged: true})}/>
                             <InputMask id='dow5End' mask='99:99'
-                                style={{margin:'0 0 0 1em', width:'4em'}} 
+                                style={{margin:'0 0 0 1em', width:'5em'}} 
                                 value={this.state.end6} 
                                 onChange={(e) => this.setState({end6:e.target.value, shiftChanged: true})}/>
                         </div>
 
-                        <div className="p-grid form-group" style={{padding:'2em 0 0 0'}}>
+                        <div className="p-grid form-group" style={{padding:'1em 0 0 0'}}>
                             <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Сб</div>
                             <InputMask id='dow6Start' mask='99:99' 
-                                style={{width:'4em'}} 
+                                style={{width:'5em'}} 
                                 value={this.state.start7} 
                                 onChange={(e) => this.setState({start7:e.target.value, shiftChanged: true})}/>
                             <InputMask id='dow6End' mask='99:99'
-                                style={{margin:'0 0 0 1em', width:'4em'}} 
+                                style={{margin:'0 0 0 1em', width:'5em'}} 
                                 value={this.state.end7} 
                                 onChange={(e) => this.setState({end7:e.target.value, shiftChanged: true})}/>
                         </div>
 
-                        <div className="p-grid form-group" style={{padding:'2em 0 0 0'}}>
+                        <div className="p-grid form-group" style={{padding:'1em 0 0 0'}}>
                             <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>No</div>
                             <InputMask id='shiftNoFld' mask='9' 
-                                style={{width:'2em'}}
+                                style={{width:'3em'}}
                                 value={this.state.shiftNo} 
                                 onChange={(e) => this.setState({shiftNo: e.target.value, shiftChanged: true})}/>
-                        </div>
-                        <div className='p-grid form-group' style={{padding:'2em 0 0 0'}}>
-                            <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Заметки</div>
                             <InputText id='shiftNotesFld'  placeholder='доп.информация о смене'
                                 value={this.state.notes}
                                 style={{width: '70%'}}
                                 onChange={(e) => this.setState({notes: e.target.value, shiftChanged: true})}/>
+
                         </div>
 
-                        <div style={{margin: '1.5em 1em 1em 1em'}}>
+                        <div className='p-grid ' style={{margin: '1.5em 1em 1em 1em'}}>
                             <span >
                                 {(this.state.shiftChanged && this.state.selectedRow) && 
                                 <Button id="btnShiftSave" label="Сохранить" icon="pi pi-check" style={{marginRight: '1em'}} 

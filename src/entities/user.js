@@ -1,33 +1,28 @@
+import axios from 'axios'
+import AppSets from '../service/AppSettings'
+
 export default class User{
-    constructor(login){
-        if (login === 'hr')
-            this.getHrUser()
-        else
-            this.getSimpleUser()
-    }
-
-    getHrUser(){
-        this.login = 'hr'
-        this.id = 6;
-        this.firstName = 'Катерина';
-        this.lastName = '';
-        this.nickName = 'Катя';
-        this.fullName = 'Катерина'
-        this.jobTitle = "HR"
-        this.org_unit_id = 3
-        this.authorities = ['editAll'];
-    }
-
-    getSimpleUser(){
-        this.login = 'sales'
-        this.id = 1;
-        this.firstName = 'Лариса';
-        this.lastName = 'Дорош';
-        this.nickName = 'Лариса';
-        this.jobTitle = "Продавец"
-        this.fullName = 'Дорош Лариса'
-        this.org_unit_id = 1
+    constructor(id){
+        this.id = id;
         this.authorities = [];
+    }
+
+    init(){
+        const server = AppSets.host;
+        const url = server + '/employee/authorityList/'+this.id
+        axios.get(url)
+            .then(res => res.data)
+            .then(
+                data => {this.authorities = data})
+            .catch(err => {
+                let errMsg = "";
+                if (err.toString().includes(': Network')){
+                    errMsg = 'Данные о пользователе. Сервер не отвечает.'
+                }else{
+                    errMsg = 'Данные о пользователе не получены';
+                }
+                console.error(errMsg);
+            });       
     }
 
     hasAuthority(authName){
@@ -38,13 +33,4 @@ export default class User{
         return this.hasAuthority('editAll');
     }
 
-    getId(){return this.id}
-
-    getFullName(){
-        return this.lastName.concat(" ").concat(this.firstName).trim();
-    }
-
-    toString(){
-        const main = this.getFullName.concat(", ").concat(this.jobTitle);
-    }
 }

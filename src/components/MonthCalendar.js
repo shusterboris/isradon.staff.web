@@ -12,7 +12,7 @@ import { Button } from 'primereact/button';
 
 
 export default class MonthCalendar extends Component{
-    state = {days:[], chosenPerson:"", employees:[]}
+    state = {days:[], chosenPerson:"", employees:[], chosenOrgUnit:null, orgUnits:[], filteredEmployees:[]}
 
     constructor(props){
         super(props);
@@ -22,17 +22,26 @@ export default class MonthCalendar extends Component{
         this.processSelection = this.processSelection.bind(this);
         this.onEmployeeChange = this.onEmployeeChange.bind(this);
         this.onClearChosenPerson = this.onClearChosenPerson.bind(this);
+        this.displayHrHeader = this.displayHrHeader.bind(this);
+        this.displaySimpleUserHeader = this.displaySimpleUserHeader.bind(this);
+        this.getEmployeeList = this.getEmployeeList.bind(this);
+        this.onOrgUnitChange = this.onOrgUnitChange.bind(this);
         this.moment = require('moment');
+        this.employee = AppSets.curEmployee;
     }
 
     componentDidMount(){
-        AppSets.getEmployees(this);
+        this.user = AppSets.user;
+        AppSets.getEmployees(this); //employees
+        AppSets.getOrgUnitList(this); //orgUnits
     }
+
+
 
     chosenMonthChanged(eventInfo){
         this.startStr = eventInfo.start.toISOString().split('T')[0] + " 00:00";
         this.endStr = eventInfo.end.toISOString().split('T')[0] + " " +AppSets.maxEndTime;
-        if (AppSets.user.amIhr())
+        if (AppSets.user && AppSets.user.amIhr())
             this.updateData(this.startStr, this.endStr, NaN);
         else
             this.updateData(this.startStr, this.endStr, AppSets.user.id);
@@ -81,27 +90,92 @@ export default class MonthCalendar extends Component{
         }
     }
 
+    getEmployeeList(chosenUnit){
+        if (this.user){
+            if (this.user.amIhr() && !chosenUnit){
+                return this.state.orgUnits;
+            }else{
+                const employeeOrgUnit = chosenUnit ? chosenUnit.name : this.employee.orgUnit;
+                const sameOrgUnitEmployees = this.state.employees.filter(empl=>{
+                        return empl.orgUnit === employeeOrgUnit});
+                return sameOrgUnitEmployees;
+            }
+        }else{
+            return {}
+        }
+    }
+
+    onOrgUnitChange(ou){
+        this.setState({chosenOrgUnit:ou.value});
+        this.getEmployeeList(ou.value);
+    }
+
+    displaySimpleUserHeader(){
+        return (
+            <div className='p-grid'>
+                <div className='p-col-2'>
+                    <div className="p-shadow-4 p-text-bold p-highlight " style={{height: '50px', fontSize:'large', color: '#1E88E5'}}>
+                        {this.employee && this.employee.orgUnit}</div>
+                </div>
+                <div className='p-col-3'>
+                    <Dropdown value={this.state.chosenPerson} 
+                        options={this.getEmployeeList()}
+                        optionLabel="fullName" placeholder="Выберите сотрудника"
+                        onChange = {ou=>this.onEmployeeChange(ou)}>
+                    </Dropdown> 
+                    {this.state.chosenPerson &&
+                        <Button icon="pi pi-times" className="p-button-rounded p-button-info" style={{marginInlineStart:'1em'}}
+                                onClick={this.onClearChosenPerson}/>
+                    }
+                </div>
+                <div className='p-col-6'>
+                    <div className='p-card-title p-text-bold p-text-left' style={{fontSize:'large', color: '#1E88E5'}}>
+                        Планирование отпусков и больничных
+                    </div>
+                </div>
+            </div>
+            );    
+    }
+
+    displayHrHeader(){
+        return (
+        <div className='p-grid'>
+            <div className='p-col-2'>
+                <Dropdown value={this.state.chosenOrgUnit} 
+                    options={this.state.orgUnits} optionLabel="name" placeholder="Подразделение"
+                    onChange={this.onOrgUnitChange}>
+                </Dropdown>
+            </div>
+            <div className='p-col-3 p-text-left'>
+                <Dropdown value={this.state.chosenPerson} options={this.getEmployeeList(this.state.chosenOrgUnit)}
+                    optionLabel="fullName" placeholder="Выберите сотрудника"
+                    onChange = {this.onEmployeeChange}>
+                </Dropdown> 
+                {this.state.chosenPerson &&
+                    <Button icon="pi pi-times" className="p-button-rounded p-button-info" style={{marginInlineStart:'1em'}}
+                            onClick={this.onClearChosenPerson}/>
+                }
+            </div>
+            <div className='p-col-6'>
+                <div className='p-card-title p-text-bold p-text-left' style={{fontSize:'large', color: '#1E88E5'}}>
+                    Планирование отпусков и больничных
+                </div>
+            </div>
+        </div>
+        );
+    }
+
     render() {
         return (
             <div>
                 <div className="content-section implementation">
                     <div className="card">
                         <Messages ref={(el) => this.messages = el}></Messages>
-                        {AppSets.user.amIhr() && 
-                        <Dropdown value={this.state.chosenPerson} options={this.state.employees}
-                            optionLabel="fullName" placeholder="Выберите сотрудника"
-                            onChange = {this.onEmployeeChange}>
-                        </Dropdown>}
-                        {!AppSets.user.amIhr() && <div className="card-title p-text-bold p-highlight">{AppSets.user.fullName}</div>}
-
-                        {this.state.chosenPerson &&
-                            <Button icon="pi pi-times" className="p-button-rounded p-button-info" style={{marginInlineStart:'1em'}}
-                                    onClick={this.onClearChosenPerson}/>
-                        }
+                        {(this.user && this.user.amIhr()) ? this.displayHrHeader() : this.displaySimpleUserHeader()}
                         <FullCalendar events={this.state.days} initialDate={Date.now()} locale={ruLocale}
                             slotMinTime={AppSets.minStartTime} slotMaxTime={AppSets.maxEndTime} 
-                            selectable firstDay={0} weekends={false} 
-                            editable selectMirror dayMaxEvents 
+                            selectable firstDay={0} weekends={false} expandRows
+                            displayEventEnd={true}
                             initialView='dayGridMonth' plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                             headerToolbar={{ left: 'prev,next', center: 'title', right: 'today,dayGridMonth,timeGridWeek,timeGridDay' }} 
                             datesSet={(info)=>this.chosenMonthChanged(info)}

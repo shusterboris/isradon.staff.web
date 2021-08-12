@@ -39,8 +39,8 @@ const App = () => {
         {
             label: 'График работы', icon: 'pi pi-list',
             items: [
-                {label: 'По подразделениям', icon: 'pi pi-sitemap', to: '/shed-plan-orgunit'},
-                {label: 'По сотрудникам', icon: 'pi pi-users', to: '/shed-plan'},
+                {label: 'Календарь смен', icon: 'pi pi-sitemap', to: '/shed-plan-orgunit'},
+                {label: 'Календарь отпусков', icon: 'pi pi-users', to: '/shed-plan'},
             ]
         },
         {label: 'Настройки', icon: 'pi pi-cog', 

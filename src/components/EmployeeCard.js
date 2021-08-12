@@ -13,7 +13,7 @@ export default class EmployeeCard extends Component {
         orgUnit:'',
         jobTitles:[],
         jobTitle:'',
-        filteredOrgInits:[],
+        filteredOrgUnits:[],
         filteredJobTitles:[],
         firstName:'', lastName:'',nickName:'',
         pnone:'',eMail:'',birthday:'', shiftLength:8, daysInWeek:5, addConditions:''
@@ -60,9 +60,10 @@ export default class EmployeeCard extends Component {
         }
         else {
             results = this.state.orgUnits.filter((orgunit) => {
-                return orgunit.toLowerCase().contains(event.query.toLowerCase());
+                return orgunit.toLowerCase().includes(event.query.toLowerCase());
             });
         }
+        this.setState({filteredOrgUnits: results});
         return results;
     }
 
@@ -73,9 +74,10 @@ export default class EmployeeCard extends Component {
         }
         else {
             results = this.state.jobTitles.filter((jobTitle) => {
-                return jobTitle.toLowerCase().contains(event.query.toLowerCase());
+                return jobTitle.toLowerCase().includes(event.query.toLowerCase());
             });
         }
+        this.setState({filteredJobTitles: results});
         return results;
     }
 
@@ -88,87 +90,86 @@ export default class EmployeeCard extends Component {
                         <img src={'/assets/demo/images/photo1.png'} 
                             onError={(e) => e.target.src='https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png'} alt='Фото'></img>
                     </div>
-                    <div className = 'p-col'>
-                        <div className="p-grid form-group" >
-                            <div className="p-col-2" style={{ padding: '20px'}}>                            
+                    <div className = 'p-col  p-my-0'>
+                        <div className="p-grid form-group " >
+                            <div className="p-col-2 p-mx-2" >                            
                                 <span className="p-float-label">
                                     <InputText id="lastNameFld" value={this.state.lastName} 
                                         onChange={(e) => this.setState({lastName:e.target.value})}/>
                                     <label htmlFor="lastNameFld">Фамилия</label>
                                 </span>
                             </div>
-                            <div className="p-col-2" style={{ padding: '20px'}}>                            
+                            <div className="p-col-2 p-mx-2" >                            
                                 <span className="p-float-label">
                                     <InputText id="firstNameFld" value={this.state.firstName}  
                                         onChange={(e) => this.setState({firstName:e.target.value})}/>
                                     <label htmlFor="firstNameFld">Имя</label>
                                 </span>
                             </div>
-                            <div className="p-col-12" style={{ padding: '20px'}}>                            
+                            <div className="p-col-12 p-mx-2 p-my-2">                            
                                 <span className="p-float-label">
                                     <InputText id="nickNameFld" value={this.state.nickName}  
                                         onChange={(e) => this.setState({nickName:e.target.value})}/>
                                     <label htmlFor="nickNameFld">Как называть (ник)</label>
                                 </span>
                             </div>
-                            <div className="p-col-2" style={{ padding: '20px'}}>                            
+                            <div className="p-col-2 p-mx-2" >                            
                                 <span className="p-float-label">
                                     <AutoComplete id="orgUnitFld" dropdown
                                         value={this.state.orgUnit} 
-                                        sug gestions={this.state.orgUnits} 
+                                        suggestions={this.state.filteredOrgUnits} 
                                         completeMethod={this.filterOrgUnit}
                                         onChange={event => this.setState({ orgUnit: event.value, filteredOrgInits: null})}/>
                                     <label htmlFor="orgUnitFld">Место работы</label>
                                 </span>
                             </div>
-                            <div className="p-col-10" style={{ padding: '20px'}}>                            
+                            <div className="p-col-8 p-mx-2" >                            
                                 <span className="p-float-label">
                                     <AutoComplete id="jobTitleFld" dropdown
                                         value={this.state.jobTitle} 
-                                        suggestions={this.state.jobTitles} 
+                                        suggestions={this.state.filteredJobTitles} 
                                         completeMethod={this.filterJobTitle}
                                         onChange={event => this.setState({ jobTitle: event.value, filteredJobTitles: null})}/>
                                     <label htmlFor="jobTitleFld">Должность</label>
                                 </span>
                             </div>
-                            <div className="p-col-2" style={{ padding: '20px'}}>                            
+                            <div className="p-col-2 p-mx-2" >                            
                                 <span className="p-float-label">
                                     <InputMask mask="99-999-99-99" id="phoneFld" value={this.state.phone} 
                                         onChange={(e) => this.setState({phone:e.target.value})} />
                                     <label htmlFor="phoneFld">Телефон</label>
                                 </span>
                             </div>
-                            <div className="p-col-2" style={{ padding: '20px'}}>                            
+                            <div className="p-col-2 p-mx-2">                            
                                 <span className="p-float-label">
                                     <InputText id="eMailFld" value={this.state.eMail}  
                                         onChange={(e) => this.setState({eMail:e.target.value})}/>
                                     <label htmlFor="eMailFld">Электронная почта</label>
                                 </span>
                             </div>
-                            <div className="p-col-12" style={{ padding: '20px'}}>                                
+                            <div className="p-col-12 p-mx-2" >                                
                                 <span className="p-float-label">
                                     <InputMask mask='99/99/9999' slotChar='dd/mm/yyyy'  id="birthdayFld" 
                                         value={this.state.birthday} onChange={(e) => this.setState({birthday:e.target.value})} />
                                     <label htmlFor="birthdayFld">День рождения</label>
                                 </span>
                             </div>
-                            <div className="p-col-2">
-                                <div className="p-text"> Длительность смены</div>
-                            </div>
-                            <div className="p-col-10">  
-                                <InputText value={this.state.shiftLength} width='3em' 
+                            <div className="p-col-2 p-mx-2">                            
+                                <span className="p-float-label">
+                                    <InputText id='shiftDurFld' value={this.state.shiftLength} width='3em' 
                                            onChange={(sl) => this.setState({shiftLength:sl.target.value})}/>
-                            </div>                            
-
-                            <div className="p-col-2">
-                                <div className="p-text" > Дней в неделю </div>
+                                    <label htmlFor="shiftDurFld"> Длительность смены </label>
+                                </span>
                             </div>
-                            <div className="p-col-10" >  
-                                <InputText value={this.state.daysInWeek} width='3em' 
-                                           onChange={(diw) => this.setState({daysInWeek:diw.target.value})}/>
+                            <div className="p-col-9 p-mx-2">
+                                <span className="p-float-label">
+                                    <InputText id="daysInWeekFld" value={this.state.daysInWeek} width='3em' 
+                                            onChange={(diw) => this.setState({daysInWeek:diw.target.value})}/>
+                                    <label htmlFor='daysInWeekFld'> Дней в неделю </label>
+                                </span>
                             </div>
                             
-                            <div className="p-col-12" >  
+                            <div className="p-col-12 p-mx-2" >  
                                 <InputText value={this.state.addConditions} placeholder="Дополнительная информация"
                                            style={{width:"40%"}}
                                            onChange={(addc) => this.setState({addConditions:addc.target.value})}/>

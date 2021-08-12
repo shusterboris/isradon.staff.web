@@ -5,15 +5,13 @@ import { Button } from 'primereact/button';
 import { Messages } from 'primereact/messages';
 import {Error} from '../pages/Error'
 import App from '../App';
-import User from '../entities/user'
 import AppSets from '../service/AppSettings';
 import ScheduleService from '../service/ScheduleService';
 import { Dropdown } from 'primereact/dropdown';
 
 
 export default class DayOffForm extends Component {
-    //state = {start: new Date(), end: new Date(), eventType: null, reason: '', id: null, errorMsg:''};
-    state = {eventType: null, reason: '', id: null, errorMsg:'', eventType:''};
+    state = {eventType: null, reason: '', id: null, errorMsg:''};
 
     constructor(props) {
         super(props);
@@ -45,7 +43,7 @@ export default class DayOffForm extends Component {
             return;
         }    
         if (!param.hasOwnProperty('employee') || !param.employee){
-            this.state.errorMsg = 'Вернитесь на предыдущую страницу кнопкой \"Назад\" и выберите ФИО сотрудника'
+            this.state.errorMsg = 'Вернитесь на предыдущую страницу кнопкой "Назад" и выберите ФИО сотрудника'
             return;
         }    
 
@@ -56,7 +54,7 @@ export default class DayOffForm extends Component {
         //открывает рядовой сотрудник
         //задача: определить, с какой даты можно планировать и можно ли редактировать даты
         const moment = require('moment');
-        if (mode == 'create'){//создается новый
+        if (mode === 'create'){//создается новый
             if (this.state.eventType.toLowerCase().includes('отпуск')) {
                 //поля можно редактировать, миним  альная дата + заданное количество дней от сегодня
                 this.editMode = true;
@@ -73,12 +71,6 @@ export default class DayOffForm extends Component {
                 this.endDateMin = minDate.toDate();
             }
         }
-    }
-
-    
-
-    componentDidMount(){
-        const user = new User('nobody');
     }
     
     thisIsMy(){

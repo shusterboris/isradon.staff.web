@@ -53,6 +53,32 @@ export default class ScheduleService {
             });
     }
 
+    getMonthCalendarByOrgUnit(start, end, orgunit, _this) {
+        if (!(start && end && orgunit)){
+            return [];
+        }
+        const server = AppSets.host;
+        const url = server + '/calendar/orgUnit/'+orgunit+"/"+start+"/"+end
+        return axios.get(url)
+            .then(res => res.data)
+            .then(data => {
+                if (_this){
+                    _this.setState({ days: data });
+                }
+                return data;
+            })
+            .catch(err => {
+                let errMsg = "";
+                if (err.toString().includes(': Network')){
+                    errMsg = 'Планирование рабочего времени. Сервер не отвечает.'
+                }else{
+                    errMsg = 'Планирование рабочего времени. Данные не получены';
+                }
+            _this.messages.show({ severity: 'warn', summary: errMsg});
+            });
+    }
+
+
     getMonthCalendarCommon(start, end, _this) {
         if (!start){
             return [];
@@ -102,6 +128,22 @@ export default class ScheduleService {
                 }
             _this.messages.show({ severity: 'warn', summary: errMsg});
             });
+    }
+
+    createSchedule(payload, _this, action){
+        const server = AppSets.host;
+        const query = "/schedule/create";
+        const url = server + query;
+        axios.post(url, payload, {timeout: 5000})
+            .then(()=>{
+                _this.messages.show({ severity: 'success', summary: 'Выполнено успешно'});
+                action()
+            })
+            .catch(err => {
+                const errMsg = err.toString().includes(': Network') ? 
+                    'Создание расписания. Сервер не отвечает.' :  err;
+                _this.messages.show({ severity: 'error', summary: errMsg, sticky:true})
+            })
     }
 
     acceptJobTime(selected, mode, _this){

@@ -288,7 +288,7 @@ class ScheduleResultTable extends React.Component{
 
         return (
             <div className = 'p-grid'>
-                <div className = 'p-col-12' className = 'datatable-style-sched-repo'>
+                <div className = 'p-col-12 datatable-style-sched-repo'>
                     <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}}/>
                     <ContextMenu model={this.rowMenuModel} ref={el => this.cm = el} onHide={() => this.setState({ selectedRow: null })}/>
                     <DataTable value={this.props.days} rowClassName={this.getRowBackgroundClassName} 
@@ -368,7 +368,7 @@ class ScheduleFilter extends React.Component{
     }
 
     onChangeSeller(event){
-        this.state.chosenPerson = event.target.value
+        this.setState({chosenPerson: event.target.value});
         if (this.state.employees){
             let foundEmployee = this.state.employees.filter(employee =>  employee.fullName.includes(event.target.value))
             if (foundEmployee)

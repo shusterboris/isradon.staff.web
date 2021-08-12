@@ -4,19 +4,29 @@ import User from '../entities/user';
 export default class AppSets{
     static dateformat = new Intl.DateTimeFormat('ru-RU');
     static hhmmFormat = new Intl.DateTimeFormat('ru-RU', {hour: "2-digit", minute: "2-digit"});
-    static minStartTime = "07:00";
+    static minStartTime = "09:00";
     static maxEndTime = "20:00";
     static timeBound = 10 * 60 * 1000; // допустимое время отклонения от запланированного времени прихода/ухода в милисекундах  
     static dayOffTimeLag = 10; //за какое количество дней пользователь может планировать отпуск
     static host = 'http://10.100.102.58:8080';
     static timeout = 5000;
     static mmyyFormat = new Intl.DateTimeFormat('ru', {month: "2-digit", year: "numeric"});
-    static user = AppSets.getCurrentUser()
     
-    static getCurrentUser(){
-        const user = new User('hr')
-        return user;
+    static getCurrentUser(id){       
+        let user = new User(id)
+        user.init()
+        AppSets.user = user;
     }
+
+    static getCurrentEmployee(){
+        return axios.get(AppSets.host+'/employee/byId/7')
+        .then(result=> result.data)
+        .then(data => {
+            AppSets.curEmployee = data;
+            this.getCurrentUser(data.userId);
+        })    
+    }
+
 
     static getHolydays(){
         const holyStr = '2021-09-07, 2021-09-08,2021-09-16,2021-09-21,2021-09-28';
@@ -95,5 +105,6 @@ export default class AppSets{
             });
     }
 
-
 }
+
+AppSets.getCurrentEmployee();
