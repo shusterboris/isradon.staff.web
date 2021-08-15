@@ -28,6 +28,52 @@ export default class ScheduleService {
             });
     }
 
+    getWorkCalendar(start, end, onlyAbsense, orgUnit, person, _this){
+        //должен вернуть данные календаря в зависимости от фильтров: весь магазин, избранный сотрудник, только дни отсутствия
+        if (!(start && end)) { 
+            _this.setState({ days: []});
+            return
+        }
+        const server = AppSets.host;
+        let url = server + '/calendar/'+start+"/"+end;
+        url = url + ((onlyAbsense) ? ('/' + true) : ('/' + false));
+        if (orgUnit){
+            url = url + (orgUnit.hasOwnProperty('id') ? ('/' + orgUnit.id) : '');    
+        }
+        if (person){
+            url = url + (person.hasOwnProperty('id') ? ('/' + person.id) : '');
+        }
+        return axios.get(url)
+            .then(res => res.data)
+            .then(data => {
+                if (_this){
+                    _this.setState({ days: data });
+                }
+                return data;
+            });
+            //.catch(err => { 
+            //        this.processRequestsCatch(err, "Получение календаря работы на месяц", _this.messages) 
+            //    }
+            //);
+    }
+
+
+    processRequestsCatch(err, subject, messages){
+        let errMsg = "";
+        if (err.toString().includes(': Network')){
+            errMsg = subject+'. Сервер не отвечает.'
+        }else{
+            errMsg = subject+'. Данные не получены';
+        }
+        if (messages){
+            messages.show({ severity: 'warn', summary: errMsg});
+        }else{
+            console.error(errMsg);
+            console.error(err.toString());
+        }
+
+    }
+
     getMonthCalendarByPerson(start, end, person, _this) {
         if (!person){
             return [];

@@ -10,19 +10,19 @@
 }
 
 .datatable-style-sched-repo .row-example {
-    background-color: rgba(0, 0, 0, 0.15) !important;
+    background-color: #14e452ea !important;
 }
 
 .datatable-style-sched-repo .row-rest {
-    background-color: #afebcd !important;
+    background-color: #f39898 !important;
 }
 
 .datatable-style-sched-repo .row-day-off {
-    background-color: #d3fae7 !important;
+    background-color: #8cc3f7 !important;
 }
 
 .datatable-style-sched-repo .row-holiday {
-    background-color: #fac3c3 !important;
+    background-color: #c5cece !important;
 }
 
 .datatable-style-sched-repo .row-sick-leave {

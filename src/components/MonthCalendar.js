@@ -9,10 +9,10 @@ import ScheduleService from '../service/ScheduleService'
 import { Messages } from 'primereact/messages';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
-
+import {Checkbox} from 'primereact/checkbox';
 
 export default class MonthCalendar extends Component{
-    state = {days:[], chosenPerson:"", employees:[], chosenOrgUnit:null, orgUnits:[], filteredEmployees:[]}
+    state = {days:[], chosenPerson:"", employees:[], chosenOrgUnit:null, orgUnits:[], filteredEmployees:[], filterChecked: true}
 
     constructor(props){
         super(props);
@@ -26,6 +26,7 @@ export default class MonthCalendar extends Component{
         this.displaySimpleUserHeader = this.displaySimpleUserHeader.bind(this);
         this.getEmployeeList = this.getEmployeeList.bind(this);
         this.onOrgUnitChange = this.onOrgUnitChange.bind(this);
+        this.onCheckFilter = this.onCheckFilter.bind(this);
         this.moment = require('moment');
         this.employee = AppSets.curEmployee;
     }
@@ -36,15 +37,10 @@ export default class MonthCalendar extends Component{
         AppSets.getOrgUnitList(this); //orgUnits
     }
 
-
-
     chosenMonthChanged(eventInfo){
         this.startStr = eventInfo.start.toISOString().split('T')[0] + " 00:00";
         this.endStr = eventInfo.end.toISOString().split('T')[0] + " " +AppSets.maxEndTime;
-        if (AppSets.user && AppSets.user.amIhr())
-            this.updateData(this.startStr, this.endStr, NaN);
-        else
-            this.updateData(this.startStr, this.endStr, AppSets.user.id);
+        this.updateData()
     }
 
     processSelection(eventInfo){
@@ -69,25 +65,22 @@ export default class MonthCalendar extends Component{
     }
 
     onEmployeeChange(event){
+        this.chosenEmployee = event.value;
         this.setState({chosenPerson: event.value});
-        this.updateData(this.startStr, this.endStr, event.value.id);
+        this.updateData()
     }
 
     onClearChosenPerson(){
+        this.chosenEmployee = null;
         this.setState({chosenPerson:null});
-        this.updateData(this.startStr, this.endStr, NaN);
+        this.updateData();
     }
 
-    updateData(startStr, endStr, chosenPersonId){
-        if (!AppSets.user.amIhr || chosenPersonId){
-            if (chosenPersonId && startStr && endStr){
-                this.dataService.getMonthCalendarByPerson(startStr, endStr, chosenPersonId, this);
-            }
-        }else{//hr
-            if (startStr && endStr){
-                this.dataService.getMonthCalendarCommon(startStr, endStr, this);
-            }
-        }
+    updateData(){
+        if (!this.startStr || !this.endStr)
+            return;
+        this.dataService.getWorkCalendar(this.startStr, this.endStr, this.state.filterChecked,
+            this.chosenOrgUnit, this.chosenEmployee,  this);
     }
 
     getEmployeeList(chosenUnit){
@@ -101,13 +94,20 @@ export default class MonthCalendar extends Component{
                 return sameOrgUnitEmployees;
             }
         }else{
-            return {}
+            return []
         }
     }
 
     onOrgUnitChange(ou){
+        this.chosenOrgUnit = ou.value;
         this.setState({chosenOrgUnit:ou.value});
         this.getEmployeeList(ou.value);
+        this.updateData();
+    }
+
+    onCheckFilter(event){
+        this.setState({filterChecked: event.checked});
+        this.updateData();
     }
 
     displaySimpleUserHeader(){
@@ -128,9 +128,16 @@ export default class MonthCalendar extends Component{
                                 onClick={this.onClearChosenPerson}/>
                     }
                 </div>
-                <div className='p-col-6'>
+                <div className='p-col-5'>
                     <div className='p-card-title p-text-bold p-text-left' style={{fontSize:'large', color: '#1E88E5'}}>
                         Планирование отпусков и больничных
+                    </div>
+                </div>
+                <div className="p-col">
+                    <div className="p-field-checkbox">
+                        <Checkbox id="checkFilterFld" checked={this.state.filterChecked} 
+                            onChange={(chk)=>this.onCheckFilter(chk)}></Checkbox>
+                        <label htmlFor="checkFilterFld" >Только отпуска</label>
                     </div>
                 </div>
             </div>
@@ -156,9 +163,16 @@ export default class MonthCalendar extends Component{
                             onClick={this.onClearChosenPerson}/>
                 }
             </div>
-            <div className='p-col-6'>
+            <div className='p-col-5'>
                 <div className='p-card-title p-text-bold p-text-left' style={{fontSize:'large', color: '#1E88E5'}}>
                     Планирование отпусков и больничных
+                </div>
+            </div>
+            <div className="p-col">
+                <div className="p-field-checkbox">
+                    <Checkbox id="checkFilterFld" checked={this.state.filterChecked} 
+                            onChange={(chk)=>this.onCheckFilter(chk)}></Checkbox>
+                    <label htmlFor="checkFilterFld" >Только отпуска</label>
                 </div>
             </div>
         </div>
@@ -174,7 +188,7 @@ export default class MonthCalendar extends Component{
                         {(this.user && this.user.amIhr()) ? this.displayHrHeader() : this.displaySimpleUserHeader()}
                         <FullCalendar events={this.state.days} initialDate={Date.now()} locale={ruLocale}
                             slotMinTime={AppSets.minStartTime} slotMaxTime={AppSets.maxEndTime} 
-                            selectable firstDay={0} weekends={false} expandRows
+                            selectable firstDay={0} expandRows
                             displayEventEnd={true}
                             initialView='dayGridMonth' plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                             headerToolbar={{ left: 'prev,next', center: 'title', right: 'today,dayGridMonth,timeGridWeek,timeGridDay' }} 
