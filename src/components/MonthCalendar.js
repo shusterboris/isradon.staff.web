@@ -29,6 +29,7 @@ export default class MonthCalendar extends Component{
         this.onCheckFilter = this.onCheckFilter.bind(this);
         this.moment = require('moment');
         this.employee = AppSets.curEmployee;
+        this.filterChecked = true;
     }
 
     componentDidMount(){
@@ -79,7 +80,7 @@ export default class MonthCalendar extends Component{
     updateData(){
         if (!this.startStr || !this.endStr)
             return;
-        this.dataService.getWorkCalendar(this.startStr, this.endStr, this.state.filterChecked,
+        this.dataService.getWorkCalendar(this.startStr, this.endStr, this.filterChecked,
             this.chosenOrgUnit, this.chosenEmployee,  this);
     }
 
@@ -106,6 +107,7 @@ export default class MonthCalendar extends Component{
     }
 
     onCheckFilter(event){
+        this.filterChecked = event.checked;
         this.setState({filterChecked: event.checked});
         this.updateData();
     }
