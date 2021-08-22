@@ -13,8 +13,7 @@ import { InputText } from 'primereact/inputtext';
 import {Messages} from 'primereact/messages';
 import classNames from 'classnames';
 import './ScheduleReport.css'
-import '../i18n'
-import { ru } from '../i18n';
+import { ru } from '../service/AppSettings';
 import { addLocale } from 'primereact/api';
 
 export default class ScheduleReportHR extends React.Component{
@@ -359,7 +358,7 @@ class ScheduleFilter extends React.Component{
     onChangeCalendar(event){
         if (event){
             const theDate = event.value;
-            this.chosenDate = AppSets.mmyyFormat.format(theDate)
+            //this.chosenDate = AppSets.mmyyFormat.format(theDate)
             let month = new Date(Date.parse(theDate)).getMonth()
             this.props.onCalendarChange(month)
         }else{
@@ -385,9 +384,9 @@ class ScheduleFilter extends React.Component{
     setInitialChosenDate(){
         let chosenDate = new Date();
         //если число меньше 10, берем прошлый месяц, иначе текущий
-        chosenDate = chosenDate.getDay() > 100 ?  
+        chosenDate = chosenDate.getDay() > 10 ?  
             chosenDate :  chosenDate.setMonth(chosenDate.getMonth() - 1); 
-        this.chosenDate = AppSets.mmyyFormat.format(chosenDate)
+        //this.chosenDate = AppSets.mmyyFormat.format(chosenDate)
     }
 
     render(){

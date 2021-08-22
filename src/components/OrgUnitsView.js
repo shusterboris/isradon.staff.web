@@ -5,9 +5,10 @@ import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
 import { InputMask } from 'primereact/inputmask';
 import {Button} from 'primereact/button';
+import { Toolbar } from 'primereact/toolbar'
 import {Dropdown} from 'primereact/dropdown'
 import ScheduleService from '../service/ScheduleService';
-import {Messages} from 'primereact/messages';
+import { Messages } from 'primereact/messages';
 import { ProgressSpinner } from 'primereact/progressspinner';
 
 export default class OrgUnitView extends Component {
@@ -37,6 +38,7 @@ export default class OrgUnitView extends Component {
         this.onShiftValidation = this.onShiftValidation.bind(this);
         this.onCreateShift = this.onCreateShift.bind(this);
         this.onRemoveShift = this.onRemoveShift.bind(this);
+        this.displayButtonBar = this.displayButtonBar.bind(this);
     }
 
     componentDidMount(){
@@ -187,17 +189,31 @@ export default class OrgUnitView extends Component {
         end1: '', end2: '', end3: '', end4: '', end5: '', end6: '', end7: '',shiftChanged: false, orgUnitChanged: false});
     }
 
-    accept(){
-
-    }
-
-    reject(){
-
+    displayButtonBar(){
+        const leftBar = (<React.Fragment>
+            {(this.state.shiftChanged && this.state.selectedRow) && 
+                <Button id="btnShiftSave" label="Сохранить" icon="pi pi-check" style={{marginRight: '1em'}} 
+                        className="p-button-primary p-mr-2"
+                        onClick={this.onShiftSavePressed}/>}
+                <Button id="btnShiftCancel" label="Выйти" icon="pi pi-arrow-left" className="p-button-secondary p-mr-2" 
+                        onClick={this.props.history.goBack}/>
+            </React.Fragment>);
+        const rightBar = (<React.Fragment>
+            {this.state.shiftNo &&
+                <Button id="btnShiftDelete" label="Удалить" icon="pi pi-thumbs-down" className="p-button-danger"
+                        style={{marginLeft: '1em'}} 
+                        onClick={this.onConfirmRemoveShift}/>
+            }
+        </React.Fragment>);    
+        return <div>
+            <Toolbar left={leftBar} right={rightBar} />
+        </div>
     }
 
     onRemoveShift(){
 
     }
+
 
     actionBodyTemplate() {
         return (
@@ -353,17 +369,7 @@ export default class OrgUnitView extends Component {
                         </div>
 
                         <div className='p-grid ' style={{margin: '1.5em 1em 1em 1em'}}>
-                            <span >
-                                {(this.state.shiftChanged && this.state.selectedRow) && 
-                                <Button id="btnShiftSave" label="Сохранить" icon="pi pi-check" style={{marginRight: '1em'}} 
-                                        onClick={this.onShiftSavePressed}/>}
-                                <Button id="btnShiftCancel" label="Выйти" icon="pi pi-times" className="p-button-secondary" 
-                                        onClick={this.props.history.goBack}/>
-                                {this.state.shiftNo &&
-                                    <Button id="btnShiftDelete" label="Удалить" icon="pi thumbs-down" className="p-button-warning"
-                                            onClick={this.onConfirmRemoveShift}/>
-                                }
-                            </span>
+                            {this.displayButtonBar()}
                         </div>
                     </div>
                 </div>

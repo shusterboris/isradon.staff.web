@@ -4,7 +4,6 @@ import {Column} from "primereact/column";
 import {Button} from 'primereact/button';
 import {Messages} from 'primereact/messages';
 import AppSets from '../service/AppSettings';
-import axios from 'axios';
 
 export default class EmployeeView extends React.Component{
     state = {
@@ -20,15 +19,7 @@ export default class EmployeeView extends React.Component{
 
 
     componentDidMount() {
-        axios.get(AppSets.host+'/employee/active/list')
-            .then(res => {
-                const employeeList = res.data;
-                this.setState({employees: employeeList})
-            })
-            .catch(()=>{
-                let msg = {severity: 'error', summary: 'Данные не получены', detail: 'Возможно, проблемы со связью'};
-                this.messages.current.show(msg);
-            });
+        AppSets.getEmployees(this);
     }
 
     startEditEmployee(rowData){
@@ -49,7 +40,7 @@ export default class EmployeeView extends React.Component{
     }
 
     addMessages() {
-        this.messages.show({severity:'error', summary: 'Проблема', detail:'Не удалось получить данные с сервера. ВОзможно, плохая связь', life: 3000});
+        this.messages.show({severity:'error', summary: 'Проблема', detail:'Не удалось получить данные с сервера. Возможно, плохая связь', life: 3000});
     }
 
     render(){

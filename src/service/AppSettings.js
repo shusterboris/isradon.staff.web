@@ -2,20 +2,22 @@ import axios from 'axios';
 import User from '../entities/user';
 
 export default class AppSets{
-    static dateformat = new Intl.DateTimeFormat('ru-RU');
-    static hhmmFormat = new Intl.DateTimeFormat('ru-RU', {hour: "2-digit", minute: "2-digit"});
     static minStartTime = "09:00";
     static maxEndTime = "20:00";
     static timeBound = 10 * 60 * 1000; // допустимое время отклонения от запланированного времени прихода/ухода в милисекундах  
     static dayOffTimeLag = 10; //за какое количество дней пользователь может планировать отпуск
-    static host = 'http://10.100.102.58:8080';
-    static timeout = 5000;
-    static mmyyFormat = new Intl.DateTimeFormat('ru', {month: "2-digit", year: "numeric"});
+    static host = 'http://localhost:8080';
+    //static host = "https://test.sclub.in.ua";
+    static timeout = 2000;
     
     static getCurrentUser(id){       
         let user = new User(id)
         user.init()
         AppSets.user = user;
+    }
+
+    static getUser(){
+        return AppSets.user
     }
 
     static getCurrentEmployee(){
@@ -25,24 +27,6 @@ export default class AppSets{
             AppSets.curEmployee = data;
             this.getCurrentUser(data.userId);
         })    
-    }
-
-
-    static getHolydays(){
-        const holyStr = '2021-09-07, 2021-09-08,2021-09-16,2021-09-21,2021-09-28';
-        let result = [];
-        if (! holyStr)
-            return [];
-        let holyStrList = holyStr.split(",")
-        for(let i=0; i < holyStrList.length; i++){
-            try{
-                let current = new Date(holyStrList[i]);
-                result.push(current);
-            }catch{
-                console.error("Неправильный формат даты одного из праздников")
-            }
-        }
-        return result;
     }
     
     static getOrgUnits(_this) {
@@ -54,9 +38,7 @@ export default class AppSets{
                 return data;
             })
             .catch(err=>{
-                const errMsg = err.toString().includes(': Network') ? 
-                    'Список подразделений. Сервер не отвечает.' : 'Не удалось получить справочник подразделений.'
-                _this.messages.show({severity: 'warn', summary: errMsg })
+                AppSets.processRequestsCatch(err, "Справочник подразделений", _this.messages, false)
             });
     }
 
@@ -69,9 +51,7 @@ export default class AppSets{
                 _this.setState({ orgUnits: data, waitPlease: false });
                 return data;
             }).catch(err=>{
-                const errMsg = err.toString().includes(': Network') ? 
-                    'Справочник подразделений. Сервер не отвечает.' : 'Не удалось получить данные о справочнике подразделений.'
-                _this.messages.show({severity: 'warn', summary: errMsg })
+                AppSets.processRequestsCatch(err, "Справочник подразделений", _this.messages, false)
             });
     }
 
@@ -85,10 +65,19 @@ export default class AppSets{
                 }
                 return data;
             }).catch(err=>{
-                const errMsg = err.toString().includes(': Network') ? 
-                    'Список сотрудников. Сервер не отвечает.' : 'Не удалось получить список сотрудников.'
-                _this.messages.show({severity: 'warn', summary: errMsg })
+                AppSets.processRequestsCatch(err, "Список сотрудников", _this.messages, true)
             });
+    }
+
+    static saveEmployee(data, finalAction, _this){
+        return axios.get(AppSets.host+'/employee/save')
+            .then(res => {
+                _this.messages({severity:'info', summary:'Успешно сохранено'});
+                finalAction()
+            })
+            .catch(err=>{
+                AppSets.processRequestsCatch(err, "Список сотрудников", _this.messages, true)
+            })
     }
 
     static getJobTitles(_this){
@@ -99,12 +88,52 @@ export default class AppSets{
                 _this.setState({ jobTitles: data });
                 return data;
             }).catch(err=>{
-                const errMsg = err.toString().includes(': Network') ? 
-                    'Список должностей. Сервер не отвечает.' : 'Не удалось получить список должностей из справочника'
-                _this.messages.show({severity: 'warn', summary: errMsg })
+                AppSets.processRequestsCatch(err, 'Список должностей.', this.messages, false)
             });
     }
+    
+    static processRequestsCatch(err, subject, messages, sticky){
+        let errMsg = "";
+        if (err.response== null || err.toString().includes(': Network')){
+            errMsg = subject+'. Сервер не отвечает. Возможно проблемы с подключением к сети...'
+        }else if (err.toString().includes('status code 400')){
+            errMsg = 'Неправильный запрос к системе(400). Обратитесь в техническую поддержку';
+        }else if (err.toString().includes('status code 405')){
+            errMsg = 'Неправильный запрос к системе(405). Обратитесь в техническую поддержку';
+        }else if (err.toString().includes('status code 500')){
+            errMsg = 'Сервер не может обработать запрос(500). Обратитесь в техническую поддержку';
+        }else if (err.toString().includes('status code 403')){
+            errMsg = 'Недостаточно прав. Обратитесь в IT-службу компании';
+        }else{
+            console.log(err.response.data);
+            errMsg = subject+'. Непредусмотренная ошибка';
+        }
+        if (messages){
+            messages.show({ severity: 'error', summary: errMsg, sticky: sticky});
+        }else{
+            console.error(errMsg);
+            if (err.response){
+                console.error(err.response.data)
+            }else{
+                console.error(err.toString());
+            }
+        }
+    }
+    
+}
 
+export const row_types = [{name: 'Работа', id: 0}, {name: 'Отпуск', id: 2}, {name: 'Неоплачиваемый отпуск', id: 3},
+                            {name: 'Больничный', id: 4}, {name: 'Прогул', id: 5}]
+
+export const ru = {
+    firstDayOfWeek: 0,
+    dayNames: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
+    dayNamesShort: ["Вск", "Пнд", "Втр", "Срд", "Чтв", "Птн", "Сбт"],
+    dayNamesMin: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+    monthNames: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+    monthNamesShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авн", "Сен", "Окт", "Ноя", "Дек"],
+    today: "Сегодня",
+    clear: "Очистить"
 }
 
 AppSets.getCurrentEmployee();

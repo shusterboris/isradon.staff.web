@@ -16,6 +16,7 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './App.scss';
+import { DayEdit } from './components/DayEdit';
 
 const App = () => {
 
@@ -214,6 +215,7 @@ const App = () => {
 		{path: "/day-off", component:DayOffForm},
 		{path: "/day-off:type", component:DayOffForm},
 		{path: "/create-schedule", component:EmptyPage},
+        {path: "/edit-day:id", component:DayEdit},
 		{path: "/public/" },
     ];
 

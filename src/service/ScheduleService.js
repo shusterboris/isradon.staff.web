@@ -3,6 +3,22 @@ import AppSets from '../service/AppSettings'
 
 export default class ScheduleService {    
 
+    getScheduleRecordById(id, _this, processResult){
+        const server = AppSets.host;
+        const url = server + '/schedule/getrow/'+id
+        axios.get(url)
+            .then(res => res.data)
+            .then(row => {
+                if (_this){
+                    _this.setState({rowData: row});
+                    processResult && processResult(row)
+                }
+            })
+            .catch(err => {
+                this.processRequestsCatch(err, 'Расписания сотрудника на день.', _this.messages);
+            });
+    }
+
     getMonthScheduleByPerson(month, person, _this) {
         if (!person || (month < 0)){
             return [];
@@ -44,34 +60,47 @@ export default class ScheduleService {
             url = url + (person.hasOwnProperty('id') ? ('/' + person.id) : '');
         }
         return axios.get(url)
-            .then(res => res.data)
+            .then(
+                res => res.data)
             .then(data => {
                 if (_this){
                     _this.setState({ days: data });
                 }
                 return data;
-            });
-            //.catch(err => { 
-            //        this.processRequestsCatch(err, "Получение календаря работы на месяц", _this.messages) 
-            //    }
-            //);
+            })
+            .catch(err => { 
+                    this.processRequestsCatch(err, "Получение календаря работы на месяц", _this.messages) 
+                }
+            );
     }
 
 
-    processRequestsCatch(err, subject, messages){
+    processRequestsCatch(err, subject, messages, sticky=false){
         let errMsg = "";
-        if (err.toString().includes(': Network')){
-            errMsg = subject+'. Сервер не отвечает.'
+        if (err.response== null || err.toString().includes(': Network')){
+            errMsg = subject+'. Сервер не отвечает. Возможно проблемы с подключением к сети...'
+        }else if (err.toString().includes('status code 400')){
+            errMsg = 'Неправильный запрос к системе(400). Обратитесь в техническую поддержку';
+        }else if (err.toString().includes('status code 405')){
+            errMsg = 'Неправильный запрос к системе(405). Обратитесь в техническую поддержку';
+        }else if (err.toString().includes('status code 500')){
+            errMsg = 'Сервер не может обработать запрос(500). Обратитесь в техническую поддержку';
+        }else if (err.toString().includes('status code 403')){
+            errMsg = 'Недостаточно прав. Обратитесь в IT-службу компании';
         }else{
-            errMsg = subject+'. Данные не получены';
+            console.log(err.response.data);
+            errMsg = subject+'. Непредусмотренная ошибка';
         }
         if (messages){
-            messages.show({ severity: 'warn', summary: errMsg});
+            messages.show({ severity: 'error', summary: errMsg, sticky: sticky});
         }else{
             console.error(errMsg);
-            console.error(err.toString());
+            if (err.response){
+                console.error(err.response.data)
+            }else{
+                console.error(err.toString());
+            }
         }
-
     }
 
     getMonthCalendarByPerson(start, end, person, _this) {
@@ -186,9 +215,7 @@ export default class ScheduleService {
                 action()
             })
             .catch(err => {
-                const errMsg = err.toString().includes(': Network') ? 
-                    'Создание расписания. Сервер не отвечает.' :  err;
-                _this.messages.show({ severity: 'error', summary: errMsg, sticky:true})
+                this.processRequestsCatch(err, 'Создание расписания.', _this.messages);
             })
     }
 
@@ -368,7 +395,6 @@ export default class ScheduleService {
         );
     }
 
-
     saveDayOff(_this){
         const server = AppSets.host;
         const url = server + '/schedule/newVacation'
@@ -394,6 +420,39 @@ export default class ScheduleService {
                     'Запись об отсутствии на работе. Сервер не отвечает.' : "Не удалось записать запись: "+_this.state.eventType;
                 _this.messages.show({ severity: 'warn', summary: errMsg})
             });
+    }
+
+    saveRow(_this){
+        let payload = {"comingPlan": _this.state.rowData.comingPlan, "start": _this.state.start, "end": _this.state.end, 
+                        "rowType": _this.state.chosenType.id,
+                        "chosenEmployeeId": _this.state.chosenEmployee.id, "chosenOrgUnitId": _this.state.chosenEmployee.id, 
+                        "id": _this.state.rowData.id}
+        const server = AppSets.host;
+        const url = server + '/schedule/row/update'
+        axios.post(url, payload, {timeout: AppSets.timeout})
+            .then(res => res.data)
+            .then(data => {
+                _this.messages.show({severity: 'success', summary: 'Расписание обновлено'})
+                _this.props.history.goBack()
+            })
+            .catch(err=>{
+                this.processRequestsCatch(err, "Изменение записи в расписании", _this.messages, true);
+        });                    
+    }
+
+    deleteRow(_this){
+        const server = AppSets.host;
+        const url = server + '/schedule/row/delete/'+_this.state.rowData.id
+        axios.delete(url, {timeout: AppSets.timeout})
+        .then(res => res.data)
+        .then(() => {
+            _this.messages.show({severity: 'success', summary: 'Запись удалена из расписания'})
+            _this.props.history.goBack()
+        })
+        .catch(err=>{
+            this.processRequestsCatch(err, "Удаление записи из расписания", _this.messages, true);
+    });                    
+
     }
 
 }

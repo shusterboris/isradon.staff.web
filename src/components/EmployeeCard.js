@@ -3,12 +3,15 @@ import {Card} from 'primereact/card'
 import {Button} from 'primereact/button'
 import { InputText } from 'primereact/inputtext';
 import { InputMask } from 'primereact/inputmask';
-import AppSets from '../service/AppSettings'
-import axios from 'axios'
+import { Checkbox} from 'primereact/checkbox';
+import AppSets from '../service/AppSettings';
+import axios from 'axios';
 import { AutoComplete } from 'primereact/autocomplete';
+import ScheduleService from '../service/ScheduleService';
 
 export default class EmployeeCard extends Component {
     state = {
+        wasChanged: false,
         orgUnits:[], 
         orgUnit:'',
         jobTitles:[],
@@ -16,17 +19,19 @@ export default class EmployeeCard extends Component {
         filteredOrgUnits:[],
         filteredJobTitles:[],
         firstName:'', lastName:'',nickName:'',
-        pnone:'',eMail:'',birthday:'', shiftLength:8, daysInWeek:5, addConditions:''
+        phone:'',eMail:'',birthday:'', shiftLength:8, daysInWeek:5, addConditions:''
     }
     
     constructor(props) {
         super(props);
+        this.dataService = new ScheduleService();
         this.employee = this.createEmptyEmployee(); 
         this.filterOrgUnit = this.filterOrgUnit.bind(this);
         this.filterJobTitle = this.filterJobTitle.bind(this);
         this.initiateFields = this.initiateFields.bind(this);
-        this.onCancelPressed = this.onCancelPressed.bind(this);
+        this.onCancelPressed = this.goBack.bind(this);
         this.onSavePressed = this.onSavePressed.bind(this);
+        this.onWorkStatusChange = this.onWorkStatusChange.bind(this);
     }
 
     componentDidMount(){
@@ -40,7 +45,7 @@ export default class EmployeeCard extends Component {
                 this.initiateFields(res.data);
             })
             .catch(error => 
-                console.log(error));
+                this.messages.show({ severity: 'error', summary: "Не удается получить данные о пользователе", sticky: true}));
         }
     }    
 
@@ -49,8 +54,8 @@ export default class EmployeeCard extends Component {
         let fldPhone = (data.phone) ? data.phone.slice(-12) : '';
         let fldBirthday = (data.birthday) ? data.birthday : '';
         let fldOrgUnit = (data.orgUnit) ? data.orgUnit.name : '';
-        this.setState({lastName: data.lastName, firstName: data.firstName, nickName: data.nickName, 
-            jobTitle:data.jobTitle, orgUnit: fldOrgUnit, phone: fldPhone, eMail: data.eMail, birthday: fldBirthday});
+        this.setState({lastName: data.lastName, firstName: data.firstName, working: data.working,
+            jobTitle:data.jobTitle, orgUnit: fldOrgUnit, phone: fldPhone, eMail: data.eMail, birthday: fldBirthday, id:data.id});
     }
 
     filterOrgUnit(event){
@@ -81,36 +86,38 @@ export default class EmployeeCard extends Component {
         return results;
     }
 
-    render() {
+    onWorkStatusChange(event){
+        this.setState({working: event.checked, wasChanged: true});
+    }
 
+    render() {
         return<div> 
             <Card title="Карточка сотрудника" >
                 <div className="p-grid">
                     <div className = 'p-col-fixed' style={{ width: '260px'}}>
-                        <img src={'/assets/demo/images/photo1.png'} 
+                        <img src={'/assets/images/personal.png'} 
                             onError={(e) => e.target.src='https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png'} alt='Фото'></img>
+                        <div className="p-field-checkbox">   
+                            <Checkbox inputId="isWorkingFld" value={this.state.working} 
+                                onChange={chk => this.onWorkStatusChange(chk)} 
+                                checked={this.state.working == true}></Checkbox>
+                            <label htmlFor="isWorkingFld" className="p-checkbox-label">Работает</label>
+                        </div>
                     </div>
                     <div className = 'p-col  p-my-0'>
                         <div className="p-grid form-group " >
                             <div className="p-col-2 p-mx-2" >                            
                                 <span className="p-float-label">
                                     <InputText id="lastNameFld" value={this.state.lastName} 
-                                        onChange={(e) => this.setState({lastName:e.target.value})}/>
-                                    <label htmlFor="lastNameFld">Фамилия</label>
+                                        onChange={(e) => this.setState({lastName:e.target.value, wasChanged: true})}/>
+                                    <label htmlFor="lastNameFld">Фамилия*</label>
                                 </span>
                             </div>
-                            <div className="p-col-2 p-mx-2" >                            
+                            <div className="p-col-8 p-mx-2" >                            
                                 <span className="p-float-label">
                                     <InputText id="firstNameFld" value={this.state.firstName}  
-                                        onChange={(e) => this.setState({firstName:e.target.value})}/>
-                                    <label htmlFor="firstNameFld">Имя</label>
-                                </span>
-                            </div>
-                            <div className="p-col-12 p-mx-2 p-my-2">                            
-                                <span className="p-float-label">
-                                    <InputText id="nickNameFld" value={this.state.nickName}  
-                                        onChange={(e) => this.setState({nickName:e.target.value})}/>
-                                    <label htmlFor="nickNameFld">Как называть (ник)</label>
+                                        onChange={(e) => this.setState({firstName:e.target.value, wasChanged: true})}/>
+                                    <label htmlFor="firstNameFld">Имя*</label>
                                 </span>
                             </div>
                             <div className="p-col-2 p-mx-2" >                            
@@ -119,7 +126,7 @@ export default class EmployeeCard extends Component {
                                         value={this.state.orgUnit} 
                                         suggestions={this.state.filteredOrgUnits} 
                                         completeMethod={this.filterOrgUnit}
-                                        onChange={event => this.setState({ orgUnit: event.value, filteredOrgInits: null})}/>
+                                        onChange={event => this.setState({ orgUnit: event.value, filteredOrgInits: null, wasChanged: true})}/>
                                     <label htmlFor="orgUnitFld">Место работы</label>
                                 </span>
                             </div>
@@ -129,42 +136,42 @@ export default class EmployeeCard extends Component {
                                         value={this.state.jobTitle} 
                                         suggestions={this.state.filteredJobTitles} 
                                         completeMethod={this.filterJobTitle}
-                                        onChange={event => this.setState({ jobTitle: event.value, filteredJobTitles: null})}/>
-                                    <label htmlFor="jobTitleFld">Должность</label>
+                                        onChange={event => this.setState({ jobTitle: event.value, filteredJobTitles: null, wasChanged: true})}/>
+                                    <label htmlFor="jobTitleFld">Должность*</label>
                                 </span>
                             </div>
                             <div className="p-col-2 p-mx-2" >                            
                                 <span className="p-float-label">
                                     <InputMask mask="99-999-99-99" id="phoneFld" value={this.state.phone} 
-                                        onChange={(e) => this.setState({phone:e.target.value})} />
-                                    <label htmlFor="phoneFld">Телефон</label>
+                                        onChange={(e) => this.setState({phone:e.target.value, wasChanged: true})} />
+                                    <label htmlFor="phoneFld">Телефон*</label>
                                 </span>
                             </div>
                             <div className="p-col-2 p-mx-2">                            
                                 <span className="p-float-label">
                                     <InputText id="eMailFld" value={this.state.eMail}  
-                                        onChange={(e) => this.setState({eMail:e.target.value})}/>
+                                        onChange={(e) => this.setState({eMail:e.target.value, wasChanged: true})}/>
                                     <label htmlFor="eMailFld">Электронная почта</label>
                                 </span>
                             </div>
                             <div className="p-col-12 p-mx-2" >                                
                                 <span className="p-float-label">
                                     <InputMask mask='99/99/9999' slotChar='dd/mm/yyyy'  id="birthdayFld" 
-                                        value={this.state.birthday} onChange={(e) => this.setState({birthday:e.target.value})} />
+                                        value={this.state.birthday} onChange={(e) => this.setState({birthday:e.target.value, wasChanged: true})} />
                                     <label htmlFor="birthdayFld">День рождения</label>
                                 </span>
                             </div>
                             <div className="p-col-2 p-mx-2">                            
                                 <span className="p-float-label">
                                     <InputText id='shiftDurFld' value={this.state.shiftLength} width='3em' 
-                                           onChange={(sl) => this.setState({shiftLength:sl.target.value})}/>
+                                           onChange={(sl) => this.setState({shiftLength:sl.target.value, wasChanged: true})}/>
                                     <label htmlFor="shiftDurFld"> Длительность смены </label>
                                 </span>
                             </div>
                             <div className="p-col-9 p-mx-2">
                                 <span className="p-float-label">
                                     <InputText id="daysInWeekFld" value={this.state.daysInWeek} width='3em' 
-                                            onChange={(diw) => this.setState({daysInWeek:diw.target.value})}/>
+                                            onChange={(diw) => this.setState({daysInWeek:diw.target.value, wasChanged: true})}/>
                                     <label htmlFor='daysInWeekFld'> Дней в неделю </label>
                                 </span>
                             </div>
@@ -172,25 +179,49 @@ export default class EmployeeCard extends Component {
                             <div className="p-col-12 p-mx-2" >  
                                 <InputText value={this.state.addConditions} placeholder="Дополнительная информация"
                                            style={{width:"40%"}}
-                                           onChange={(addc) => this.setState({addConditions:addc.target.value})}/>
+                                           onChange={(addc) => this.setState({addConditions:addc.target.value, wasChanged: true})}/>
                             </div>
                         </div>
+                        
                     </div>
                 </div>
                 <span>
-                    <Button label="Сохранить" icon="pi pi-check" style={{marginRight: '1em'}} onClick={this.onSavePressed}/>
-                    <Button label="Отменить" icon="pi pi-times" className="p-button-secondary" onClick={this.onCancelPressed}/>
+                    {this.state.wasChanged && 
+                        <Button label="Сохранить" icon="pi pi-check" style={{marginRight: '1em'}} onClick={this.onSavePressed}/>
+                    }
+                    <Button label="Отменить" icon="pi pi-times" className="p-button-secondary" onClick={this.goBack}/>
                 </span>
             </Card>
         </div>
     }
 
+    isDataValid(messages){
+        let errFields = [];
+        if (!this.state.firstName && !this.state.lastName){
+            errFields.push('Имя или фамилия')
+        }if (!this.state.jobTitle || this.state.jobTitle.trim() === ''){
+            errFields.push('Должность')
+        }if (!this.state.phone || this.state.phone.trim() === ''){
+            errFields.push('Номер телефона')
+        }
+        if (errFields.length !== 0){
+            const lstFlds = errFields.join(", ")
+            const msg = "Не введены: "+lstFlds+". Все поля, обозначенные символом * должны быть обязательно заполнены!";
+            messages.show({severity: 'warn', details: msg});
+            return false;
+        }
+        
+    }
+
     onSavePressed(){
-        this.props.history.goBack();
+        if (this.state.wasChanged){
+            if (this.isDataValid(this.messages))
+                AppSets.saveEmployee(this.state, this.goBack, this);
+        }
     }
 
 
-    onCancelPressed(){
+    goBack(){
         this.props.history.goBack();
     }
 
@@ -205,7 +236,7 @@ export default class EmployeeCard extends Component {
             "phone": "",
             "eMail": "",
             "userId": 10,
-            "working": 0
+            "working": true
         }
         return empty;
     }

@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 
 export class EmptyPage extends Component {
-
-    constructor() {
-        super();
-        this.state = {};
+    state = {};
+    constructor(props) {
+        super(props);
     }
 
     render() {

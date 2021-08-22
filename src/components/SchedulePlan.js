@@ -9,10 +9,11 @@ import { AutoComplete } from 'primereact/autocomplete';
 import ScheduleService from '../service/ScheduleService';
 import { Dropdown } from 'primereact/dropdown';
 import { Calendar as CalendarFld} from 'primereact/calendar';
-import { ru } from '../i18n';
+import { ru } from '../service/AppSettings';
 import { addLocale } from 'primereact/api';
 import { Button } from 'primereact/button';
 import {Toast} from 'primereact/toast';
+import ScheduleCreateProxy from '../entities/ScheduleCreateProxy';
 
 
 export default class SchedulePlan extends Component {
@@ -35,26 +36,51 @@ export default class SchedulePlan extends Component {
         this.updateCalendar = this.updateCalendar.bind(this);
         this.save = this.save.bind(this);
         this.isDataValid = this.isDataValid.bind(this);
-        this.clearFields = this.clearFields.bind(this);
+        this.finalizeCalendarView = this.finalizeCalendarView.bind(this);
         this.selectDates = this.selectDates.bind(this);
         this.displayShiftInfo = this.displayShiftInfo.bind(this);
+        this.onEventClick = this.onEventClick.bind(this);
+        this.storage = window.sessionStorage;
     }
 
     componentDidMount(){
         AppSets.getOrgUnitList(this);
         AppSets.getEmployees(this);
+        const storedOrgUnit = this.storage.getItem("chosenOrgUnit")
+        let valuesRestored = false;
+        let ou = null;
+        if (storedOrgUnit != null){
+            ou = JSON.parse(storedOrgUnit)
+            this.setState({chosenOrgUnit: ou});
+            valuesRestored = true;
+        }
+        const storedEmployee = this.storage.getItem("chosenEmployee")
+        if (storedEmployee != null){
+            const empl = JSON.parse(storedEmployee);
+            this.setState({chosenEmployee: empl})
+            this.chosenEmployee = empl;
+            valuesRestored = true
+        }
+        if (valuesRestored) 
+            {this.updateCalendar(ou)}
     }
 
     updateCalendar(ou){
-        if (!ou)
+        if (!ou){
             ou = this.state.chosenOrgUnit;
-        if (ou && this.startStr && this.endStr)
-            this.dataService.getMonthCalendarByOrgUnit(this.startStr, this.endStr, ou.id, this);
+        }
+        if (ou != null && this.startStr != null  && this.endStr != null){
+            this.dataService.getWorkCalendar(this.startStr, this.endStr, false, ou, this.chosenEmployee, this);
+        }
     }
 
     chosenMonthChanged(eventInfo){
-        this.startStr = eventInfo.start.toISOString().split('T')[0] + " 00:00";
+        this.startStr = eventInfo.start.toISOString().split('T')[0] + " " + AppSets.minStartTime;
         this.endStr = eventInfo.end.toISOString().split('T')[0] + " " +AppSets.maxEndTime;
+        let mstart = this.moment(eventInfo.view.currentStart);
+        let mend = this.moment(eventInfo.view.currentEnd);
+        this.interval = [mstart.format("YYYY-MM-DD") + " 00:00",
+                        mend.subtract(1, 'days').format("YYYY-MM-DD") + " " +AppSets.maxEndTime]
         this.updateCalendar();
     }
 
@@ -88,6 +114,7 @@ export default class SchedulePlan extends Component {
         this.setState({chosenOrgUnit: ouInfo, chosenShift:null});
         this.dataService.getOrgUnitShifts(ouInfo.id, this);
         this.updateCalendar(ouInfo);
+        this.storage.setItem("chosenOrgUnit", JSON.stringify(ouInfo));
     }
 
     onShiftChange(shft){
@@ -110,7 +137,17 @@ export default class SchedulePlan extends Component {
     }
 
     onEmployeeChoose(empl){
+        this.chosenEmployee = empl;
         this.setState({chosenEmployee: empl});
+        this.updateCalendar();
+        this.storage.setItem("chosenEmployee", JSON.stringify(empl));   
+    }
+
+    onEventClick(info){
+        this.props.history.push({
+            pathname: '/edit-day:id', state: {id: info.event.id, 
+                chosenEmployee: this.state.chosenEmployee, employees: this.state.employees,
+                chosenOrgUnit: this.state.chosenOrgUnit, orgUnits: this.state.orgUnits}});
     }
 
     isDataValid(){
@@ -145,27 +182,28 @@ export default class SchedulePlan extends Component {
         return true;
     }
 
-    clearFields(){
-        this.setState({chosenEmployee:null, chosenOrgUnit:null, chosenShift:null});
+    finalizeCalendarView(){
+        //this.setState({chosenEmployee:null, chosenOrgUnit:null, chosenShift:null});
+        this.updateCalendar()
     }
 
     save(){
         if (this.isDataValid()){
-            const interval = [this.moment(this.startStr).format(), this.moment(this.endStr).format()]
-            const payload = {"orgUnitId": this.state.chosenOrgUnit.id, "chosenShiftId": this.state.chosenShift.id,
-                "chosenEmployeeId": this.state.chosenEmployee.id, "selectedDates": this.state.selectedDates, 
-                "selectedInterval": interval
+            for (let theDate of this.state.selectedDates){
+                this.moment(theDate).format()
             }
-            this.dataService.createSchedule(payload, this, this.clearFields);
+            let payload = new ScheduleCreateProxy(this.state.chosenOrgUnit.id, this.state.chosenShift.id, 
+                this.state.chosenEmployee.id, this.state.selectedDates, this.interval)
+            this.dataService.createSchedule(payload, this, this.finalizeCalendarView);
         }
     }
 
     displayShiftInfo(){
         return <div className='p-grid'>
-            <div className='p-col-12' marginTop='1em'>{this.state.chosenShift.notes}</div>
+            <div className='p-col-12' margintop='1em'>{this.state.chosenShift.notes}</div>
             <div className='p-col p-md-4'>Вс</div>
             <div className='p-col p-md-4'>{this.state.chosenShift.start1}</div>
-            <div className='p-col p-md-4'>{this.state.chosenShift.start1}</div>
+            <div className='p-col p-md-4'>{this.state.chosenShift.end1}</div>
             <div className='p-col p-md-4'>Пн</div>
             <div className='p-col p-md-4'>{this.state.chosenShift.start2}</div>
             <div className='p-col p-md-4'>{this.state.chosenShift.end2}</div>
@@ -201,6 +239,7 @@ export default class SchedulePlan extends Component {
                         initialView='dayGridMonth' plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                         headerToolbar={{ left: 'prev,next', center: 'title', right: 'today,dayGridMonth,timeGridWeek,timeGridDay' }}  
                         datesSet={(info)=>this.chosenMonthChanged(info)}
+                        eventClick={(e)=>this.onEventClick(e)}
                         select={(selEvent)=>this.selectDates(selEvent)}
                     />                    
                 </div>
