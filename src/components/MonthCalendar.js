@@ -29,6 +29,7 @@ export default class MonthCalendar extends Component{
         this.onCheckFilter = this.onCheckFilter.bind(this);
         this.moment = require('moment');
         this.employee = AppSets.curEmployee;
+        this.storage = window.sessionStorage;
         this.filterChecked = true;
     }
 
@@ -41,6 +42,7 @@ export default class MonthCalendar extends Component{
     chosenMonthChanged(eventInfo){
         this.startStr = eventInfo.start.toISOString().split('T')[0] + " 00:00";
         this.endStr = eventInfo.end.toISOString().split('T')[0] + " " +AppSets.maxEndTime;
+        this.storage.setItem("initalCalDate", eventInfo.start)
         this.updateData()
     }
 
@@ -182,13 +184,15 @@ export default class MonthCalendar extends Component{
     }
 
     render() {
+        let storedIniDate = this.storage.getItem("initalCalDate");
+        let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         return (
             <div>
                 <div className="content-section implementation">
                     <div className="card">
                         <Messages ref={(el) => this.messages = el}></Messages>
                         {(this.user && this.user.amIhr()) ? this.displayHrHeader() : this.displaySimpleUserHeader()}
-                        <FullCalendar events={this.state.days} initialDate={Date.now()} locale={ruLocale}
+                        <FullCalendar events={this.state.days} initialDate={iniDate} locale={ruLocale}
                             slotMinTime={AppSets.minStartTime} slotMaxTime={AppSets.maxEndTime} 
                             selectable firstDay={0} expandRows
                             displayEventEnd={true}

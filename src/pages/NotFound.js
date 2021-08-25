@@ -10,6 +10,10 @@ export const NotFound = () => {
 		history.push('/');
 	}
 
+	const goBack = () => {
+		history.goBack();
+	}
+
 	return <div className="exception-body notfound">
 		<div className="exception-panel">
 			<div className="exception-image">
@@ -17,9 +21,10 @@ export const NotFound = () => {
 			</div>
 
 			<div className="exception-detail">
-				<h1>PAGE NOT FOUND</h1>
-				<p>Requested resource is not available.</p>
-				<Button label="GO TO DASHBOARD" onClick={goDashboard} />
+				<h1>НЕТ ТАКОЙ СТРАНИЦЫ</h1>
+				<p>Запрошенная страница не существует.</p>
+				<Button label="На главную страницу" onClick={goDashboard} />
+				<Button label="Назад" onClick={goBack} style={{margin:'0 0 0 1em'}}/>
 			</div>
 		</div>
 	</div>

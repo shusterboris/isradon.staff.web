@@ -25,11 +25,19 @@ const AppTopbar = (props) => {
             element.className = element.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
     }
 
-	const onItemClick = (event) => {
+	const onItemClick = (event, itemNo) => {
 		const ink = getInk(event.currentTarget);
 		if (ink) {
 			removeClass(ink, 'p-ink-active');
 		}
+		processTopbarMenuClick(itemNo);
+	}
+
+	const processTopbarMenuClick = (itemNo) =>{
+		if (itemNo == 2){
+			window.sessionStorage.clear();
+		}
+		window.location = "/login"
 	}
 
 	return (
@@ -39,7 +47,7 @@ const AppTopbar = (props) => {
 			</button>
 
 			<div className="layout-topbar-grid">
-				<div className="layout-topbar-grid-column layout-topbar-grid-column-fixed">
+				<div className="layout-topbar-grid-column ">
 					<button type="button" className="layout-logo p-link" onClick={() => { window.location = "/#" }}>
 						<img src="/assets/layout/images/isradon-logo-hor.png" alt="logotype"/>
 					</button>
@@ -64,21 +72,14 @@ const AppTopbar = (props) => {
 						</li>
 
 						<li role="menuitem">
-							<button type="button" className="p-link p-ripple" onClick={onItemClick}>
-								<i className="pi pi-user"></i>
-								<span>Настройки пользователя</span>
-                                <Ripple />
-							</button>
-						</li>
-						<li role="menuitem">
-							<button type="button" className="p-link p-ripple" onClick={onItemClick}>
-								<i className="pi pi-cog"></i>
+							<button type="button" className="p-link p-ripple" onClick={(e)=>onItemClick(e,1)}>
+								<i className="pi pi-key"></i>
 								<span>Регистрация</span>
                                 <Ripple />
 							</button>
 						</li>
 						<li role="menuitem">
-							<button type="button" className="p-link p-ripple" onClick={onItemClick}>
+							<button type="button" className="p-link p-ripple" onClick={(e)=>onItemClick(e,2)}>
 								<i className="pi pi-times"></i>
 								<span>Выход</span>
                                 <Ripple />

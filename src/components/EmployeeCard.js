@@ -8,18 +8,19 @@ import AppSets from '../service/AppSettings';
 import axios from 'axios';
 import { AutoComplete } from 'primereact/autocomplete';
 import ScheduleService from '../service/ScheduleService';
+import { Messages } from 'primereact/messages';
 
 export default class EmployeeCard extends Component {
     state = {
         wasChanged: false,
         orgUnits:[], 
-        orgUnit:'',
+        orgUnit:null,
         jobTitles:[],
         jobTitle:'',
         filteredOrgUnits:[],
         filteredJobTitles:[],
         firstName:'', lastName:'',nickName:'',
-        phone:'',eMail:'',birthday:'', shiftLength:8, daysInWeek:5, addConditions:''
+        phone:'',email:'',birthday:'', shiftLength:8, daysInWeek:5, addConditions:''
     }
     
     constructor(props) {
@@ -31,14 +32,21 @@ export default class EmployeeCard extends Component {
         this.initiateFields = this.initiateFields.bind(this);
         this.onCancelPressed = this.goBack.bind(this);
         this.onSavePressed = this.onSavePressed.bind(this);
+        this.goBack = this.goBack.bind(this);
         this.onWorkStatusChange = this.onWorkStatusChange.bind(this);
     }
 
     componentDidMount(){
-        AppSets.getOrgUnits(this);
         AppSets.getJobTitles(this);        
         const param = this.props.location.state;
         if (param){
+            const orgUnitListParam = param.orgUnitList;
+            if (orgUnitListParam){
+                const orgUnitList = JSON.parse(orgUnitListParam);
+                this.setState({orgUnits: orgUnitList});
+        }   else{
+                AppSets.getOrgUnitList(this);
+            }
             const id = param.id;
             axios.get(AppSets.host+'/employee/byId/'+id)
             .then(res => {
@@ -53,9 +61,11 @@ export default class EmployeeCard extends Component {
         this.employee = data;
         let fldPhone = (data.phone) ? data.phone.slice(-12) : '';
         let fldBirthday = (data.birthday) ? data.birthday : '';
-        let fldOrgUnit = (data.orgUnit) ? data.orgUnit.name : '';
+        this.orgUnitName = data.orgUnit;
+        const found = this.state.orgUnits.find(ou => ou.name === this.orgUnitName)
         this.setState({lastName: data.lastName, firstName: data.firstName, working: data.working,
-            jobTitle:data.jobTitle, orgUnit: fldOrgUnit, phone: fldPhone, eMail: data.eMail, birthday: fldBirthday, id:data.id});
+            jobTitle:data.jobTitle, phone: fldPhone, orgUnit: found, addConditions: data.addConditions,
+            email: data.email, birthday: fldBirthday, id:data.id, shiftLength: data.shiftLength, daysInWeek: data.daysInWeek}); 
     }
 
     filterOrgUnit(event){
@@ -93,6 +103,7 @@ export default class EmployeeCard extends Component {
     render() {
         return<div> 
             <Card title="Карточка сотрудника" >
+            <Messages ref={(m) => this.messages = m}/>
                 <div className="p-grid">
                     <div className = 'p-col-fixed' style={{ width: '260px'}}>
                         <img src={'/assets/images/personal.png'} 
@@ -124,7 +135,7 @@ export default class EmployeeCard extends Component {
                                 <span className="p-float-label">
                                     <AutoComplete id="orgUnitFld" dropdown
                                         value={this.state.orgUnit} 
-                                        suggestions={this.state.filteredOrgUnits} 
+                                        suggestions={this.state.filteredOrgUnits} field="name"
                                         completeMethod={this.filterOrgUnit}
                                         onChange={event => this.setState({ orgUnit: event.value, filteredOrgInits: null, wasChanged: true})}/>
                                     <label htmlFor="orgUnitFld">Место работы</label>
@@ -149,8 +160,8 @@ export default class EmployeeCard extends Component {
                             </div>
                             <div className="p-col-2 p-mx-2">                            
                                 <span className="p-float-label">
-                                    <InputText id="eMailFld" value={this.state.eMail}  
-                                        onChange={(e) => this.setState({eMail:e.target.value, wasChanged: true})}/>
+                                    <InputText id="eMailFld" value={this.state.email}  
+                                        onChange={(e) => this.setState({email:e.target.value, wasChanged: true})}/>
                                     <label htmlFor="eMailFld">Электронная почта</label>
                                 </span>
                             </div>
@@ -210,13 +221,14 @@ export default class EmployeeCard extends Component {
             messages.show({severity: 'warn', details: msg});
             return false;
         }
-        
+        return true;
     }
 
     onSavePressed(){
         if (this.state.wasChanged){
-            if (this.isDataValid(this.messages))
-                AppSets.saveEmployee(this.state, this.goBack, this);
+            if (this.isDataValid(this.messages)){
+                AppSets.saveEmployee(this.state, this);
+            }
         }
     }
 
@@ -234,7 +246,7 @@ export default class EmployeeCard extends Component {
             "orgUnit": "",
             "photoFile": "",
             "phone": "",
-            "eMail": "",
+            "email": "",
             "userId": 10,
             "working": true
         }

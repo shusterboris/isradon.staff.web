@@ -6,21 +6,21 @@ export const Access = () => {
 
 	const history = useHistory();
 
-	const goDashboard = () => {
-		history.push('/');
+	const goLoginPage = () => {
+		history.push('/login');
 	}
 
 	return (
 		<div className="exception-body accessdenied" >
 			<div className="exception-panel">
 				<div className="exception-image">
-					<img src="assets/layout/images/exception/icon-access.png" alt="sapphire" />
+					<img src="assets/layout/images/exception/icon-access.png" alt="Isradon" />
 				</div>
 
 				<div className="exception-detail">
-					<h1>ACCESS DENIED</h1>
-					<p>You do not have the necessary permissons.</p>
-					<Button label="GO TO DASHBOARD" onClick={goDashboard} />
+					<h1>ДОСТУП ЗАПРЕЩЕН!</h1>
+					<p>Вы не ввели правильные реквизиты для доступа или у Вас недостаточно прав.</p>
+					<Button label="Вход в систему" onClick={goLoginPage} />
 				</div>
 			</div>
 		</div>

@@ -240,9 +240,9 @@ export default class OrgUnitView extends Component {
                 </div>
                 <div className="p-col-12 p-md-2">
                     <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}} >Подразделение
-                        <Button id="btnCreateOrgUnit" icon="pi pi-check" className="p-button-rounded" 
+                        <Button id="btnCreateOrgUnit" icon="pi pi-plus" className="p-button-rounded" 
                             style={{margin: '0 0 0 1em'}}
-                            onClick={this.onCreateOrgUnit} tooltip='Создание нового подразделения'/>
+                            onClick={this.onCreateOrgUnit} tooltip='Нажмите для создания нового подразделения'/>
                     </div>
                     <div className = 'p-field'>
                         <label htmlFor="orgUnitNameFld">Название подразделения</label>
@@ -267,8 +267,8 @@ export default class OrgUnitView extends Component {
 
                 <div className="p-col-12 p-md-6" >                
                     <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}}>Расписание смен
-                        <Button id="btnCreateShift" icon="pi pi-check" className="p-button-rounded" style={{margin: '0 0 0 1em'}}
-                            onClick={this.onCreateShift} tooltip='Создание новой смены'/>
+                        <Button id="btnCreateShift" icon="pi pi-plus" className="p-button-rounded" style={{margin: '0 0 0 1em'}}
+                            onClick={this.onCreateShift} tooltip='Нажмите для создания новой смены'/>
                     </div>
                     <div className="p-grid form-group">
                         <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Вс</div>

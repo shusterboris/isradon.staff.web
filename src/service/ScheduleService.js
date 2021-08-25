@@ -209,7 +209,7 @@ export default class ScheduleService {
         const server = AppSets.host;
         const query = "/schedule/create";
         const url = server + query;
-        axios.post(url, payload, {timeout: 5000})
+        axios.post(url, payload, {timeout: AppSets.timeout})
             .then(()=>{
                 _this.messages.show({ severity: 'success', summary: 'Выполнено успешно'});
                 action()
@@ -262,11 +262,25 @@ export default class ScheduleService {
             );
     }    
 
+    notesUpdate(data, fieldName, _this){
+        const server = AppSets.host;
+        const id = data.id;
+        const notes = data.note;
+        const query = "/schedule/notesUpdate/" + id + "/" + fieldName + "/" + notes;
+        const url = server + query;
+        axios.put(url, )
+            .then(_this.messages.show({severity: 'success', summary: 'Выполнено успешно'}))
+            .catch(err=>{
+                this.processRequestsCatch('','Ввод примечаний',_this.messages,true)
+            })
+
+    }
+
     saveOrgUnit(_this, orgUnitId, orgUnitName){
         const server = AppSets.host;
         let query = '/dictionary/orgunit/save'
         const url = server + query;
-        axios.put(url, {'id': orgUnitId, name: orgUnitName}, {timeout: 5000})
+        axios.put(url, {'id': orgUnitId, name: orgUnitName}, {timeout: AppSets.timeout})
         .then(res => res.data)
         .then(res => {
             _this.messages.show({severity:'success', summary:'Сохранено успешно!'});

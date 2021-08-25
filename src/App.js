@@ -46,7 +46,6 @@ const App = () => {
         },
         {label: 'Настройки', icon: 'pi pi-cog', 
             items: [
-                {label: 'Настройки приложения', icon:'pi pi-cog', to: '/app-settings'},
                 {label: 'Сотрудники', icon: 'pi pi-user-edit', to: '/employees-all'},
                 {label: 'Подразделения', icon: 'pi pi-home', to: '/orgunit-list'},
             ]

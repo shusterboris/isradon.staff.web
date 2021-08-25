@@ -53,6 +53,7 @@ export default class SchedulePlan extends Component {
             ou = JSON.parse(storedOrgUnit)
             this.setState({chosenOrgUnit: ou});
             valuesRestored = true;
+            this.dataService.getOrgUnitShifts(ou.id, this);
         }
         const storedEmployee = this.storage.getItem("chosenEmployee")
         if (storedEmployee != null){
@@ -81,6 +82,7 @@ export default class SchedulePlan extends Component {
         let mend = this.moment(eventInfo.view.currentEnd);
         this.interval = [mstart.format("YYYY-MM-DD") + " 00:00",
                         mend.subtract(1, 'days').format("YYYY-MM-DD") + " " +AppSets.maxEndTime]
+        this.storage.setItem("initalCalDate", mstart.toDate())
         this.updateCalendar();
     }
 
@@ -183,17 +185,19 @@ export default class SchedulePlan extends Component {
     }
 
     finalizeCalendarView(){
-        //this.setState({chosenEmployee:null, chosenOrgUnit:null, chosenShift:null});
+        this.setState({selectedDates:null});
         this.updateCalendar()
     }
 
     save(){
         if (this.isDataValid()){
+            let selectedDatesFormatted = []
             for (let theDate of this.state.selectedDates){
-                this.moment(theDate).format()
+                let formDate = this.moment(theDate).format("YYYY-MM-DD HH:mm")
+                selectedDatesFormatted.push(formDate);
             }
             let payload = new ScheduleCreateProxy(this.state.chosenOrgUnit.id, this.state.chosenShift.id, 
-                this.state.chosenEmployee.id, this.state.selectedDates, this.interval)
+                this.state.chosenEmployee.id, selectedDatesFormatted, this.interval)
             this.dataService.createSchedule(payload, this, this.finalizeCalendarView);
         }
     }
@@ -227,12 +231,15 @@ export default class SchedulePlan extends Component {
     }
 
     render() {
+        let storedIniDate = this.storage.getItem("initalCalDate");
+        let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         return <div className="p-grid">
             <Toast ref={(el) => this.messages = el}/>
             <div className="p-col-9">
                 <div className="card">
                     <div className='p-card-title p-text-bold p-text-left' style={{fontSize:'large', color: '#1E88E5'}}>Планирование графика работы</div>
                     <FullCalendar 
+                        initialDate={iniDate}
                         events={this.state.days} locale={ruLocale}
                         slotMinTime={AppSets.minStartTime} slotMaxTime={AppSets.maxEndTime} 
                         selectable editable displayEventEnd firstDay={0} expandRows={true}

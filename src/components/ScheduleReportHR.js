@@ -11,6 +11,7 @@ import {ColumnGroup} from 'primereact/columngroup';
 import {Row} from 'primereact/row';
 import { InputText } from 'primereact/inputtext';
 import {Messages} from 'primereact/messages';
+import { OverlayPanel } from 'primereact/overlaypanel';
 import classNames from 'classnames';
 import './ScheduleReport.css'
 import { ru } from '../service/AppSettings';
@@ -92,18 +93,21 @@ class ScheduleResultTable extends React.Component{
         this.bodyTotalDif = this.bodyTotalDif.bind(this);
         this.setDifferenceColor = this.setDifferenceColor.bind(this);
         this.dataService = this.props.dataService;
-        this.actionBodyTemplate = this.actionBodyTemplate.bind(this);
         this.bodyLeavingFact = this.bodyLeavingFact.bind(this);
         this.bodyComingFact = this.bodyComingFact.bind(this);
         this.setBold = this.setBold.bind(this);
         this.rowMenuModel = this.createHrMenuModel(this);
         this.acceptTime = this.acceptTime.bind(this)
-        this.inputTextEditor = this.inputTextEditor.bind(this);
+        this.inputTextEditor = this.inputTimeEditor.bind(this);
         this.onEditorValueChange = this.onEditorValueChange.bind(this);
         this.onAcceptedTimeSubmit = this.onAcceptedTimeSubmit.bind(this);
         this.onAcceptedTimeCancel = this.onAcceptedTimeCancel.bind(this);
         this.changeRowType = this.changeRowType.bind(this);
         this.createHrMenuModel = this.createHrMenuModel.bind(this);
+        this.inputNotesEditor = this.inputNotesEditor.bind(this);
+        this.onNoteSubmit = this.onNoteSubmit.bind(this);
+        this.actionBodyReason = this.actionBodyReason.bind(this);
+        this.displayReason = this.displayReason.bind(this);
     }
 
     createHrMenuModel(){
@@ -221,16 +225,22 @@ class ScheduleResultTable extends React.Component{
         );
     }
 
+    displayReason(reason){
 
-    actionBodyTemplate(rowData) {
-        return (
-            <div>
-                <Button type="button" icon="pi pi-cog" className="p-button-secondary" 
-                    onClick={(event) => this.cm.toggle(event)}>
-                </Button>
-            </div>
-        );
     }
+
+    actionBodyReason(rowData){
+        const reason = rowData.reason;
+        if (reason != ''){
+            return(<div>
+                <Button type="button" icon="pi pi-bell" className="p-button-sm p-button-rounded p-button-warning p-button-text"
+                        style={{margin:'0 0 0 0', }}  
+                        onClick={() => this.messages.show({severity: 'info', summary: reason, sticky: true})}/>
+                </div>
+        )}else
+            {<div></div>}
+    }
+    
 
     onEditorValueChange(props, value) {
         let updatedSchedule = [...props.value];
@@ -238,16 +248,35 @@ class ScheduleResultTable extends React.Component{
         this.props.updateDaysState(updatedSchedule)
     }
 
-    inputTextEditor(fieldName, props) {
+    inputNotesEditor(fieldName, props) {
+        let val = '';
+        let user = AppSets.user;
+        if (fieldName.startsWith('note')){
+            if (user.amIhr()){
+                val = props.rowData['note'];
+            }else{
+                val = props.rowData['reason'];
+            }
+        }
+        return <InputText type="text" value={val}  onChange={(e) => this.onEditorValueChange(props, e.target.value)} />;
+    }
+
+    inputTimeEditor(fieldName, props) {
         let val = props.rowData[fieldName];
         this.storedTimeValue = val;
         if (val === ''){
-            if (fieldName.startsWith('comingAccepted'))
+            if (fieldName.startsWith('comingAccepted')){
                 val = props.rowData['comingFactDisp'];
-            else 
+            }else{ 
                 val = props.rowData['leavingFactDisp'];
+            }
         }
         return <InputText type="time" value={val}  onChange={(e) => this.onEditorValueChange(props, e.target.value)} />;
+    }
+
+    onNoteSubmit(data){
+        let fieldName = (AppSets.user && AppSets.user.amIhr()) ? "note" : "reason";
+        this.props.dataService.notesUpdate(data.columnProps.rowData, fieldName, this);
     }
 
     onAcceptedTimeSubmit(fieldName, data){
@@ -272,6 +301,7 @@ class ScheduleResultTable extends React.Component{
                 <Column header="Всего, +/-" rowSpan={2}/>
                 <Column header="Раб. время" rowSpan={2}/>
                 <Column header="Примечания" rowSpan={2} />
+                <Column header='i' rowSpan={2} />
             </Row>
             <Row>
                 <Column header='План'/>
@@ -303,7 +333,7 @@ class ScheduleResultTable extends React.Component{
                         <Column field='comingPlanDisp' ></Column>
                         <Column body={this.bodyComingFact} ></Column>
                         <Column field='comingAcceptedDisp' 
-                                editor={props=>this.inputTextEditor('comingAcceptedDisp', props)} 
+                                editor={props=>this.inputTimeEditor('comingAcceptedDisp', props)} 
                                 onEditorSubmit = {props=>this.onAcceptedTimeSubmit('comingAcceptedDisp', props)}
                                 onEditorCancel = {props=>this.onAcceptedTimeCancel('comingAcceptedDisp', props)}
                                 style={{color:'#00008B'}}></Column>
@@ -311,13 +341,17 @@ class ScheduleResultTable extends React.Component{
                         <Column field='leavingPlanDisp' ></Column>
                         <Column body={this.bodyLeavingFact} ></Column>
                         <Column field='leavingAcceptedDisp' 
-                                editor={props=>this.inputTextEditor('leavingAcceptedDisp', props)} 
+                                editor={props=>this.inputTimeEditor('leavingAcceptedDisp', props)} 
                                 onEditorSubmit = {props=>this.onAcceptedTimeSubmit('leavingAcceptedDisp', props)}
                                 style={{color:'#00008B'}}></Column>
                         <Column body={this.bodyLeavingDif} ></Column>
                         <Column body={this.bodyTotalDif} ></Column>
                         <Column field='total'></Column>
-                        <Column field='note' style={{width: '15%', textAlign: 'left'}}></Column>
+                        <Column field='note' 
+                                editor = {props=>this.inputNotesEditor('note', props)}
+                                onEditorSubmit = {props=>this.onNoteSubmit(props)}
+                                style={{width: '15%', textAlign: 'left'}}></Column>
+                        <Column body={this.actionBodyReason} />
                     </DataTable>
                 </div>
             </div>

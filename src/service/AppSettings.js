@@ -29,17 +29,15 @@ export default class AppSets{
         })    
     }
     
-    static getOrgUnits(_this) {
-        return axios.get(AppSets.host+'/dictionary/orgunit/stringlist')
-            .then(
-                res => res.data)
-            .then(data => {
-                _this.setState({ orgUnits: data });
-                return data;
-            })
-            .catch(err=>{
-                AppSets.processRequestsCatch(err, "Справочник подразделений", _this.messages, false)
-            });
+    static async getOrgUnits(_this) {
+        try {
+            const res = await axios.get(AppSets.host + '/dictionary/orgunit/stringlist');
+            const data = res.data;
+            _this.setState({ orgUnits: data });
+            return data;
+        } catch (err) {
+            AppSets.processRequestsCatch(err, "Справочник подразделений", _this.messages, false);
+        }
     }
 
 
@@ -49,7 +47,6 @@ export default class AppSets{
                 res => res.data)
             .then(data => {
                 _this.setState({ orgUnits: data, waitPlease: false });
-                return data;
             }).catch(err=>{
                 AppSets.processRequestsCatch(err, "Справочник подразделений", _this.messages, false)
             });
@@ -69,14 +66,16 @@ export default class AppSets{
             });
     }
 
-    static saveEmployee(data, finalAction, _this){
-        return axios.get(AppSets.host+'/employee/save')
-            .then(res => {
-                _this.messages({severity:'info', summary:'Успешно сохранено'});
-                finalAction()
+    static saveEmployee(data, _this){
+        const orgUnitId = data.orgUnit.id;
+        data.orgUnit = orgUnitId;
+        return axios.post(AppSets.host+'/employee/save', data)
+            .then(() => {
+                _this.messages.show({severity:'success', summary:'Успешно сохранено'});
+                _this.goBack();
             })
             .catch(err=>{
-                AppSets.processRequestsCatch(err, "Список сотрудников", _this.messages, true)
+                AppSets.processRequestsCatch(err, "Информация о сотруднике", _this.messages, true)
             })
     }
 
@@ -119,7 +118,6 @@ export default class AppSets{
             }
         }
     }
-    
 }
 
 export const row_types = [{name: 'Работа', id: 0}, {name: 'Отпуск', id: 2}, {name: 'Неоплачиваемый отпуск', id: 3},

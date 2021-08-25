@@ -8,6 +8,7 @@ import AppSets from '../service/AppSettings';
 export default class EmployeeView extends React.Component{
     state = {
         employees: [],
+        orgUnits : [],
         selectedRow: null,
       }
     
@@ -20,11 +21,13 @@ export default class EmployeeView extends React.Component{
 
     componentDidMount() {
         AppSets.getEmployees(this);
+        AppSets.getOrgUnitList(this)
     }
 
     startEditEmployee(rowData){
         this.setState({selectedRow: rowData})
-        this.props.history.push({pathname: '/employee-edit', state: {id: rowData.id}});
+        let orgUnitList = JSON.stringify(this.state.orgUnits)
+        this.props.history.push({pathname: '/employee-edit', state: {id: rowData.id, orgUnitList: orgUnitList}});
     }
 
     nameBody(rowData){
