@@ -373,6 +373,11 @@ class ScheduleFilter extends React.Component{
         this.onChangeSeller = this.onChangeSeller.bind(this);
         this.filterSellers = this.filterSellers.bind(this); 
         addLocale('ru', ru);   
+        this.user = null;
+        const userStr = window.sessionStorage.getItem("user");
+        if (userStr){
+            this.user = JSON.parse(userStr);
+        }
     }
 
     filterSellers(event){
@@ -424,6 +429,8 @@ class ScheduleFilter extends React.Component{
     }
 
     render(){
+        if (!AppSets.getUser())
+            { window.location = "/login" }
         return(
             <div className = 'p-grid'>
                 <div className = 'p-col-4'>

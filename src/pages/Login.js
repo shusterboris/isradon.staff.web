@@ -1,7 +1,8 @@
-import React, { useState }  from 'react';
+import React, { useState, useRef }  from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { useHistory } from 'react-router-dom';
+import { Messages } from 'primereact/messages';
 import axios from 'axios';
 import AppSets from '../service/AppSettings';
 
@@ -10,26 +11,45 @@ export const Login = () => {
 	const [userName, setUserName] = useState('');
 	const [password, setPassword] = useState('');
 	const history = useHistory();
+	const messages = useRef(null);
 
 
 	const goAhead = (userName,password) => {
+		let user = null;
 		const server = AppSets.host;
-        const url = server + '/auth';
+        let url = server + '/auth';
 		const data = {"username": userName, "password": password};
 		axios.post(url, data, {headers: {'Content-Type': 'application/json'}})
 		.then(res=>{
-			console.log(res);
+			const token = "Bearer " + res.data.jwttoken;
+			window.sessionStorage.setItem("token", token);
+			const headers = {headers: {'Authorization': token}}
+			url = server + '/user/authorities/'+userName;
+			axios.get(url, headers)
+			.then(userData=>{
+				user = userData.data;
+				const userString = JSON.stringify(user);
+				window.sessionStorage.setItem("user", userString);
+				history.push("/");
+			})
+			.catch((err)=>
+				{window.location="/access"})
 		})
-		.catch(window.location="/access")
-		history.push('/');
+		.catch((err)=>
+			{window.location="/access"})
 	}
+
+    const showMessage = (msgParams) => {
+        messages.current.show(msgParams)
+    }
+
 
 	return (
 		<div className="login-body">
 			<div className="login-panel ui-fluid">
+				<Messages ref = {messages}/>
 				<div className="login-panel-header">
-					<img src="/assets/layout/images/isradon-logo-hor.png" alt="logotype"/>
-					
+					<img src="/assets/layout/images/isradon-logo-hor.png" alt="logotype"/>		
 				</div>
 				<div className="login-panel-content">
 					<div className="p-grid">
@@ -55,7 +75,7 @@ export const Login = () => {
 							
 						</div>
 						<div className="p-col-6" style={{ textAlign: 'right' }}>
-							<Button label="Дальше" onClick={()=>goAhead(userName, password)} style={{ width: '100%' }} />
+							<Button label="Дальше" onClick={()=>AppSets.authenticateUser(userName, password, showMessage)} style={{ width: '100%' }} />
 						</div>
 					</div>
 				</div>

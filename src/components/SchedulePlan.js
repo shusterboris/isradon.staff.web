@@ -231,6 +231,8 @@ export default class SchedulePlan extends Component {
     }
 
     render() {
+        if (!AppSets.getUser())
+            { window.location = "/login" }
         let storedIniDate = this.storage.getItem("initalCalDate");
         let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         return <div className="p-grid">

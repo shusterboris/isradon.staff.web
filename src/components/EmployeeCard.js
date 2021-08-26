@@ -101,6 +101,9 @@ export default class EmployeeCard extends Component {
     }
 
     render() {
+        if (!AppSets.getUser())
+            { window.location = "/login" }
+
         return<div> 
             <Card title="Карточка сотрудника" >
             <Messages ref={(m) => this.messages = m}/>

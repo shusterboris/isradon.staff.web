@@ -9,26 +9,56 @@ export default class AppSets{
     static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
     static timeout = 2000;
-    
-    static getCurrentUser(id){       
-        let user = new User(id)
-        user.init()
-        AppSets.user = user;
+        
+    static authenticateUser(userName, password, showMessage){
+        let user = null;
+		const server = AppSets.host;
+        let url = server + '/auth';
+		const data = {"username": userName, "password": password};
+		axios.post(url, data, {headers: {'Content-Type': 'application/json'}})
+		.then(res=>{
+			const token = "Bearer " + res.data.jwttoken;
+			window.sessionStorage.setItem("token", token);
+			const headers = {headers: {'Authorization': token}}
+			url = server + '/user/authorities/'+userName;
+			axios.get(url, headers)
+			.then(userData=>{
+				userData = userData.data;
+				const userString = JSON.stringify(userData);
+                AppSets.user = new User(userData);
+				window.sessionStorage.setItem("user", userString);
+				window.location = "/";
+			})
+            .catch((err)=>{(
+                    !err.response) ?  
+                    showMessage({severity: 'error', summary: 'Нет связи с сервером!'}) : 
+                    showMessage({severity: 'error', summary: 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку'})})})
+		.catch((err)=>{
+            if (!err.response){
+                showMessage({severity: 'error', summary: 'Нет связи с сервером!'});
+            }else{
+                if (err.response.status === 401){
+                    {window.location="/access"}
+                }else{
+                    showMessage({severity: 'error', summary: 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку', sticky: true})
+                }
+            }
+        });
     }
 
     static getUser(){
-        return AppSets.user
+        if (AppSets.user){
+            return AppSets.user;
+        }else{
+            let userData = window.sessionStorage.getItem("user");
+            if (!userData)
+                {return null}
+            const userInfo = JSON.parse(userData);
+            AppSets.user = new User(userInfo);
+        }
+        return AppSets.user;
     }
 
-    static getCurrentEmployee(){
-        return axios.get(AppSets.host+'/employee/byId/7')
-        .then(result=> result.data)
-        .then(data => {
-            AppSets.curEmployee = data;
-            this.getCurrentUser(data.userId);
-        })    
-    }
-    
     static async getOrgUnits(_this) {
         try {
             const res = await axios.get(AppSets.host + '/dictionary/orgunit/stringlist');
@@ -133,5 +163,3 @@ export const ru = {
     today: "Сегодня",
     clear: "Очистить"
 }
-
-AppSets.getCurrentEmployee();

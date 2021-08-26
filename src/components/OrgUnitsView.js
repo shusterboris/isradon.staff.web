@@ -222,6 +222,9 @@ export default class OrgUnitView extends Component {
     }
 
     render() {
+        if (!AppSets.getUser())
+            { window.location = "/login" }
+
         return <div className="content-section implementation">
             <div className="p-card">
                 <Messages ref={(el) => this.messages = el}/>

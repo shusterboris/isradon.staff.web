@@ -117,6 +117,9 @@ export default class DayOffForm extends Component {
     }
 
     render() {
+        if (!AppSets.getUser())
+            { window.location = "/login" }
+
         if (this.state.errorMsg !== ''){
             return <Error reason={this.state.errorMsg}></Error>;
         }

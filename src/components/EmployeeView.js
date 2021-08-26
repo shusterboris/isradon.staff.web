@@ -47,6 +47,8 @@ export default class EmployeeView extends React.Component{
     }
 
     render(){
+        if (!AppSets.getUser())
+            { window.location = "/login" }        
         return (
             <div className = 'p-grid'>
                 <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}} />
