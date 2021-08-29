@@ -34,7 +34,7 @@ const AppTopbar = (props) => {
 	}
 
 	const processTopbarMenuClick = (itemNo) =>{
-		if (itemNo == 2){
+		if (itemNo === 2){
 			window.sessionStorage.clear();
 		}
 		window.location = "/login"

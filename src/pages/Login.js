@@ -3,7 +3,6 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { useHistory } from 'react-router-dom';
 import { Messages } from 'primereact/messages';
-import axios from 'axios';
 import AppSets from '../service/AppSettings';
 
 export const Login = () => {
@@ -14,35 +13,9 @@ export const Login = () => {
 	const messages = useRef(null);
 
 
-	const goAhead = (userName,password) => {
-		let user = null;
-		const server = AppSets.host;
-        let url = server + '/auth';
-		const data = {"username": userName, "password": password};
-		axios.post(url, data, {headers: {'Content-Type': 'application/json'}})
-		.then(res=>{
-			const token = "Bearer " + res.data.jwttoken;
-			window.sessionStorage.setItem("token", token);
-			const headers = {headers: {'Authorization': token}}
-			url = server + '/user/authorities/'+userName;
-			axios.get(url, headers)
-			.then(userData=>{
-				user = userData.data;
-				const userString = JSON.stringify(user);
-				window.sessionStorage.setItem("user", userString);
-				history.push("/");
-			})
-			.catch((err)=>
-				{window.location="/access"})
-		})
-		.catch((err)=>
-			{window.location="/access"})
-	}
-
     const showMessage = (msgParams) => {
         messages.current.show(msgParams)
     }
-
 
 	return (
 		<div className="login-body">
@@ -75,7 +48,7 @@ export const Login = () => {
 							
 						</div>
 						<div className="p-col-6" style={{ textAlign: 'right' }}>
-							<Button label="Дальше" onClick={()=>AppSets.authenticateUser(userName, password, showMessage)} style={{ width: '100%' }} />
+							<Button label="Дальше" onClick={()=>AppSets.authenticateUser(userName, password, showMessage, history)} style={{ width: '100%' }} />
 						</div>
 					</div>
 				</div>

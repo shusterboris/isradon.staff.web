@@ -11,7 +11,7 @@ import { Dropdown } from 'primereact/dropdown';
 
 
 export default class DayOffForm extends Component {
-    state = {eventType: null, reason: '', id: null, errorMsg:''};
+    state = {eventType: null, reason: '', id: null, errorMsg:'', employees: []};
 
     constructor(props) {
         super(props);
@@ -38,16 +38,13 @@ export default class DayOffForm extends Component {
             this.state.errorMsg = 'Некорректный режим открытия страницы'
             return;
         }
+
         if (! (param.hasOwnProperty('start')) && param.hasOwnProperty('end')){
             this.state.errorMsg = 'Некорректный режим открытия страницы'
             return;
         }    
-        if (!param.hasOwnProperty('employee') || !param.employee){
-            this.state.errorMsg = 'Вернитесь на предыдущую страницу кнопкой "Назад" и выберите ФИО сотрудника'
-            return;
-        }    
-
-        this.state = {start: param.dateStart, end: param.dateEnd, employee: param.employee, errorMsg:''};
+        
+        this.state = {start: param.dateStart, end: param.dateEnd, employee: param.employee, errorMsg:'', employees: param.employeeList};
     }
 
     createNewRecord(mode){
@@ -78,17 +75,21 @@ export default class DayOffForm extends Component {
     }
 
     isDataValid(){
+        if (!this.state.employee){
+            this.messages.show({severity: 'error', summary: "Не выбран сотрудник!"});
+            return false;
+        }
         if (!this.state.eventType){
-            this.messages.show({severity: 'warn', summary: "Не выбрана причина отсутствия - отпуск, больничный и т.д.!"});
+            this.messages.show({severity: 'error', summary: "Не выбрана причина отсутствия - отпуск, больничный и т.д.!"});
             return false;
         }
         if (this.state.start > this.state.end){
-            this.messages.show({severity: 'warn', summary: "Дата окончания больше даты начала!"});
+            this.messages.show({severity: 'error', summary: "Дата окончания больше даты начала!"});
             return false;
         }
         const daysDiffers = (this.state.start - this.state.end) / 1000 / 60 / 60 / 24;
         if (daysDiffers > 31){
-            this.messages.show({severity: 'warn', summary: "Слишком большой интервал дат!"});
+            this.messages.show({severity: 'error', summary: "Слишком большой интервал дат!"});
             return false;
         }
 
@@ -116,60 +117,79 @@ export default class DayOffForm extends Component {
         this.setState({eventType: chosenType.value});
     }
 
+    isFilledOut(){
+        //ключевые поля заполнены
+        return (this.state.employee && this.state.eventType && this.state.start && this.state.end)
+    }
+
     render() {
         if (!AppSets.getUser())
             { window.location = "/login" }
 
-        if (this.state.errorMsg !== ''){
-            return <Error reason={this.state.errorMsg}></Error>;
-        }
         return(
         <div className="card" >
             <Messages ref={(msgE) => this.messages = msgE} style={{marginBottom: '1em'}}/>
-            <div className="card-title p-text-bold p-highlight">{this.state.employee.fullName}</div>
             
             <div className="p-grid">
                 <div className="p-col-12  p-md-8">
-                    <Dropdown value={this.state.eventType} options={this.eventTypes} optionLabel="name"
-                            placeholder="*Выбор причины отсутствия" required={true}
-                            onChange={chosenType => {this.onChangeType(chosenType)}}/>
+                    <span className="p-float-label" >
+                        <Dropdown id='employeeFld' value={this.state.employee} 
+                            options={this.state.employees}
+                            optionLabel="fullName" 
+                            onChange = {pers=>this.setState({employee: pers.value})}
+                            style={{width:'50%'}}>
+                        </Dropdown> 
+                        <label htmlFor="employeeFld">Сотрудник</label>
+                    </span>
                 </div>
                 <div className="p-col-12  p-md-8">
-                    <div className="p-text-left p-text-bold" style={{margin: '0 1em 0 1em'}}>Пояснение сотрудника:</div>
-                    <InputText value={this.state.reason} 
-                        onChange={(reasonText) => this.setState({ reason: reasonText.value })}
-                        style={{margin: '0 1em 0 1em', width: '75%'}} placeholder='Введите необходимые комментарии, если надо'></InputText>
+                    <span className="p-float-label" >
+                        <Dropdown id='reasonTypeFld' value={this.state.eventType} style={{width:'50%'}}
+                                options={this.eventTypes} optionLabel="name"
+                                required={true}
+                                onChange={chosenType => {this.onChangeType(chosenType)}}/>
+                    </span>
                 </div>
-            </div>
-            <div className="p-grid" style={{margin: '0 1em 0 1em'}}>
-                <div className="p-col-4  p-md-4">
-                    <div className="p-text-left p-text-bold" >Дата начала*:</div>
-                </div>
-                <div className="p-col-4  p-md-4">
-                    <div className="p-text-left p-text-bold" >Дата окончания*:</div>
+                <div className="p-col-12  p-md-8">
+                    <span className="p-float-label" >
+                        <InputText id='reasonFld' value={this.state.reason} 
+                            onChange={(reasonText) => this.setState({ reason: reasonText.value })}
+                            style={{width: '50%'}} ></InputText>
+                        <label htmlFor="reasonFld">Пояснения сотрудника*</label>
+                    </span>
                 </div>
             </div>
             
-            <div className="p-grid" style={{margin: '0 1em 0 1em'}}> 
-                <div className="p-col-4  p-md-4" >
-                    <Calendar value={this.state.start} showWeek showIcon dateFormat="dd/mm/yy" 
+            <div className="p-grid" > 
+                <div className="p-col-2  p-md-2" >
+                    <span className="p-float-label" >
+                    <Calendar id='startCalendarFld' value={this.state.start} 
+                        showWeek showIcon dateFormat="dd/mm/yy" 
                         minDate = {this.startDateMin} 
                         onChange={(newStartDate) => this.editStartDate(newStartDate.value)}  />
+                        <label htmlFor="startCalendarFld">Дата начала*</label>
+                    </span>
                 </div>
-                <div className="p-col-3  p-md-3">
-                    <Calendar value={this.state.end} showWeek showIcon dateFormat="dd/mm/yy"
-                        minDate={this.endDateMin}
-                        onChange={(newEndDate) => this.editEndDate(newEndDate.value)}  />
+                <div className="p-col-2  p-md-2">
+                    <span className="p-float-label">
+                        <Calendar id='endCalendarFld' value={this.state.end} 
+                            showWeek showIcon dateFormat="dd/mm/yy"
+                            minDate={this.endDateMin}
+                            onChange={(newEndDate) => this.editEndDate(newEndDate.value)}  />
+                        <label htmlFor="endCalendarFld">Дата окончания*</label>
+                    </span>
                 </div>
             </div>
 
             <div className="p-grid" style={{margin: '0 1em 0 1em'}}>
-                <div className="p-col-4  p-md-4">
+                <div className="p-col-3  p-md-3">
                     <Button label="Отменить" onClick={this.props.history.goBack} style={{marginRight: '1em'}}></Button>
-                    <Button label="Сохранить" onClick={this.save} style={{marginRight: '1em'}}></Button>
+                    {this.isFilledOut() &&
+                    <Button label="Сохранить" onClick={this.save} style={{marginRight: '1em'}}></Button>}
                 </div>
                 <div className="p-col-4  p-md-4">
-                    <Button label="Удалить" style={{marginRight: '1em'}}></Button>
+                    {this.isFilledOut() &&
+                    <Button label="Удалить" style={{marginRight: '1em'}}></Button>}
                 </div>                
             </div>
         </div>

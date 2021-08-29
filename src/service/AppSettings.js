@@ -10,8 +10,7 @@ export default class AppSets{
     //static host = "https://test.sclub.in.ua";
     static timeout = 2000;
         
-    static authenticateUser(userName, password, showMessage){
-        let user = null;
+    static authenticateUser(userName, password, showMessage, history){
 		const server = AppSets.host;
         let url = server + '/auth';
 		const data = {"username": userName, "password": password};
@@ -27,7 +26,7 @@ export default class AppSets{
 				const userString = JSON.stringify(userData);
                 AppSets.user = new User(userData);
 				window.sessionStorage.setItem("user", userString);
-				window.location = "/";
+                window.location = "/";
 			})
             .catch((err)=>{(
                     !err.response) ?  
@@ -38,7 +37,7 @@ export default class AppSets{
                 showMessage({severity: 'error', summary: 'Нет связи с сервером!'});
             }else{
                 if (err.response.status === 401){
-                    {window.location="/access"}
+                    window.location="/access"
                 }else{
                     showMessage({severity: 'error', summary: 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку', sticky: true})
                 }

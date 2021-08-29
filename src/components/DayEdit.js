@@ -3,7 +3,7 @@ import ScheduleService from '../service/ScheduleService';
 import { InputMask } from 'primereact/inputmask';
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
-import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { confirmDialog } from 'primereact/confirmdialog';
 import AppSets from '../service/AppSettings';
 import { AutoComplete } from 'primereact/autocomplete';
 import { Dropdown } from 'primereact/dropdown';

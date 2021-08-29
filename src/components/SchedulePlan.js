@@ -9,6 +9,7 @@ import { AutoComplete } from 'primereact/autocomplete';
 import ScheduleService from '../service/ScheduleService';
 import { Dropdown } from 'primereact/dropdown';
 import { Calendar as CalendarFld} from 'primereact/calendar';
+import { InputMask } from 'primereact/inputmask';
 import { ru } from '../service/AppSettings';
 import { addLocale } from 'primereact/api';
 import { Button } from 'primereact/button';
@@ -20,7 +21,7 @@ export default class SchedulePlan extends Component {
     state = {days:[], selectedDates:[],
         chosenOrgUnit: null, orgUnits: [], filteredOrgUnits: [], 
         chosenEmployee: null, employees:[], filteredEmployees: [], 
-        chosenShift: null, shifts: []};
+        chosenShift: null, shifts: [], timeFrom:null, timeTo:null};
 
     constructor() {
         super();
@@ -40,6 +41,9 @@ export default class SchedulePlan extends Component {
         this.selectDates = this.selectDates.bind(this);
         this.displayShiftInfo = this.displayShiftInfo.bind(this);
         this.onEventClick = this.onEventClick.bind(this);
+        this.displayEmployeeInfo = this.displayEmployeeInfo.bind(this);
+        this.intervalIsInPast = this.intervalIsInPast.bind(this);
+        this.inputSimpleTimes = this.inputSimpleTimes.bind(this);
         this.storage = window.sessionStorage;
     }
 
@@ -142,7 +146,7 @@ export default class SchedulePlan extends Component {
         this.chosenEmployee = empl;
         this.setState({chosenEmployee: empl});
         this.updateCalendar();
-        this.storage.setItem("chosenEmployee", JSON.stringify(empl));   
+        this.storage.setItem("chosenEmployee", JSON.stringify(empl)); 
     }
 
     onEventClick(info){
@@ -152,12 +156,39 @@ export default class SchedulePlan extends Component {
                 chosenOrgUnit: this.state.chosenOrgUnit, orgUnits: this.state.orgUnits}});
     }
 
+
+    intervalIsInPast(){
+        return false;
+        //проверяет, не приходится ли выбранный интервал на текущий или прошедший месяц
+        const startInt = this.moment(this.startStr);
+        const dayDifs = -1 * (startInt.diff(this.endStr, 'days'));
+        const middleInt = startInt.add(dayDifs / 2, 'days');
+        return  startInt.month() <= (new Date).getMonth();
+    }
+
     isDataValid(){
-        if (! (this.state.chosenEmployee && this.state.chosenOrgUnit && this.state.chosenShift)){
+        if (! (this.state.chosenEmployee && this.state.chosenOrgUnit)){
             this.messages.show({ severity: 'error', sticky:true, life:5000,
-                 summary: "Нельзя создавать расписание, пока не выбрано подразделение, смена и сотрудник"});
+                 summary: "Нельзя создавать расписание, пока не выбрано подразделение и сотрудник"});
             return false;
         }
+        if (!this.state.chosenShift && (!this.state.timeFrom || !this.state.timeTo)){
+            this.messages.show({ severity: 'error', sticky:true, life:5000,
+                 summary: "Нельзя создавать расписание, если не выбрана смена или введен интервал времени с и по."});
+                 return false;
+        }else if (!this.state.chosenShift){
+            //смена не задана, а времена заданы, проверяем...
+            if (this.state.timeFrom>=this.state.timeTo){
+                this.messages.show({ severity: 'error', sticky:true, life:5000,
+                summary: "Время прихода раньше времени ухода"});
+                return false;
+            }else if(this.state.timeFrom<AppSets.minStartTime || this.state.timeTo>AppSets.maxEndTime){
+                this.messages.show({ severity: 'error', sticky:true, life:5000,
+                summary: "Введено неправильное время прихода или ухода"});
+                return false;
+            }
+        }
+
         const now = this.moment();
         if (this.state.selectedDates && this.state.selectedDates.length>0){
             for(let i=0; i < this.state.selectedDates.length; i++){
@@ -166,7 +197,8 @@ export default class SchedulePlan extends Component {
                     const currentStr = current.format("DD/MM/yy")
                     let errMsg = "Как минимум, одна из дат в списке - "+currentStr+" - уже прошла. Это запрещено!";
                     this.messages.show({severity: 'error', sticky:true, life:5000, summary: errMsg});    
-                    return false;
+                    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!УБРАТЬ   УБРАТЬ 
+                    return true;
                 }
             }
         }else{//период задается выбором в календаре
@@ -174,7 +206,7 @@ export default class SchedulePlan extends Component {
                 this.messages.show({severity: 'error', sticky:true, life:5000,
                      summary: "Вы хотите составить расписание на ПРОШЕДШИЙ месяц. Так нельзя!"});
                 return false;
-            }else if (this.moment(this.startStr).isBefore(now)){
+            }else if (this.intervalIsInPast()){
                 //если дата начала или конца периода больше текущего - ошибка
                 this.messages.show({severity: 'error', sticky:true, life:5000,
                      summary: "Вы составляете расписание на месяц, но месяц уже начался. Так нельзя!"});
@@ -196,15 +228,32 @@ export default class SchedulePlan extends Component {
                 let formDate = this.moment(theDate).format("YYYY-MM-DD HH:mm")
                 selectedDatesFormatted.push(formDate);
             }
-            let payload = new ScheduleCreateProxy(this.state.chosenOrgUnit.id, this.state.chosenShift.id, 
-                this.state.chosenEmployee.id, selectedDatesFormatted, this.interval)
+            const shiftId = this.state.chosenShift ? this.state.chosenShift.id : null;
+            let payload = new ScheduleCreateProxy(this.state.chosenOrgUnit.id, shiftId, 
+                this.state.chosenEmployee.id, selectedDatesFormatted, this.interval, this.state.timeFrom, this.state.timeTo)
             this.dataService.createSchedule(payload, this, this.finalizeCalendarView);
         }
     }
 
+    displayEmployeeInfo(){
+        if (!this.state.chosenEmployee)
+            {return}
+        let info = this.state.chosenEmployee.shiftLength>0 ? (this.state.chosenEmployee.shiftLength+" ч ") : ""
+        info = info + ((this.state.chosenEmployee.daysInWeek>0) ? (", "+this.state.chosenEmployee.daysInWeek+" дней/нед. ") : "");
+        info = info + ((this.state.chosenEmployee.shiftLengthOnFriday>0) ? (", в пятницу "+this.state.chosenEmployee.shiftLengthOnFriday+" ч") : "");
+        info = info + ((this.state.chosenEmployee.addConditions) ? (", "+this.state.chosenEmployee.addConditions) : '');
+        info = (info!="") ? ("Работает: "+info) : "";
+        return(
+            <div className='p-grid'>
+                <div className='p-col-12' margintop='1em' style={{color:'#4095eb'}}>
+                    {info}
+                </div>
+            </div>
+        )
+    }
+
     displayShiftInfo(){
         return <div className='p-grid'>
-            <div className='p-col-12' margintop='1em'>{this.state.chosenShift.notes}</div>
             <div className='p-col p-md-4'>Вс</div>
             <div className='p-col p-md-4'>{this.state.chosenShift.start1}</div>
             <div className='p-col p-md-4'>{this.state.chosenShift.end1}</div>
@@ -226,8 +275,27 @@ export default class SchedulePlan extends Component {
             <div className='p-col p-md-4'>Сб</div>
             <div className='p-col p-md-4'>{this.state.chosenShift.start7}</div>
             <div className='p-col p-md-4'>{this.state.chosenShift.end7}</div>
-
+            <div className='p-col-12' margintop='1em' style={{color:'#2c29eb'}}>{this.state.chosenShift.notes} </div>
         </div>
+    }
+
+    inputSimpleTimes(){
+        return(<div className="p-grid">
+            <div className="p-field p-col-3 p-md-3">
+                <label htmlFor="simpleTimeFrom">C</label>
+                <InputMask id="simpleTimeFrom"
+                    value={this.state.timeFrom} mask="99:99" style={{width:'5em'}}
+                    onChange={(e) => this.setState({timeFrom:e.target.value,})}>
+                </InputMask>
+            </div>
+            <div className="p-field p-col-2 p-md-2">
+                <label htmlFor="simpleTimeTo">По</label>
+                <InputMask id="simpleTimeTo"
+                    value={this.state.timeTo} mask="99:99" style={{width:'5em'}}
+                    onChange={(e) => this.setState({timeTo:e.target.value,})}>
+                </InputMask>
+            </div>
+        </div>);
     }
 
     render() {
@@ -287,12 +355,13 @@ export default class SchedulePlan extends Component {
                             onChange={(dte) => this.setState({selectedDates: dte.value})}/>
                         <label htmlFor="selectedDatesFld">Даты - если график на отдельные дни</label>
                     </span>
-                    {(this.state.chosenEmployee && this.state.chosenOrgUnit && this.state.chosenShift) && 
+                    {(this.state.chosenEmployee && this.state.chosenOrgUnit && (this.state.chosenShift || (this.state.timeFrom && this.state.timeTo))) && 
                         <div className="p-col-12">
                             <Button label="Создать" icon="pi pi-check" onClick={this.save} style={{marginRight: '1em'}}/>
                         </div>
                     }
-                    {this.state.chosenShift && this.displayShiftInfo()}
+                    {(this.state.chosenShift) ? this.displayShiftInfo() : this.inputSimpleTimes()}
+                    {this.displayEmployeeInfo()}
                 </div>
             </div>            
         </div>

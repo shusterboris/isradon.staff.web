@@ -20,7 +20,7 @@ export default class EmployeeCard extends Component {
         filteredOrgUnits:[],
         filteredJobTitles:[],
         firstName:'', lastName:'',nickName:'',
-        phone:'',email:'',birthday:'', shiftLength:8, daysInWeek:5, addConditions:''
+        phone:'',email:'',birthday:'', shiftLength:8, daysInWeek:5, shiftLengthFri:0, addConditions:''
     }
     
     constructor(props) {
@@ -114,7 +114,7 @@ export default class EmployeeCard extends Component {
                         <div className="p-field-checkbox">   
                             <Checkbox inputId="isWorkingFld" value={this.state.working} 
                                 onChange={chk => this.onWorkStatusChange(chk)} 
-                                checked={this.state.working == true}></Checkbox>
+                                checked={this.state.working === true}></Checkbox>
                             <label htmlFor="isWorkingFld" className="p-checkbox-label">Работает</label>
                         </div>
                     </div>
@@ -156,7 +156,7 @@ export default class EmployeeCard extends Component {
                             </div>
                             <div className="p-col-2 p-mx-2" >                            
                                 <span className="p-float-label">
-                                    <InputMask mask="99-999-99-99" id="phoneFld" value={this.state.phone} 
+                                    <InputMask mask="999-999-99-99" id="phoneFld" value={this.state.phone} 
                                         onChange={(e) => this.setState({phone:e.target.value, wasChanged: true})} />
                                     <label htmlFor="phoneFld">Телефон*</label>
                                 </span>
@@ -179,14 +179,21 @@ export default class EmployeeCard extends Component {
                                 <span className="p-float-label">
                                     <InputText id='shiftDurFld' value={this.state.shiftLength} width='3em' 
                                            onChange={(sl) => this.setState({shiftLength:sl.target.value, wasChanged: true})}/>
-                                    <label htmlFor="shiftDurFld"> Длительность смены </label>
+                                    <label htmlFor="shiftDurFld"> Смена, ч </label>
                                 </span>
                             </div>
-                            <div className="p-col-9 p-mx-2">
+                            <div className="p-col-2 p-mx-2">
                                 <span className="p-float-label">
                                     <InputText id="daysInWeekFld" value={this.state.daysInWeek} width='3em' 
                                             onChange={(diw) => this.setState({daysInWeek:diw.target.value, wasChanged: true})}/>
-                                    <label htmlFor='daysInWeekFld'> Дней в неделю </label>
+                                    <label htmlFor='daysInWeekFld'> Дней/нед. </label>
+                                </span>
+                            </div>
+                            <div className="p-col-7 p-mx-2">
+                                <span className="p-float-label">
+                                    <InputText id="shiftDurFryFld" value={this.state.shiftLengthFri} width='3em' 
+                                            onChange={(diw) => this.setState({shiftLengthFri:diw.target.value, wasChanged: true})}/>
+                                    <label htmlFor='shiftDurFryFld'> В пятницу </label>
                                 </span>
                             </div>
                             

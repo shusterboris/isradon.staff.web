@@ -28,7 +28,6 @@ export default class MonthCalendar extends Component{
         this.onOrgUnitChange = this.onOrgUnitChange.bind(this);
         this.onCheckFilter = this.onCheckFilter.bind(this);
         this.moment = require('moment');
-        this.employee = AppSets.curEmployee;
         this.storage = window.sessionStorage;
         this.filterChecked = true;
     }
@@ -57,8 +56,10 @@ export default class MonthCalendar extends Component{
         endMoment.hour(maxTime[0]);
         endMoment.minute(maxTime[1]);
         endMoment.subtract(1,'days');
+        const unitsToChoose = this.getEmployeeList(this.state.chosenOrgUnit);
         this.props.history.push(
-            {pathname:'/day-off', state: {mode: 'create', employee: this.state.chosenPerson, dateStart:start, dateEnd:endMoment.toDate()}}
+            {pathname:'/day-off', state: {mode: 'create', employeeList: unitsToChoose, 
+                            employee: this.state.chosenPerson, dateStart:start, dateEnd:endMoment.toDate()}}
             );
     }
 
@@ -87,13 +88,14 @@ export default class MonthCalendar extends Component{
     }
 
     getEmployeeList(chosenUnit){
-        if (this.user){
-            if (this.user.amIhr() && !chosenUnit){
-                return this.state.orgUnits;
+        const user = AppSets.getUser()
+        if (user){
+            if (user.amIhr() && !chosenUnit){
+                return this.state.employees;
             }else{
-                const employeeOrgUnit = chosenUnit ? chosenUnit.name : this.employee.orgUnit;
+                const employeeOrgUnit = chosenUnit ? chosenUnit.name : user.orgUnit;
                 const sameOrgUnitEmployees = this.state.employees.filter(empl=>{
-                        return empl.orgUnit === employeeOrgUnit});
+                        return empl.orgUnit === null || empl.orgUnit === employeeOrgUnit});
                 return sameOrgUnitEmployees;
             }
         }else{
@@ -119,7 +121,7 @@ export default class MonthCalendar extends Component{
             <div className='p-grid'>
                 <div className='p-col-2'>
                     <div className="p-shadow-4 p-text-bold p-highlight " style={{height: '50px', fontSize:'large', color: '#1E88E5'}}>
-                        {this.employee && this.employee.orgUnit}</div>
+                        {this.user && this.user.orgUnit}</div>
                 </div>
                 <div className='p-col-3'>
                     <Dropdown value={this.state.chosenPerson} 
@@ -196,6 +198,7 @@ export default class MonthCalendar extends Component{
                         {(this.user && this.user.amIhr()) ? this.displayHrHeader() : this.displaySimpleUserHeader()}
                         <FullCalendar events={this.state.days} initialDate={iniDate} locale={ruLocale}
                             slotMinTime={AppSets.minStartTime} slotMaxTime={AppSets.maxEndTime} 
+                            aspectRatio={2.2}
                             selectable firstDay={0} expandRows
                             displayEventEnd={true}
                             initialView='dayGridMonth' plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}

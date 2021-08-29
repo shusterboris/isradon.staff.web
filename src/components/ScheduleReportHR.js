@@ -11,7 +11,6 @@ import {ColumnGroup} from 'primereact/columngroup';
 import {Row} from 'primereact/row';
 import { InputText } from 'primereact/inputtext';
 import {Messages} from 'primereact/messages';
-import { OverlayPanel } from 'primereact/overlaypanel';
 import classNames from 'classnames';
 import './ScheduleReport.css'
 import { ru } from '../service/AppSettings';
@@ -231,7 +230,7 @@ class ScheduleResultTable extends React.Component{
 
     actionBodyReason(rowData){
         const reason = rowData.reason;
-        if (reason != ''){
+        if (reason !== ''){
             return(<div>
                 <Button type="button" icon="pi pi-bell" className="p-button-sm p-button-rounded p-button-warning p-button-text"
                         style={{margin:'0 0 0 0', }}  
@@ -373,11 +372,6 @@ class ScheduleFilter extends React.Component{
         this.onChangeSeller = this.onChangeSeller.bind(this);
         this.filterSellers = this.filterSellers.bind(this); 
         addLocale('ru', ru);   
-        this.user = null;
-        const userStr = window.sessionStorage.getItem("user");
-        if (userStr){
-            this.user = JSON.parse(userStr);
-        }
     }
 
     filterSellers(event){
@@ -417,15 +411,6 @@ class ScheduleFilter extends React.Component{
 
     componentDidMount() {
         AppSets.getEmployees(this);
-        this.setInitialChosenDate();
-    }
-
-    setInitialChosenDate(){
-        let chosenDate = new Date();
-        //если число меньше 10, берем прошлый месяц, иначе текущий
-        chosenDate = chosenDate.getDay() > 10 ?  
-            chosenDate :  chosenDate.setMonth(chosenDate.getMonth() - 1); 
-        //this.chosenDate = AppSets.mmyyFormat.format(chosenDate)
     }
 
     render(){
