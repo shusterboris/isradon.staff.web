@@ -14,6 +14,8 @@ import { ru } from '../service/AppSettings';
 import { addLocale } from 'primereact/api';
 import { Button } from 'primereact/button';
 import {Toast} from 'primereact/toast';
+import { Toolbar } from 'primereact/toolbar';
+import Confirmation from './Confirmation';
 import ScheduleCreateProxy from '../entities/ScheduleCreateProxy';
 
 
@@ -21,7 +23,7 @@ export default class SchedulePlan extends Component {
     state = {days:[], selectedDates:[],
         chosenOrgUnit: null, orgUnits: [], filteredOrgUnits: [], 
         chosenEmployee: null, employees:[], filteredEmployees: [], 
-        chosenShift: null, shifts: [], timeFrom:null, timeTo:null};
+        chosenShift: null, shifts: [], timeFrom:null, timeTo:null, showConfirm: false};
 
     constructor() {
         super();
@@ -36,6 +38,10 @@ export default class SchedulePlan extends Component {
         this.searchEmployee = this.searchEmployee.bind(this);
         this.updateCalendar = this.updateCalendar.bind(this);
         this.save = this.save.bind(this);
+        this.verify = this.verify.bind(this);
+        this.delete = this.delete.bind(this);
+        this.onDelete = this.onDelete.bind(this);
+        this.hideConfirmationDlg = this.hideConfirmationDlg.bind(this);
         this.isDataValid = this.isDataValid.bind(this);
         this.finalizeCalendarView = this.finalizeCalendarView.bind(this);
         this.selectDates = this.selectDates.bind(this);
@@ -158,11 +164,11 @@ export default class SchedulePlan extends Component {
 
 
     intervalIsInPast(){
-        return false;
         //проверяет, не приходится ли выбранный интервал на текущий или прошедший месяц
         const startInt = this.moment(this.startStr);
         const dayDifs = -1 * (startInt.diff(this.endStr, 'days'));
-        const middleInt = startInt.add(dayDifs / 2, 'days');
+        //TODO Удалить !!!!! пока для отладки
+        return false;
         return  startInt.month() <= (new Date).getMonth();
     }
 
@@ -235,6 +241,37 @@ export default class SchedulePlan extends Component {
         }
     }
 
+    verify(){
+        if (! (this.state.chosenEmployee && this.state.chosenOrgUnit)){
+            this.messages.show({ severity: 'error', sticky:true, life:5000,
+                 summary: "Для запуска проверки, выберите подразделение и сотрудника"});
+            return;
+        }
+        const shiftId = this.state.chosenShift ? this.state.chosenShift.id : null;
+        let payload = new ScheduleCreateProxy(this.state.chosenOrgUnit.id, shiftId, 
+            this.state.chosenEmployee.id, [], this.interval, this.state.timeFrom, this.state.timeTo)
+        this.dataService.verifySchedule(payload, this, this.finalizeCalendarView);
+    }
+
+    delete(){
+        const shiftId = this.state.chosenShift ? this.state.chosenShift.id : null;
+        const payload = new ScheduleCreateProxy(this.state.chosenOrgUnit.id, shiftId, 
+            this.state.chosenEmployee.id, [], this.interval, this.state.timeFrom, this.state.timeTo)
+        this.dataService.deleteSchedule(payload, this)
+    }
+
+    hideConfirmationDlg(){
+        this.setState({showConfirm: false});
+    }
+
+    onDelete(){
+        this.confirmHeader='Подтвердите удаление?';
+        this.confirmBody='Удалить полностью расписание на месяц для выбранного сотрудника?'; 
+        this.confirmAccept=this.delete;
+        this.confirmReject=this.hideConfirmationDlg;
+        this.setState({showConfirm: true});
+    }
+
     displayEmployeeInfo(){
         if (!this.state.chosenEmployee)
             {return}
@@ -242,7 +279,7 @@ export default class SchedulePlan extends Component {
         info = info + ((this.state.chosenEmployee.daysInWeek>0) ? (", "+this.state.chosenEmployee.daysInWeek+" дней/нед. ") : "");
         info = info + ((this.state.chosenEmployee.shiftLengthOnFriday>0) ? (", в пятницу "+this.state.chosenEmployee.shiftLengthOnFriday+" ч") : "");
         info = info + ((this.state.chosenEmployee.addConditions) ? (", "+this.state.chosenEmployee.addConditions) : '');
-        info = (info!="") ? ("Работает: "+info) : "";
+        info = (info !== "") ? ("Работает: "+info) : "";
         return(
             <div className='p-grid'>
                 <div className='p-col-12' margintop='1em' style={{color:'#4095eb'}}>
@@ -298,6 +335,32 @@ export default class SchedulePlan extends Component {
         </div>);
     }
 
+    displayToolbar(){
+        //если данные не введены, кнопок нет
+        if (!(this.state.chosenEmployee && this.state.chosenOrgUnit )){
+            return
+        }
+        const leftBar = (<React.Fragment>
+                {(this.state.chosenShift || (this.state.timeFrom && this.state.timeTo)) &&
+                <Button label="Создать" icon="pi pi-check" 
+                    tooltip = "Создать или изменить расписание для выбранного подразделения и сотрудника"
+                    onClick={this.save} style={{marginRight: '1em'}}/>
+                }
+                <Button icon="pi pi-search" className="p-button-rounded p-button-success"
+                        tooltip = "Проверить соответствие рабочих часов настройкам сотрудника"
+                        onClick={this.verify} style={{marginRight: '1em'}}/>
+        </React.Fragment>)
+        const rightBar = (<React.Fragment>
+                <Button className="p-button-rounded p-button-danger" icon="pi pi-thumbs-down" 
+                    tooltip = "Удалить полностью запланированное расписание для выбранного сотудника"
+                    onClick={this.onDelete} style={{marginRight: '1em'}}/>
+        </React.Fragment>)
+
+        return(<div>
+            <Toolbar left={leftBar} right={rightBar} />
+        </div>);
+    }
+
     render() {
         if (!AppSets.getUser())
             { window.location = "/login" }
@@ -307,6 +370,9 @@ export default class SchedulePlan extends Component {
             <Toast ref={(el) => this.messages = el}/>
             <div className="p-col-9">
                 <div className="card">
+                    {this.state.showConfirm && 
+                    <Confirmation visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmBody}
+                            accept={this.confirmAccept} reject={this.confirmReject} messages={this.messages} context={this}/>}
                     <div className='p-card-title p-text-bold p-text-left' style={{fontSize:'large', color: '#1E88E5'}}>Планирование графика работы</div>
                     <FullCalendar 
                         initialDate={iniDate}
@@ -355,11 +421,7 @@ export default class SchedulePlan extends Component {
                             onChange={(dte) => this.setState({selectedDates: dte.value})}/>
                         <label htmlFor="selectedDatesFld">Даты - если график на отдельные дни</label>
                     </span>
-                    {(this.state.chosenEmployee && this.state.chosenOrgUnit && (this.state.chosenShift || (this.state.timeFrom && this.state.timeTo))) && 
-                        <div className="p-col-12">
-                            <Button label="Создать" icon="pi pi-check" onClick={this.save} style={{marginRight: '1em'}}/>
-                        </div>
-                    }
+                    {this.displayToolbar()}
                     {(this.state.chosenShift) ? this.displayShiftInfo() : this.inputSimpleTimes()}
                     {this.displayEmployeeInfo()}
                 </div>

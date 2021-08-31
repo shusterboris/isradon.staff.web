@@ -3,7 +3,6 @@ import { Calendar } from 'primereact/calendar'
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Messages } from 'primereact/messages';
-import {Error} from '../pages/Error'
 import App from '../App';
 import AppSets from '../service/AppSettings';
 import ScheduleService from '../service/ScheduleService';

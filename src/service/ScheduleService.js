@@ -205,6 +205,40 @@ export default class ScheduleService {
             });
     }
 
+    deleteSchedule(payload, _this){
+        const server = AppSets.host;
+        const query = "/calendar/deleteForPerson" ;
+        const url = server + query;
+        axios.delete(url, {data: payload},{timeout: AppSets.timeout})
+            .then((res)=>{
+                _this.messages.show({ severity: 'success', summary: 'Записи расписания успешно удалены'});
+                _this.setState({showConfirm: false});
+                _this.updateCalendar(_this.chosenOrgUnit);
+            })
+            .catch(err => {
+                this.processRequestsCatch(err, 'Проверка расписания.', _this.messages);
+                _this.setState({showConfirm: false});
+        });
+    }
+
+    verifySchedule(payload, _this){
+        const server = AppSets.host;
+        const query = "/calendar/verify";
+        const url = server + query;
+        axios.post(url, payload, {timeout: AppSets.timeout})
+            .then((res)=>{
+                const answer = res.data;
+                if (answer.startsWith("Порядок")){
+                    _this.messages.show({ severity: 'success', summary: answer});
+                }else{
+                    _this.messages.show({ severity: 'warn', summary: answer, sticky: true});
+                }
+            })
+            .catch(err => {
+                this.processRequestsCatch(err, 'Проверка расписания.', _this.messages);
+            })
+    }
+
     createSchedule(payload, _this, action){
         const server = AppSets.host;
         const query = "/schedule/create";
