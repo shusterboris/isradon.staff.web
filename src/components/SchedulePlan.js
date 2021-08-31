@@ -265,6 +265,10 @@ export default class SchedulePlan extends Component {
     }
 
     onDelete(){
+        if (this.intervalIsInPast()){
+            this.messages.show({severity:'error', summary:'Нельзя удалять расписания за прошедший период'})
+            return;
+        }
         this.confirmHeader='Подтвердите удаление?';
         this.confirmBody='Удалить полностью расписание на месяц для выбранного сотрудника?'; 
         this.confirmAccept=this.delete;
@@ -337,7 +341,8 @@ export default class SchedulePlan extends Component {
 
     displayToolbar(){
         //если данные не введены, кнопок нет
-        if (!(this.state.chosenEmployee && this.state.chosenOrgUnit )){
+        const hasHrRole = AppSets.getUser().amIhr();
+        if (!(this.state.chosenEmployee && this.state.chosenOrgUnit && hasHrRole)){
             return
         }
         const leftBar = (<React.Fragment>

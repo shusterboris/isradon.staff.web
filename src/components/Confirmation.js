@@ -37,7 +37,7 @@ export default class Confirmation extends Component{
             </div>
         );
         return(
-            <Dialog  header={this.header} footer={footer} visible={this.visibility} onHide={this.reject} >
+            <Dialog  header={this.header} footer={footer} visible={this.visibility} onHide={this.reject} style={{width:'50vw'}}>
                 {this.body}
             </Dialog>
             

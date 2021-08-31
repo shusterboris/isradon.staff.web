@@ -17,6 +17,7 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './App.scss';
 import { DayEdit } from './components/DayEdit';
+import MonthScheduleDownload from './components/MonthScheduleDownload';
 
 const App = () => {
 
@@ -42,6 +43,7 @@ const App = () => {
             items: [
                 {label: 'Календарь смен', icon: 'pi pi-sitemap', to: '/shed-plan-orgunit'},
                 {label: 'Календарь отпусков', icon: 'pi pi-users', to: '/shed-plan'},
+                {label: 'Выгрузка расписания', icon: 'pi pi-download', to: '/data-download'},
             ]
         },
         {label: 'Настройки', icon: 'pi pi-cog', 
@@ -215,6 +217,7 @@ const App = () => {
 		{path: "/day-off:type", component:DayOffForm},
 		{path: "/create-schedule", component:EmptyPage},
         {path: "/edit-day:id", component:DayEdit},
+        {path: "/data-download", component:MonthScheduleDownload},
 		{path: "/public/" },
     ];
 
