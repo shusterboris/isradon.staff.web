@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Route, useLocation, withRouter } from 'react-router-dom';
 import App from './App';
-import {Login} from './pages/Login';
+import {Login} from './components/Login';
 import {Error} from './pages/Error';
 import { NotFound } from './pages/NotFound';
 import { Access } from './pages/Access';
@@ -15,8 +15,6 @@ const AppWrapper = () => {
     }, [location]);
 
     switch (location.pathname) {
-        case '/login':
-            return <Route path="/login" component={Login} />
         case '/error':
             return <Route path="/error" component={Error} />
         case '/notfound':
@@ -24,7 +22,7 @@ const AppWrapper = () => {
         case '/access':
             return <Route path="/access" component={Access} />
         default:
-            return <App />;
+            return <App/>;
     }
 }
 

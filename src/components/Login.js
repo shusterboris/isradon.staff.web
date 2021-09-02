@@ -1,15 +1,14 @@
 import React, { useState, useRef }  from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
-import { useHistory } from 'react-router-dom';
+import { useHistory} from 'react-router-dom';
 import { Messages } from 'primereact/messages';
 import AppSets from '../service/AppSettings';
 
-export const Login = () => {
-
+export const Login = (props) => {
+	const history = useHistory();
 	const [userName, setUserName] = useState('');
 	const [password, setPassword] = useState('');
-	const history = useHistory();
 	const messages = useRef(null);
 
 
@@ -22,7 +21,7 @@ export const Login = () => {
 			<div className="login-panel ui-fluid">
 				<Messages ref = {messages}/>
 				<div className="login-panel-header">
-					<img src="/assets/layout/images/isradon-logo-hor.png" alt="logotype"/>		
+					<img src="/assets/images/isradon-logo-hor.png" alt="logotype"/>		
 				</div>
 				<div className="login-panel-content">
 					<div className="p-grid">

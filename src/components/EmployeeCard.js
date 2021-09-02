@@ -20,7 +20,7 @@ export default class EmployeeCard extends Component {
         filteredOrgUnits:[],
         filteredJobTitles:[],
         firstName:'', lastName:'',nickName:'',
-        phone:'',email:'',birthday:'', shiftLength:8, daysInWeek:5, shiftLengthFri:0, addConditions:''
+        phone:'',email:'',birthday:'', shiftLength:8, daysInWeek:5, shiftLengthOnFriday:0, addConditions:''
     }
     
     constructor(props) {
@@ -59,13 +59,14 @@ export default class EmployeeCard extends Component {
 
     initiateFields(data){
         this.employee = data;
-        let fldPhone = (data.phone) ? data.phone.slice(-12) : '';
+        let fldPhone = (data.phone) ? data.phone.slice(-13) : '';
         let fldBirthday = (data.birthday) ? data.birthday : '';
         this.orgUnitName = data.orgUnit;
         const found = this.state.orgUnits.find(ou => ou.name === this.orgUnitName)
         this.setState({lastName: data.lastName, firstName: data.firstName, working: data.working,
             jobTitle:data.jobTitle, phone: fldPhone, orgUnit: found, addConditions: data.addConditions,
-            email: data.email, birthday: fldBirthday, id:data.id, shiftLength: data.shiftLength, daysInWeek: data.daysInWeek}); 
+            email: data.email, birthday: fldBirthday, id:data.id, shiftLength: data.shiftLength, 
+            shiftLengthOnFriday: data.shiftLengthOnFriday,  daysInWeek: data.daysInWeek}); 
     }
 
     filterOrgUnit(event){
@@ -191,8 +192,8 @@ export default class EmployeeCard extends Component {
                             </div>
                             <div className="p-col-7 p-mx-2">
                                 <span className="p-float-label">
-                                    <InputText id="shiftDurFryFld" value={this.state.shiftLengthFri} width='3em' 
-                                            onChange={(diw) => this.setState({shiftLengthFri:diw.target.value, wasChanged: true})}/>
+                                    <InputText id="shiftDurFryFld" value={this.state.shiftLengthOnFriday} width='3em' 
+                                            onChange={(diw) => this.setState({shiftLengthOnFriday:diw.target.value, wasChanged: true})}/>
                                     <label htmlFor='shiftDurFryFld'> В пятницу </label>
                                 </span>
                             </div>
@@ -228,7 +229,7 @@ export default class EmployeeCard extends Component {
         if (errFields.length !== 0){
             const lstFlds = errFields.join(", ")
             const msg = "Не введены: "+lstFlds+". Все поля, обозначенные символом * должны быть обязательно заполнены!";
-            messages.show({severity: 'warn', details: msg});
+            messages.show({severity: 'error', summary: msg});
             return false;
         }
         return true;

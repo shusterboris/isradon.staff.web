@@ -46,12 +46,17 @@ export default class DayOffForm extends Component {
         this.state = {start: param.dateStart, end: param.dateEnd, employee: param.employee, errorMsg:'', employees: param.employeeList};
     }
 
+    componentDidMount(){
+        //this.createNewRecord('create')
+        this.editMode = true;
+    }
+
     createNewRecord(mode){
         //открывает рядовой сотрудник
         //задача: определить, с какой даты можно планировать и можно ли редактировать даты
         const moment = require('moment');
         if (mode === 'create'){//создается новый
-            if (this.state.eventType.toLowerCase().includes('отпуск')) {
+            if (this.state.eventType == null || this.state.eventType.toLowerCase().includes('отпуск')) {
                 //поля можно редактировать, миним  альная дата + заданное количество дней от сегодня
                 this.editMode = true;
                 let minDate = moment();
@@ -103,13 +108,15 @@ export default class DayOffForm extends Component {
 
     editStartDate(value){
         //если режим редактирования включен - присваиваем измененное с клавиатуры значение, иначе нет
-        if (this.editMode)
+        if (this.editMode){
             this.setState({start:  value});
+        }
     }
 
     editEndDate(value){
-        if (this.editMode)
+        if (this.editMode){
             this.setState({end:  value});
+        }
     }
 
     onChangeType(chosenType){
@@ -152,9 +159,10 @@ export default class DayOffForm extends Component {
                 <div className="p-col-12  p-md-8">
                     <span className="p-float-label" >
                         <InputText id='reasonFld' value={this.state.reason} 
-                            onChange={(reasonText) => this.setState({ reason: reasonText.value })}
+                            onChange={(reasonText) => 
+                                this.setState({ reason: reasonText.target.value })}
                             style={{width: '50%'}} ></InputText>
-                        <label htmlFor="reasonFld">Пояснения сотрудника*</label>
+                        <label htmlFor="reasonFld">Пояснения сотрудника</label>
                     </span>
                 </div>
             </div>

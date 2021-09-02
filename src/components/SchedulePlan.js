@@ -50,6 +50,7 @@ export default class SchedulePlan extends Component {
         this.displayEmployeeInfo = this.displayEmployeeInfo.bind(this);
         this.intervalIsInPast = this.intervalIsInPast.bind(this);
         this.inputSimpleTimes = this.inputSimpleTimes.bind(this);
+        this.clearEnteredShift = this.clearEnteredShift.bind(this);
         this.storage = window.sessionStorage;
     }
 
@@ -130,7 +131,7 @@ export default class SchedulePlan extends Component {
     }
 
     onShiftChange(shft){
-        const s = shft.value;
+        const s = (shft) ? shft.value : null;
         this.setState({chosenShift: s})
     }
 
@@ -227,6 +228,10 @@ export default class SchedulePlan extends Component {
         this.updateCalendar()
     }
 
+    clearEnteredShift(){
+        this.setState({chosenShift: null, timeFrom:null, timeTo:null});
+    }
+
     save(){
         if (this.isDataValid()){
             let selectedDatesFormatted = []
@@ -279,6 +284,8 @@ export default class SchedulePlan extends Component {
     displayEmployeeInfo(){
         if (!this.state.chosenEmployee)
             {return}
+        if (!(AppSets.getUser() && AppSets.getUser().amIhr()))
+            {return}
         let info = this.state.chosenEmployee.shiftLength>0 ? (this.state.chosenEmployee.shiftLength+" ч ") : ""
         info = info + ((this.state.chosenEmployee.daysInWeek>0) ? (", "+this.state.chosenEmployee.daysInWeek+" дней/нед. ") : "");
         info = info + ((this.state.chosenEmployee.shiftLengthOnFriday>0) ? (", в пятницу "+this.state.chosenEmployee.shiftLengthOnFriday+" ч") : "");
@@ -321,30 +328,32 @@ export default class SchedulePlan extends Component {
     }
 
     inputSimpleTimes(){
+        if (!(AppSets.getUser() && AppSets.getUser().amIhr()))
+            {return}
         return(<div className="p-grid">
             <div className="p-field p-col-3 p-md-3">
                 <label htmlFor="simpleTimeFrom">C</label>
                 <InputMask id="simpleTimeFrom"
                     value={this.state.timeFrom} mask="99:99" style={{width:'5em'}}
-                    onChange={(e) => this.setState({timeFrom:e.target.value,})}>
+                    onChange={(e) => this.setState({timeFrom:e.target.value, chosenShift:null})}>
                 </InputMask>
             </div>
             <div className="p-field p-col-2 p-md-2">
                 <label htmlFor="simpleTimeTo">По</label>
                 <InputMask id="simpleTimeTo"
                     value={this.state.timeTo} mask="99:99" style={{width:'5em'}}
-                    onChange={(e) => this.setState({timeTo:e.target.value,})}>
+                    onChange={(e) => this.setState({timeTo:e.target.value, chosenShift:null})}>
                 </InputMask>
             </div>
         </div>);
     }
 
-    displayToolbar(){
-        //если данные не введены, кнопок нет
-        const hasHrRole = AppSets.getUser().amIhr();
+    displayToolbar(hasHrRole=false){
+        //если не выбран сотрудник, подразделение или текущий пользователь не HR - вообще нет разговора о показе кнопок
         if (!(this.state.chosenEmployee && this.state.chosenOrgUnit && hasHrRole)){
             return
         }
+        //выбрана смена или оба времени (приход и уход)
         const leftBar = (<React.Fragment>
                 {(this.state.chosenShift || (this.state.timeFrom && this.state.timeTo)) &&
                 <Button label="Создать" icon="pi pi-check" 
@@ -371,6 +380,8 @@ export default class SchedulePlan extends Component {
             { window.location = "/login" }
         let storedIniDate = this.storage.getItem("initalCalDate");
         let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
+        const amIhr = (AppSets.getUser() && AppSets.getUser().amIhr());
+        const cardTitle = (amIhr) ? "Планирование графика" : "Просмотр графика";
         return <div className="p-grid">
             <Toast ref={(el) => this.messages = el}/>
             <div className="p-col-9">
@@ -394,7 +405,16 @@ export default class SchedulePlan extends Component {
             </div>
             <div className="p-col-3">
                 <div className="card">
-                    <div className="card-title p-text-bold">Планирование графика</div>
+                    <div className="card-title p-text-bold">{cardTitle}</div>
+                    {amIhr && 
+                        <span className="p-float-label" style={{marginBottom: '1em'}}>
+                            <CalendarFld  id="selectedDatesFld" selectionMode="multiple" readOnlyInput showIcon 
+                                dateFormat="dd/mm/yy" locale={'ru'}
+                                value={this.state.selectedDates}
+                                onChange={(dte) => this.setState({selectedDates: dte.value})}/>
+                            <label htmlFor="selectedDatesFld">Даты - если график на отдельные дни</label>
+                        </span>
+                    }
                     <span className="p-float-label" >
                         <AutoComplete id = "orgUnitFld" dropdown
                             value={this.state.chosenOrgUnit} 
@@ -402,13 +422,6 @@ export default class SchedulePlan extends Component {
                             completeMethod={this.searchOrgUnit} field="name" 
                             onChange={(ouInfo) => this.onOrgUnitChoose(ouInfo.value)} />
                         <label htmlFor="orgUnitFld">Подразделение</label>
-                    </span>
-                    <span className="p-float-label" style={{marginTop: '1em'}}>
-                        <Dropdown id="shiftFld" dropdown
-                            value={this.state.chosenShift} 
-                            options={this.state.shifts} optionLabel="no"
-                            onChange={shft => this.onShiftChange(shft)}/>
-                        <label htmlFor="shiftFld">Смена</label>
                     </span>
                     <span className="p-float-label" style={{marginTop: '1em'}}>
                         <AutoComplete id="employeeFld" dropdown
@@ -419,15 +432,21 @@ export default class SchedulePlan extends Component {
                         />
                         <label htmlFor="employeeFld">Сотрудник</label>
                     </span>
-                    <span className="p-float-label" style={{marginTop: '1em'}}>
-                        <CalendarFld  id="selectedDatesFld" selectionMode="multiple" readOnlyInput showIcon 
-                            dateFormat="dd/mm/yy" locale={'ru'}
-                            value={this.state.selectedDates}
-                            onChange={(dte) => this.setState({selectedDates: dte.value})}/>
-                        <label htmlFor="selectedDatesFld">Даты - если график на отдельные дни</label>
-                    </span>
-                    {this.displayToolbar()}
+                    <div className="p-row-6">
+                        <span className="p-float-label" style={{marginTop: '1em'}}>
+                            <Dropdown id="shiftFld" dropdown
+                                value={this.state.chosenShift} 
+                                options={this.state.shifts} optionLabel="no"
+                                onChange={shft => this.onShiftChange(shft)}/>
+                            <label htmlFor="shiftFld">Смена</label>
+                            <Button className='p-button-rounded p-button-info' icon="pi pi-times" style={{margin:'0 0 0 1em'}}
+                                    tooltip="Очистка выбранной смены или интервала времени прихода и ухода"
+                                    onClick={this.clearEnteredShift}/>
+                        </span>
+                        
+                    </div>
                     {(this.state.chosenShift) ? this.displayShiftInfo() : this.inputSimpleTimes()}
+                    {this.displayToolbar(amIhr)}
                     {this.displayEmployeeInfo()}
                 </div>
             </div>            

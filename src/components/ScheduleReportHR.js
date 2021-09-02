@@ -24,14 +24,15 @@ export default class ScheduleReportHR extends React.Component{
         chosenMonth: 4
     }
     
-    constructor(){
-        super();
+    constructor(props){
+        super(props);
         this.messages = [];
         this.dataService = new ScheduleService();
         this.onCalendarChange = this.onCalendarChange.bind(this);
         this.onSellerChange = this.onSellerChange.bind(this);
         this.updateData = this.updateData.bind(this);
         this.updateDaysState = this.updateDaysState.bind(this);
+        this.history = props.history;
     }
 
     updateData(chosenMonth, chosenPersonId){
@@ -61,6 +62,8 @@ export default class ScheduleReportHR extends React.Component{
 
     
     render(){
+        if (!AppSets.getUser())
+            { this.history.push("/login") }
         return(
             <div>
                 <ScheduleFilter 
@@ -414,8 +417,6 @@ class ScheduleFilter extends React.Component{
     }
 
     render(){
-        if (!AppSets.getUser())
-            { window.location = "/login" }
         return(
             <div className = 'p-grid'>
                 <div className = 'p-col-4'>

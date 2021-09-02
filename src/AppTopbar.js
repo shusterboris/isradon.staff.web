@@ -49,7 +49,7 @@ const AppTopbar = (props) => {
 			<div className="layout-topbar-grid">
 				<div className="layout-topbar-grid-column ">
 					<button type="button" className="layout-logo p-link" onClick={() => { window.location = "/#" }}>
-						<img src="/assets/layout/images/isradon-logo-hor.png" alt="logotype"/>
+						<img src="/assets/images/isradon-logo-hor.png" alt="logotype"/>
 					</button>
 				</div>
 

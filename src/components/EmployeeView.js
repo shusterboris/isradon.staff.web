@@ -31,6 +31,8 @@ export default class EmployeeView extends React.Component{
     }
 
     nameBody(rowData){
+        if (rowData.lastName == null)
+            {rowData.lastName=''}
         const theName = (rowData.lastName + ' ' + rowData.firstName).trim();
         return (theName !== '') ? theName : rowData.nickName;
     }

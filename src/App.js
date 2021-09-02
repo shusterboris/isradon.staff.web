@@ -12,6 +12,7 @@ import DayOffForm from './components/DayOffForm';
 import MonthCalendar from './components/MonthCalendar'
 import SchedulePlan from './components/SchedulePlan';
 import PrimeReact from 'primereact/api';
+import {Login} from './components/Login';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
@@ -218,6 +219,7 @@ const App = () => {
 		{path: "/create-schedule", component:EmptyPage},
         {path: "/edit-day:id", component:DayEdit},
         {path: "/data-download", component:MonthScheduleDownload},
+        {path: "/login", component:Login},
 		{path: "/public/" },
     ];
 

@@ -30,12 +30,31 @@ export default class MonthCalendar extends Component{
         this.moment = require('moment');
         this.storage = window.sessionStorage;
         this.filterChecked = true;
+        this.history = props.history;
+        this.storage = window.sessionStorage;
     }
 
     componentDidMount(){
-        this.user = AppSets.user;
         AppSets.getEmployees(this); //employees
         AppSets.getOrgUnitList(this); //orgUnits
+        return;
+        const storedOrgUnit = this.storage.getItem("chosenOrgUnit")
+        const storedEmployee = this.storage.getItem("chosenEmployee")
+        let valuesRestored = false;
+        let ou = null;
+        if (storedOrgUnit != null){
+            ou = JSON.parse(storedOrgUnit)
+            this.setState({chosenOrgUnit: ou});
+            valuesRestored = true;
+        }
+        if (storedEmployee != null){
+            const empl = JSON.parse(storedEmployee);
+            this.setState({chosenEmployee: empl})
+            this.chosenEmployee = empl;
+            valuesRestored = true
+        }
+        if (valuesRestored) 
+            {this.updateData()}
     }
 
     chosenMonthChanged(eventInfo){
@@ -72,12 +91,14 @@ export default class MonthCalendar extends Component{
         this.chosenEmployee = event.value;
         this.setState({chosenPerson: event.value});
         this.updateData()
+        //this.storage.setItem("chosenEmployee", event.value);
     }
 
     onClearChosenPerson(){
         this.chosenEmployee = null;
         this.setState({chosenPerson:null});
         this.updateData();
+        //this.storage.removeItem("chosenEmployee");
     }
 
     updateData(){
@@ -108,6 +129,7 @@ export default class MonthCalendar extends Component{
         this.setState({chosenOrgUnit:ou.value});
         this.getEmployeeList(ou.value);
         this.updateData();
+//        this.storage.setItem("chosenOrgUnit", ou.value);
     }
 
     onCheckFilter(event){
@@ -121,7 +143,7 @@ export default class MonthCalendar extends Component{
             <div className='p-grid'>
                 <div className='p-col-2'>
                     <div className="p-shadow-4 p-text-bold p-highlight " style={{height: '50px', fontSize:'large', color: '#1E88E5'}}>
-                        {this.user && this.user.orgUnit}</div>
+                        {AppSets.getUser() && AppSets.getUser().orgUnit}</div>
                 </div>
                 <div className='p-col-3'>
                     <Dropdown value={this.state.chosenPerson} 
@@ -186,8 +208,9 @@ export default class MonthCalendar extends Component{
     }
 
     render() {
+        const user = AppSets.getUser();
         if (!AppSets.getUser())
-            { window.location = "/login" }
+            { this.history.push("/login") }
         let storedIniDate = this.storage.getItem("initalCalDate");
         let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         return (
@@ -195,7 +218,7 @@ export default class MonthCalendar extends Component{
                 <div className="content-section implementation">
                     <div className="card">
                         <Messages ref={(el) => this.messages = el}></Messages>
-                        {(this.user && this.user.amIhr()) ? this.displayHrHeader() : this.displaySimpleUserHeader()}
+                        {(user && user.amIhr()) ? this.displayHrHeader() : this.displaySimpleUserHeader()}
                         <FullCalendar events={this.state.days} initialDate={iniDate} locale={ruLocale}
                             slotMinTime={AppSets.minStartTime} slotMaxTime={AppSets.maxEndTime} 
                             aspectRatio={2.2}
