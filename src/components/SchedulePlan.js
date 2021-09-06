@@ -13,7 +13,7 @@ import { InputMask } from 'primereact/inputmask';
 import { ru } from '../service/AppSettings';
 import { addLocale } from 'primereact/api';
 import { Button } from 'primereact/button';
-import {Toast} from 'primereact/toast';
+import {Messages} from 'primereact/messages'
 import { Toolbar } from 'primereact/toolbar';
 import Confirmation from './Confirmation';
 import ScheduleCreateProxy from '../entities/ScheduleCreateProxy';
@@ -23,10 +23,11 @@ export default class SchedulePlan extends Component {
     state = {days:[], selectedDates:[],
         chosenOrgUnit: null, orgUnits: [], filteredOrgUnits: [], 
         chosenEmployee: null, employees:[], filteredEmployees: [], 
-        chosenShift: null, shifts: [], timeFrom:null, timeTo:null, showConfirm: false};
+        chosenShift: null, shifts: [], timeFrom:null, timeTo:null, showConfirm: false,
+        wasChanged: false};
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         addLocale('ru', ru); 
         this.dataService = new ScheduleService();
         this.moment = require('moment');
@@ -51,6 +52,7 @@ export default class SchedulePlan extends Component {
         this.intervalIsInPast = this.intervalIsInPast.bind(this);
         this.inputSimpleTimes = this.inputSimpleTimes.bind(this);
         this.clearEnteredShift = this.clearEnteredShift.bind(this);
+        this.history = props.history;
         this.storage = window.sessionStorage;
     }
 
@@ -124,7 +126,7 @@ export default class SchedulePlan extends Component {
     }
 
     onOrgUnitChoose(ouInfo){
-        this.setState({chosenOrgUnit: ouInfo, chosenShift:null});
+        this.setState({chosenOrgUnit: ouInfo, chosenShift:null, wasChanged: true});
         this.dataService.getOrgUnitShifts(ouInfo.id, this);
         this.updateCalendar(ouInfo);
         this.storage.setItem("chosenOrgUnit", JSON.stringify(ouInfo));
@@ -132,7 +134,7 @@ export default class SchedulePlan extends Component {
 
     onShiftChange(shft){
         const s = (shft) ? shft.value : null;
-        this.setState({chosenShift: s})
+        this.setState({chosenShift: s, wasChanged: true})
     }
 
     searchEmployee(event){
@@ -151,7 +153,7 @@ export default class SchedulePlan extends Component {
 
     onEmployeeChoose(empl){
         this.chosenEmployee = empl;
-        this.setState({chosenEmployee: empl});
+        this.setState({chosenEmployee: empl, wasChanged: true});
         this.updateCalendar();
         this.storage.setItem("chosenEmployee", JSON.stringify(empl)); 
     }
@@ -224,19 +226,19 @@ export default class SchedulePlan extends Component {
     }
 
     finalizeCalendarView(){
-        this.setState({selectedDates:null});
+        this.setState({selectedDates:null, wasChanged: false});
         this.updateCalendar()
     }
 
     clearEnteredShift(){
-        this.setState({chosenShift: null, timeFrom:null, timeTo:null});
+        this.setState({chosenShift: null, timeFrom:null, timeTo:null, wasChanged: true});
     }
 
     save(){
         if (this.isDataValid()){
-            let selectedDatesFormatted = []
+            let selectedDatesFormatted = [];
             for (let theDate of this.state.selectedDates){
-                let formDate = this.moment(theDate).format("YYYY-MM-DD HH:mm")
+                let formDate = this.moment(theDate).format("YYYY-MM-DD HH:mm");
                 selectedDatesFormatted.push(formDate);
             }
             const shiftId = this.state.chosenShift ? this.state.chosenShift.id : null;
@@ -355,7 +357,7 @@ export default class SchedulePlan extends Component {
         }
         //выбрана смена или оба времени (приход и уход)
         const leftBar = (<React.Fragment>
-                {(this.state.chosenShift || (this.state.timeFrom && this.state.timeTo)) &&
+                {(this.state.wasChanged && (this.state.chosenShift || (this.state.timeFrom && this.state.timeTo))) &&
                 <Button label="Создать" icon="pi pi-check" 
                     tooltip = "Создать или изменить расписание для выбранного подразделения и сотрудника"
                     onClick={this.save} style={{marginRight: '1em'}}/>
@@ -377,13 +379,16 @@ export default class SchedulePlan extends Component {
 
     render() {
         if (!AppSets.getUser())
-            { window.location = "/login" }
+            { this.history.push("/login")}
+
         let storedIniDate = this.storage.getItem("initalCalDate");
         let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         const amIhr = (AppSets.getUser() && AppSets.getUser().amIhr());
         const cardTitle = (amIhr) ? "Планирование графика" : "Просмотр графика";
         return <div className="p-grid">
-            <Toast ref={(el) => this.messages = el}/>
+            <div className="p-col-12">
+                <Messages ref={(el) => this.messages = el} position="left"/>
+            </div>
             <div className="p-col-9">
                 <div className="card">
                     {this.state.showConfirm && 

@@ -39,6 +39,7 @@ export default class OrgUnitView extends Component {
         this.onCreateShift = this.onCreateShift.bind(this);
         this.onRemoveShift = this.onRemoveShift.bind(this);
         this.displayButtonBar = this.displayButtonBar.bind(this);
+        this.history = props.history;
     }
 
     componentDidMount(){
@@ -223,7 +224,7 @@ export default class OrgUnitView extends Component {
 
     render() {
         if (!AppSets.getUser())
-            { window.location = "/login" }
+            { this.history.push("/login")} 
 
         return <div className="content-section implementation">
             <div className="p-card">

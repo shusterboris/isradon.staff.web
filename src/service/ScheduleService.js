@@ -30,6 +30,7 @@ export default class ScheduleService {
             .then(data => {
                 if (_this){
                     _this.setState({ days: data });
+                    this.updateSummary(data, _this);
                 }
                 return data;
             })
@@ -42,6 +43,102 @@ export default class ScheduleService {
                 }
             _this.messages.show({ severity: 'warn', summary: errMsg});
             });
+    }
+
+    strTimeToMinutes(str){
+        if (!str){
+            return 0;
+        }
+        let mult = 1
+        if (str.startsWith("-")){
+            mult = -1
+            str = str.substring(1);
+        }
+        let parts = str.split(":");
+        return (60* parseInt(parts[0]) + parseInt(parts[1])) * mult;
+    }
+
+    minutesToTimeStr(minutes){
+        let h = Math.trunc(minutes / 60);
+        let hh="";
+        if (h < 1){
+            hh = "00"
+        }else if (h < 10){
+            hh = "0" + h
+        }else{
+            hh = h;
+        }
+        let m = Math.trunc(minutes - h * 60);
+        let mm = "";
+        if (m === 0){
+            mm = "00"
+        }else if (m < 10){
+            mm = "0" + m;
+        }else{
+            mm = m;
+        }
+        return hh+":"+mm
+    }
+
+    updateSummary(rows,_this){
+        if (!rows)
+            {return}
+        let totalDays = 0; //отработано дней
+        let difPlanMinutes = 0; //рабочего времени план, минуты
+        let difFactMinutes = 0; //рабочего времени факт, минуты
+        let latenessCount = 0; // количество опозданий
+        let latenessTime = 0; // время опозданий
+        let overtimeCount = 0; // количество опозданий
+        let overtimeTime = 0; // время опозданий
+        for(let i=0; i<rows.length;i++){
+            let data = rows[i];
+            if (data.rowType === 0 && data.comingFact){
+                totalDays += 1
+                difPlanMinutes += data.difPlanMinutes;
+                difFactMinutes += data.workHours;            
+                if (data.totalDif){
+                    //считаем количество опозданий. 
+                    if (data.comingDif !== ""){
+                        //есть отклонение по приходу
+                        let cur = this.strTimeToMinutes(data.comingDif);
+                        if (cur > 0){//и оно больше 0 - это переработка
+                            overtimeCount++;
+                        }else{// отрицательное отклонение - опоздание
+                            latenessCount++;
+                        }
+                    }
+                    //аналогично количество опозданий и овертаймов по уходу
+                    if (data.leavingDif !== ""){
+                        let cur = this.strTimeToMinutes(data.leavingDif);
+                        if (cur > 0){
+                            overtimeCount++;
+                        }else{
+                            latenessCount++;
+                        }
+                    }
+                    //а суммарное время опоздания переработки считаем по результатам дня
+                    if (data.totalDif !== ""){
+                        let cur = this.strTimeToMinutes(data.totalDif)
+                        if (cur > 0){
+                            overtimeTime += cur;                        
+                        }else{
+                            latenessTime -= cur;
+                        }
+                    }
+                }
+            }
+        }
+        let summary = "";
+        if (totalDays !== 0){
+            summary = "Отработано, дней:"+totalDays+", часов:"+this.minutesToTimeStr(difFactMinutes)+", по плану:"+this.minutesToTimeStr(difPlanMinutes)
+            if (latenessTime !== 0){
+                summary += (". Опоздания: " + latenessCount +" раз, "+ this.minutesToTimeStr(latenessTime) + " час");    
+            }
+            if (overtimeCount !== 0){
+                summary += (". Переработка: " + overtimeCount +" раз, "+ this.minutesToTimeStr(overtimeTime) + " час");    
+            }
+        }
+        _this.setState({summary: summary});
     }
 
     getWorkCalendar(start, end, onlyAbsense, orgUnit, person, _this){
@@ -253,6 +350,26 @@ export default class ScheduleService {
             })
     }
 
+    acceptJobTimeByPlan(selected, _this){
+        const server = AppSets.host;
+        const query = "/schedule/acceptTimeFromPlan/" + selected.join(",");
+        const url = server + query;
+        axios.get(url)
+            .then(res => res.data)
+            .then(data => {
+                if (_this && data){
+                    const month = new Date(selected.comingPlan).getMonth();
+                    _this.props.updateData(month, selected.employeeId);        
+                    _this.messages.show({ severity: 'success', summary: 'Выполнено успешно'});
+                }
+            })
+            .catch(err => {
+                const errMsg = err.toString().includes(': Network') ? 
+                    'Подтверждение прихода или ухода. Сервер не отвечает.' :  'Не удалось записать изменение в графике прихода и ухода'
+                _this.messages.show({ severity: 'warn', summary: errMsg})
+            });
+    }
+
     acceptJobTime(selected, mode, _this){
         const server = AppSets.host;
         const query = "/schedule/acceptTime/" + selected.id + "/" + mode + "/" + selected.orgUnitName;
@@ -377,6 +494,21 @@ export default class ScheduleService {
             );
 
     }
+
+    async getFiredEmployees(_this){
+        return await axios.get(AppSets.host+'/employee/inactive/list')
+            .then(
+                res => res.data)
+            .then(data => {
+                if (_this){
+                    _this.setState({ employees: data });
+                }
+                return data;
+            }).catch(err=>{
+                AppSets.processRequestsCatch(err, "Список сотрудников", _this.messages, true)
+            });
+    }
+
 
     getSellers(){
         let employees = AppSets.getEmployees();

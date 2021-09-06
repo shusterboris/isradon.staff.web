@@ -27,6 +27,7 @@ export class DayEdit extends Component {
         this.onDeletePressed = this.onDeletePressed.bind(this);
         this.isDataValid = this.isDataValid.bind(this);
         this.moment = require('moment');
+        this.history = props.history;
     }
 
     componentDidMount(){
@@ -208,7 +209,7 @@ export class DayEdit extends Component {
 
     render() {
         if (!AppSets.getUser())
-            { window.location = "/login" }
+            { this.history.push("/login")}
 
         return <div className="card">
             <Messages ref={(el) => this.messages = el}/>

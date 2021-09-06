@@ -34,6 +34,8 @@ export default class EmployeeCard extends Component {
         this.onSavePressed = this.onSavePressed.bind(this);
         this.goBack = this.goBack.bind(this);
         this.onWorkStatusChange = this.onWorkStatusChange.bind(this);
+        this.history = props.history;
+        this.moment = require('moment');
     }
 
     componentDidMount(){
@@ -60,7 +62,10 @@ export default class EmployeeCard extends Component {
     initiateFields(data){
         this.employee = data;
         let fldPhone = (data.phone) ? data.phone.slice(-13) : '';
-        let fldBirthday = (data.birthday) ? data.birthday : '';
+        let fldBirthday = null;
+        if (data.birthday){
+            fldBirthday = this.moment(data.birthday,"yyyy-MM-DD").format("DD/MM/yyyy")
+        }
         this.orgUnitName = data.orgUnit;
         const found = this.state.orgUnits.find(ou => ou.name === this.orgUnitName)
         this.setState({lastName: data.lastName, firstName: data.firstName, working: data.working,
@@ -103,8 +108,7 @@ export default class EmployeeCard extends Component {
 
     render() {
         if (!AppSets.getUser())
-            { window.location = "/login" }
-
+            { this.history.push("/login")}
         return<div> 
             <Card title="Карточка сотрудника" >
             <Messages ref={(m) => this.messages = m}/>

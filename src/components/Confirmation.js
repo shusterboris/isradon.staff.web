@@ -10,7 +10,7 @@ export default class Confirmation extends Component{
         this.header = props.header;
         this.accept = props.accept ? props.accept : this.dummyOk;
         this.body = props.body;
-        this.context = props.context;
+        this.parentContext = props.parentContext;
         this.visibility = true;
         this.onHide = this.onHide.bind(this);
         this.reject = props.reject;

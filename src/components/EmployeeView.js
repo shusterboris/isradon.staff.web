@@ -2,6 +2,7 @@ import React from 'react';
 import {DataTable} from 'primereact/datatable';
 import {Column} from "primereact/column";
 import {Button} from 'primereact/button';
+import ScheduleService from '../service/ScheduleService';
 import {Messages} from 'primereact/messages';
 import AppSets from '../service/AppSettings';
 
@@ -16,11 +17,19 @@ export default class EmployeeView extends React.Component{
         super(props);
         this.actionBodyTemplate = this.actionBodyTemplate.bind(this);
         this.nameBody = this.nameBody.bind(this);
+        this.history = props.history;
+        this.dataService = new ScheduleService();
     }
 
 
     componentDidMount() {
-        AppSets.getEmployees(this);
+        if (this.props.location.pathname !== '/employees-fired'){
+            //показать работающих
+            AppSets.getEmployees(this);
+        }else{
+            //показать уволенных
+            this.dataService.getFiredEmployees(this);
+        }
         AppSets.getOrgUnitList(this)
     }
 
@@ -50,7 +59,7 @@ export default class EmployeeView extends React.Component{
 
     render(){
         if (!AppSets.getUser())
-            { window.location = "/login" }        
+            { this.history.push("/login")}        
         return (
             <div className = 'p-grid'>
                 <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}} />

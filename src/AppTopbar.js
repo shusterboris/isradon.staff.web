@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import AppMenu from './AppMenu';
 import { InputText } from 'primereact/inputtext';
 import { Ripple } from 'primereact/ripple';
+import AppSets from './service/AppSettings'
 
 const AppTopbar = (props) => {
 
@@ -57,7 +58,9 @@ const AppTopbar = (props) => {
 					<AppMenu model={props.model} horizontal={props.horizontal} menuHoverActive={props.menuHoverActive} isMobile={props.isMobile}
 						onMenuItemClick={props.onMenuItemClick} onRootMenuItemClick={props.onRootMenuItemClick} onSidebarClick={props.onSidebarClick} />
 				</div>
-
+				<div className="layout-topbar-grid-column layout-topbar-grid-column-fixed">
+					{AppSets.getUser() && AppSets.getUser().employeeName}
+				</div>
 
 				<div className="layout-topbar-grid-column layout-topbar-grid-column-fixed">
 					<button type="button" className="p-link profile-menu-button" onClick={props.onTopbarUserMenuButtonClick}>

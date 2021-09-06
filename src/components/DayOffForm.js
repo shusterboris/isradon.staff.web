@@ -16,6 +16,7 @@ export default class DayOffForm extends Component {
         super(props);
         this.dataService = new ScheduleService();
         this.user = AppSets.user;
+        this.history = props.history;
         this.editStartDate = this.editStartDate.bind(this);
         this.editEndDate = this.editEndDate.bind(this);
         this.isDataValid = this.isDataValid.bind(this);
@@ -130,8 +131,7 @@ export default class DayOffForm extends Component {
 
     render() {
         if (!AppSets.getUser())
-            { window.location = "/login" }
-
+        { this.history.push("/login")}
         return(
         <div className="card" >
             <Messages ref={(msgE) => this.messages = msgE} style={{marginBottom: '1em'}}/>

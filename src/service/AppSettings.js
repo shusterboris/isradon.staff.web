@@ -100,6 +100,11 @@ export default class AppSets{
         data.orgUnit = orgUnitId;
         return axios.post(AppSets.host+'/employee/save', data)
             .then(() => {
+                if (data.birtday){
+                    const classic = data.birtday;
+                    const birthday = this.moment(classic,"DD/MM/yyyy").format("yyyy-MM-DD")
+                    data.birthday = birthday;
+                }
                 _this.messages.show({severity:'success', summary:'Успешно сохранено'});
                 _this.goBack();
             })

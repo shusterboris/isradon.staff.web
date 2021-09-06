@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Route, useLocation, withRouter } from 'react-router-dom';
 import App from './App';
-import {Login} from './components/Login';
 import {Error} from './pages/Error';
 import { NotFound } from './pages/NotFound';
 import { Access } from './pages/Access';

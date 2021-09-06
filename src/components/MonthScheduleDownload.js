@@ -20,6 +20,7 @@ export default class MonthScheduleDownload extends Component{
         this.onChangeCalendar = this.onChangeCalendar.bind(this);
         this.sendQuery = this.sendQuery.bind(this);
         this.downloadFile = this.downloadFile.bind(this);
+        this.history = props.history;
         this.moment = require('moment');
         addLocale('ru', ru);  
     }
@@ -116,6 +117,8 @@ export default class MonthScheduleDownload extends Component{
     }
 
     render(){
+        if (!AppSets.getUser())
+            { this.history.push("/login")}
         return (<div className="card" style={{width:'50vw'}}>
             <Toast ref={(el) => this.messages = el } position="top-left"/>
             <div className="card-title p-text-bold">Выгрузка данных об отработанном времени</div>

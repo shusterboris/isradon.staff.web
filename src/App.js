@@ -50,6 +50,7 @@ const App = () => {
         {label: 'Настройки', icon: 'pi pi-cog', 
             items: [
                 {label: 'Сотрудники', icon: 'pi pi-user-edit', to: '/employees-all'},
+                {label: 'Бывшие сотрудники', icon: 'pi pi-user-minus', to: '/employees-fired'},
                 {label: 'Подразделения', icon: 'pi pi-home', to: '/orgunit-list'},
             ]
         },
@@ -211,6 +212,7 @@ const App = () => {
 		{path: "/shed-fact", component: EmptyPage},
 		{path: "/app-settings", component: EmptyPage},
 		{path: "/employees-all", component: EmployeeView},
+        {path: "/employees-fired", component: EmployeeView},
 		{path: "/employee-edit", component:EmployeeCard},
 		{path: "/employee-edit:id", component:EmployeeCard},
 		{path: "/orgunit-list", component:OrgUnitView},
