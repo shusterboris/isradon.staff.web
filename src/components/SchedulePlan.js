@@ -416,7 +416,7 @@ export default class SchedulePlan extends Component {
                             <CalendarFld  id="selectedDatesFld" selectionMode="multiple" readOnlyInput showIcon 
                                 dateFormat="dd/mm/yy" locale={'ru'}
                                 value={this.state.selectedDates}
-                                onChange={(dte) => this.setState({selectedDates: dte.value})}/>
+                                onChange={(dte) => this.setState({selectedDates: dte.value, wasChanged: true})}/>
                             <label htmlFor="selectedDatesFld">Даты - если график на отдельные дни</label>
                         </span>
                     }

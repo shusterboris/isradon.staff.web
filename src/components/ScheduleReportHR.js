@@ -14,7 +14,6 @@ import classNames from 'classnames';
 import './ScheduleReport.css'
 import { ru } from '../service/AppSettings';
 import { addLocale } from 'primereact/api';
-import Confirmation from './Confirmation';
 
 export default class ScheduleReportHR extends React.Component{
     state = {
@@ -88,7 +87,6 @@ export default class ScheduleReportHR extends React.Component{
 }
 
 class ScheduleResultTable extends React.Component{
-    state = {showConfirm: false};
 
     constructor(props){
         super(props);
@@ -114,9 +112,6 @@ class ScheduleResultTable extends React.Component{
         this.inputNotesEditor = this.inputNotesEditor.bind(this);
         this.onNoteSubmit = this.onNoteSubmit.bind(this);
         this.actionBodyReason = this.actionBodyReason.bind(this);
-        this.hideConfirmationDlg = this.hideConfirmationDlg.bind(this);
-        this.acceptAll = this.acceptAll.bind(this);
-        this.acceptByPlan = this.acceptByPlan.bind(this);
         this.contextMenuMode = null;
     }
 
@@ -154,48 +149,22 @@ class ScheduleResultTable extends React.Component{
         this.dataService.changeRowType(rowType, this);
     }
 
-
-    acceptByPlan(){
-        this.dataService.acceptJobTime(this.state.selectedRow, this.contextMenuMode, this);
-        this.setState({showConfirm: false});
-        this.contextMenuMode = null;
-    }
-    
-    acceptAll(){
-        let rowsToChange = [];
-        for(let row of this.state.days){
-            if (row.totalDif === ""){
-                rowsToChange.push(row.id)
-            }
-        }
-        if (rowsToChange.length === 0){
-            this.messages({severity:'warn',summary:'В выбранном периоде записей, удовлетворяющих условию'})
-        }else{
-            this.dataService.acceptJobTimeByPlan(rowsToChange, this);
-        }
-        this.setState({showConfirm: false});
-        this.contextMenuMode = null;
-    }
-
-    hideConfirmationDlg(){
-        this.setState({showConfirm: false});
-        this.contextMenuMode = null;
-    }
-
     acceptTime(mode){
         if (mode === 0){
-            this.confirmHeader='Требуется подтверждение!';
-            this.confirmBody='Подтвердить ВСЕ записи, где фактическое время не отличается от плана более, чем на 5 минут?'; 
-            this.confirmAccept=this.acceptAll;
-            this.confirmReject=this.hideConfirmationDlg;
-            this.setState({showConfirm: true});    
-        }else if (mode > 9){
-            this.contextMenuMode = mode;
-            this.confirmHeader='Необычное действие!';
-            this.confirmBody='Утвердить для данной даты фактическое время на основании ПЛАНА, а не факта?'; 
-            this.confirmAccept=this.acceptByPlan;
-            this.confirmReject=this.hideConfirmationDlg;
-            this.setState({showConfirm: true});    
+            if (!this.props.days || this.props.days.length === 0){
+                return;
+            }
+            let idsList="";
+            for(let row of this.props.days){
+                if (row.comingDif === "" && row.leavingDif === ""){
+                    idsList = (idsList !== "") ? (idsList+","+row.id) : row.id;
+                }
+            }
+            if (idsList === ""){
+                this.messages.show({severity: 'info', summary:'В выбранном периоде нет записей, которые можно так подтвердить'})
+                return;
+            }
+            this.dataService.acceptJobTimeByPlan(idsList, this.props.days[0].comingPlan, this.props.days[0].employeeId ,this);            
         }else{
             this.dataService.acceptJobTime(this.state.selectedRow, mode, this);
         }
@@ -388,11 +357,6 @@ class ScheduleResultTable extends React.Component{
             <div className = 'p-grid'>
                 <div className = 'p-col-12 datatable-style-sched-repo'>
                     <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}}/>
-                    {(this.state.showConfirm === true) && 
-                        <Confirmation visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmBody}
-                            accept={this.confirmAccept} reject={this.confirmReject} messages={this.messages} parentContext={this}/>
-                    }
-
                     <ContextMenu model={this.rowMenuModel} ref={el => this.cm = el} onHide={() => this.setState({ selectedRow: null })}/>
                     <DataTable value={this.props.days} rowClassName={this.getRowBackgroundClassName} 
                         headerColumnGroup={header}

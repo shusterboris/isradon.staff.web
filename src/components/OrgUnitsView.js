@@ -10,6 +10,8 @@ import {Dropdown} from 'primereact/dropdown'
 import ScheduleService from '../service/ScheduleService';
 import { Messages } from 'primereact/messages';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import {Checkbox} from 'primereact/checkbox'
+import Confirmation from './Confirmation'
 
 export default class OrgUnitView extends Component {
     state = {
@@ -22,7 +24,7 @@ export default class OrgUnitView extends Component {
         chosenShift: null,
         shiftNo: '',
         start1:'', end1:'', start2:'', end2:'', start3:'', end3:'', start4:'', end4:'', start5:'', end5:'', start6:'', end6:'', start7:'', end7:'', notes:'',
-        waitPlease: true
+        waitPlease: true, showConfirm: false, showDeletedUnits: false
     }
 
     constructor(props) {
@@ -39,6 +41,15 @@ export default class OrgUnitView extends Component {
         this.onCreateShift = this.onCreateShift.bind(this);
         this.onRemoveShift = this.onRemoveShift.bind(this);
         this.displayButtonBar = this.displayButtonBar.bind(this);
+        this.onPressRemoveShift = this.onPressRemoveShift.bind(this);
+        this.onRemoveShift = this.onRemoveShift.bind(this);
+        this.hideConfirmDlg = this.hideConfirmDlg.bind(this);
+        this.afterShiftRemoving = this.afterShiftRemoving.bind(this);
+        this.actionBodyTemplate = this.actionBodyTemplate.bind(this);
+        this.onRemoveOrgUnitPressed = this.onRemoveOrgUnitPressed.bind(this);
+        this.onRemoveOrgUnit = this.onRemoveOrgUnit.bind(this);
+        this.afterOrgUnitRemoving = this.afterOrgUnitRemoving.bind(this);
+        this.checkShowDeleted = this.checkShowDeleted.bind(this);
         this.history = props.history;
     }
 
@@ -48,9 +59,13 @@ export default class OrgUnitView extends Component {
 
     onRowSelect(val){
         //выбрано новое подразделение в таблице, берем список смен
-        this.setState({selectedRow: val, orgUnitName: val.name,start1: '', start2: '', start3: '', start4: '', start5: '', start6: '', start7: '',
-            end1: '', end2: '', end3: '', end4: '', end5: '', end6: '', end7: '',shiftChanged: false, orgUnitChanged: false});
-        this.dataService.getOrgUnitShifts(val.id, this);
+        if (!val.deleted){
+            this.setState({selectedRow: val, orgUnitName: val.name,start1: '', start2: '', start3: '', start4: '', start5: '', start6: '', start7: '',
+                end1: '', end2: '', end3: '', end4: '', end5: '', end6: '', end7: '',shiftChanged: false, orgUnitChanged: false});
+            this.dataService.getOrgUnitShifts(val.id, this);
+        }else{
+            this.messages.show({severity: 'warn', summary: 'Нельзя выбирать удаленное подразделение!'})
+        }
     }
 
     createTime(timeStr){
@@ -165,6 +180,28 @@ export default class OrgUnitView extends Component {
         }
     }
 
+    onPressRemoveShift(){
+        this.confirmHeader = "Подтвердите удаление!"
+        this.confirmMessage = "Удалить из базы данных смену, которая сейчас отображается на экране?"
+        this.confirmAccept = this.onRemoveShift;
+        this.confirmReject = this.hideConfirmDlg;
+        this.setState({showConfirm: true});
+    }
+
+    onRemoveShift(){
+        this.dataService.scheduleShiftRemove(this, this.afterShiftRemoving);
+    }
+
+    afterShiftRemoving(){
+        this.setState({chosenShift: null, showConfirm: false});
+        this.onRowSelect(this.state.selectedRow);
+        this.messages.show({severity:'success', summary:'Информация о смене удалена'});
+    }
+
+    hideConfirmDlg(){
+        this.setState({showConfirm: false});
+    }
+
     onChooseOrgUnitShift(v){
         const found = this.state.shifts.filter(item=>item.no === v);
         if (found.length > 0){
@@ -203,7 +240,7 @@ export default class OrgUnitView extends Component {
             {this.state.shiftNo &&
                 <Button id="btnShiftDelete" label="Удалить" icon="pi pi-thumbs-down" className="p-button-danger"
                         style={{marginLeft: '1em'}} 
-                        onClick={this.onConfirmRemoveShift}/>
+                        onClick={this.onPressRemoveShift}/>
             }
         </React.Fragment>);    
         return <div>
@@ -211,32 +248,64 @@ export default class OrgUnitView extends Component {
         </div>
     }
 
-    onRemoveShift(){
-
+    afterOrgUnitRemoving(){
+        AppSets.getOrgUnitList(this);
+        this.hideConfirmDlg()
     }
 
+    onRemoveOrgUnit(){
+        this.dataService.orgUnitRemove(this.orgUnitToRemove, this, this.afterOrgUnitRemoving);
+    }
 
-    actionBodyTemplate() {
-        return (
-            <Button type="button" icon="pi pi-times" className="p-button-secondary"></Button>
-        );
+    onRemoveOrgUnitPressed(rowData){
+        this.confirmHeader = " Удалить информацию?"
+        this.confirmMessage = "Удалить из отдел " + rowData.name + " из базы данных?"
+        this.confirmAccept = this.onRemoveOrgUnit;
+        this.confirmReject = this.hideConfirmDlg;
+        this.orgUnitToRemove = rowData.id;
+        this.setState({showConfirm: true});
+    }
+
+    actionBodyTemplate(rowData) {
+        if (!rowData.deleted){
+            return (
+                <Button type="button" icon="pi pi-times" className="p-button-secondary"
+                    tooltip="Удалить это подразделение из базы данных"
+                    onClick={()=>this.onRemoveOrgUnitPressed(rowData)}>
+                </Button>
+            );
+        }else{
+            return(<i className="pi pi-trash p-ml-4"></i>)
+        }
+    }
+
+    checkShowDeleted(chkEvent){
+        this.setState({showDeletedUnits: chkEvent.checked});
+        AppSets.getOrgUnitList(this, chkEvent.checked)
+    }
+
+    renderOuHeader(){
+        return(
+            <Checkbox checked={this.state.showDeletedUnits} onChange={(chkEvent)=>this.checkShowDeleted(chkEvent)}/>
+        )
     }
 
     render() {
         if (!AppSets.getUser())
             { this.history.push("/login")} 
 
+        let chrHeader = this.renderOuHeader();
         return <div className="content-section implementation">
             <div className="p-card">
                 <Messages ref={(el) => this.messages = el}/>
             <div className='p-fluid p-grid'>
                 <div className="p-col-12 p-md-4">
-                    <DataTable value={this.state.orgUnits} scrollable emptyMessage='Нет сведений'
+                    <DataTable value={this.state.orgUnits} scrollable emptyMessage='Нет сведений'                                
                                 selectionMode="single" selection={this.state.selectedRow} dataKey="id"
                                 onSelectionChange={e => {
                                     this.onRowSelect(e.value)}} >
-                        <Column header='Список подразделений' field='name' style={{margin: '1em 0 0 0' }}/>
-                        <Column body={this.actionBodyTemplate} 
+                        <Column field='name' style={{margin: '1em 0 0 0' }} header="Список подразделений"/>
+                        <Column body={this.actionBodyTemplate} header={chrHeader}
                             headerStyle={{width: '4.5em', textAlign: 'center'}} 
                             bodyStyle={{padding: '2px 0 0 0'}} />
 
@@ -274,6 +343,10 @@ export default class OrgUnitView extends Component {
                         <Button id="btnCreateShift" icon="pi pi-plus" className="p-button-rounded" style={{margin: '0 0 0 1em'}}
                             onClick={this.onCreateShift} tooltip='Нажмите для создания новой смены'/>
                     </div>
+                    {this.state.showConfirm && 
+                        <Confirmation header={this.confirmHeader} body={this.confirmMessage} 
+                            accept={this.confirmAccept} reject={this.confirmReject} visibility={true} parentContext={this}> 
+                    </Confirmation>}
                     <div className="p-grid form-group">
                         <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Вс</div>
                         <InputMask id='dow0Start' mask='99:99'
@@ -369,7 +442,6 @@ export default class OrgUnitView extends Component {
                                 value={this.state.notes}
                                 style={{width: '70%'}}
                                 onChange={(e) => this.setState({notes: e.target.value, shiftChanged: true})}/>
-
                         </div>
 
                         <div className='p-grid ' style={{margin: '1.5em 1em 1em 1em'}}>

@@ -350,16 +350,42 @@ export default class ScheduleService {
             })
     }
 
-    acceptJobTimeByPlan(selected, _this){
+    orgUnitRemove(id, _this, action){
         const server = AppSets.host;
-        const query = "/schedule/acceptTimeFromPlan/" + selected.join(",");
+        const query = "/dictionary/orgunit/delete/"+id;
+        const url = server + query;
+        axios.delete(url, {timeout: AppSets.timeout})
+            .then(()=>{
+                action();
+            })
+            .catch(err => {
+                this.processRequestsCatch(err, 'Удаление подразделения.', _this.messages);
+            })
+    }
+
+    scheduleShiftRemove(_this, action){
+        const server = AppSets.host;
+        const query = "/schedule/shift/remove/"+_this.state.chosenShift.id;
+        const url = server + query;
+        axios.delete(url, {timeout: AppSets.timeout})
+            .then(()=>{
+                action();
+            })
+            .catch(err => {
+                this.processRequestsCatch(err, 'Удаление смены.', _this.messages);
+            })
+    }
+
+    acceptJobTimeByPlan(ids, startDate, employeeId, _this){
+        const server = AppSets.host;
+        const month = new Date(startDate).getMonth();
+        const query = "/schedule/acceptTimeMonth/" + ids;
         const url = server + query;
         axios.get(url)
             .then(res => res.data)
             .then(data => {
                 if (_this && data){
-                    const month = new Date(selected.comingPlan).getMonth();
-                    _this.props.updateData(month, selected.employeeId);        
+                    _this.props.updateData(month, employeeId);        
                     _this.messages.show({ severity: 'success', summary: 'Выполнено успешно'});
                 }
             })

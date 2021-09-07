@@ -70,8 +70,9 @@ export default class AppSets{
     }
 
 
-    static getOrgUnitList(_this) {
-        return axios.get(AppSets.host+'/dictionary/orgunit/list')
+    static getOrgUnitList(_this, includeDeleted = false) {
+        let query = (!includeDeleted) ? '/dictionary/orgunit/list' : '/dictionary/orgunit/listAll'
+        return axios.get(AppSets.host + query)
             .then(
                 res => res.data)
             .then(data => {
