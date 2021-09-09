@@ -19,6 +19,7 @@ import 'primeflex/primeflex.css';
 import './App.scss';
 import { DayEdit } from './components/DayEdit';
 import MonthScheduleDownload from './components/MonthScheduleDownload';
+import TestPage from './components/TestPage'
 
 const App = () => {
 
@@ -222,6 +223,7 @@ const App = () => {
         {path: "/edit-day:id", component:DayEdit},
         {path: "/data-download", component:MonthScheduleDownload},
         {path: "/login", component:Login},
+        {path: "/test", component:TestPage},
 		{path: "/public/" },
     ];
 
