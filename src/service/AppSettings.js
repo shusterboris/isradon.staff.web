@@ -97,8 +97,9 @@ export default class AppSets{
     }
 
     static saveEmployee(data, _this){
-        const orgUnitId = data.orgUnit.id;
-        data.orgUnit = orgUnitId;
+        if (data.orgUnit){
+            data.orgUnit = data.orgUnit.id;
+        }
         return axios.post(AppSets.host+'/employee/save', data)
             .then(() => {
                 if (data.birtday){
@@ -155,8 +156,9 @@ export default class AppSets{
     }
 }
 
-export const row_types = [{name: 'Работа', id: 0}, {name: 'Отпуск', id: 2}, {name: 'Неоплачиваемый отпуск', id: 3},
-                            {name: 'Больничный', id: 4}, {name: 'Прогул', id: 5}]
+export const row_types = [{name: 'Работа', id: 0, code: 'ORDINAL'}, {name: 'Праздник', id: 1, code: 'HOLIDAY'}, 
+    {name: 'Отпуск', id: 2, code: 'REST'},  {name: 'Неоплачиваемый отпуск', id: 3, code: 'DAY_OFF'}, 
+    {name: 'Больничный', id: 4, code: 'SEAK_LEAVE'}, {name: 'Прогул', id: 5,code: 'HOOKY'}]
 
 export const ru = {
     firstDayOfWeek: 0,
@@ -168,3 +170,4 @@ export const ru = {
     today: "Сегодня",
     clear: "Очистить"
 }
+

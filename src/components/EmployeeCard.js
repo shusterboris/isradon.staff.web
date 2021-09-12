@@ -9,6 +9,7 @@ import axios from 'axios';
 import { AutoComplete } from 'primereact/autocomplete';
 import ScheduleService from '../service/ScheduleService';
 import { Messages } from 'primereact/messages';
+import { FileUpload } from 'primereact/fileupload';
 
 export default class EmployeeCard extends Component {
     state = {
@@ -20,7 +21,8 @@ export default class EmployeeCard extends Component {
         filteredOrgUnits:[],
         filteredJobTitles:[],
         firstName:'', lastName:'',nickName:'',
-        phone:'',email:'',birthday:'', shiftLength:8, daysInWeek:5, shiftLengthOnFriday:0, addConditions:''
+        phone:'',email:'',birthday:'', shiftLength:8, daysInWeek:5, shiftLengthOnFriday:0, addConditions:'',
+        photoFile: null, photoData: null
     }
     
     constructor(props) {
@@ -34,6 +36,8 @@ export default class EmployeeCard extends Component {
         this.onSavePressed = this.onSavePressed.bind(this);
         this.goBack = this.goBack.bind(this);
         this.onWorkStatusChange = this.onWorkStatusChange.bind(this);
+        this.uploadEmployeePhoto = this.uploadEmployeePhoto.bind(this);
+        this.uploadHandler = this.uploadHandler.bind(this);
         this.history = props.history;
         this.moment = require('moment');
     }
@@ -53,6 +57,7 @@ export default class EmployeeCard extends Component {
             axios.get(AppSets.host+'/employee/byId/'+id)
             .then(res => {
                 this.initiateFields(res.data);
+                this.openPhoto();
             })
             .catch(error => 
                 this.messages.show({ severity: 'error', summary: "Не удается получить данные о пользователе", sticky: true}));
@@ -71,7 +76,28 @@ export default class EmployeeCard extends Component {
         this.setState({lastName: data.lastName, firstName: data.firstName, working: data.working,
             jobTitle:data.jobTitle, phone: fldPhone, orgUnit: found, addConditions: data.addConditions,
             email: data.email, birthday: fldBirthday, id:data.id, shiftLength: data.shiftLength, 
-            shiftLengthOnFriday: data.shiftLengthOnFriday,  daysInWeek: data.daysInWeek}); 
+            shiftLengthOnFriday: data.shiftLengthOnFriday,  daysInWeek: data.daysInWeek, photoFile: data.photoFile,
+            photoData: null
+        }); 
+    }
+
+    openPhoto(){
+        if (!this.state.photoFile)
+            {return}
+        const query = AppSets.host+'/files/getImageByName/'+this.state.photoFile;
+        axios.get(query, { responseType: 'arraybuffer' },)
+        .then(response => {
+            const base64 = btoa(
+                new Uint8Array(response.data).reduce(
+                  (data, byte) => data + String.fromCharCode(byte),
+                  '',
+                ),
+              );
+            this.setState({photoData: "data:;base64," + base64})
+        })
+        .catch(err=>
+            console.log(err)
+        )
     }
 
     filterOrgUnit(event){
@@ -106,6 +132,28 @@ export default class EmployeeCard extends Component {
         this.setState({working: event.checked, wasChanged: true});
     }
 
+    uploadEmployeePhoto(file, _this){
+        const config = {headers: { 'Content-Type': 'image/png', timeout: AppSets.timeout }}
+        axios.post(AppSets.host + '/files/image/save', file, config)
+            .then(res => {
+                _this.setState({photoFile: res.data});
+                AppSets.saveEmployee(_this.state, _this);
+            })
+            .catch(err=>{
+                this.dataService.processRequestsCatch(err, "Загрузка фото сотрудника", this.messages, true);
+            });
+            
+    }       
+
+    uploadHandler(files){
+        const file = files.files.shift();
+        const fileReader = new FileReader();
+        fileReader.onload = (e) => {
+            this.uploadEmployeePhoto(e.target.result, this);
+        };
+        fileReader.readAsDataURL(file);
+    }
+
     render() {
         if (!AppSets.getUser())
             { this.history.push("/login")}
@@ -114,14 +162,23 @@ export default class EmployeeCard extends Component {
             <Messages ref={(m) => this.messages = m}/>
                 <div className="p-grid">
                     <div className = 'p-col-fixed' style={{ width: '260px'}}>
-                        <img src={'/assets/images/personal.png'} 
-                            onError={(e) => e.target.src='https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png'} alt='Фото'></img>
                         <div className="p-field-checkbox">   
                             <Checkbox inputId="isWorkingFld" value={this.state.working} 
                                 onChange={chk => this.onWorkStatusChange(chk)} 
                                 checked={this.state.working === true}></Checkbox>
                             <label htmlFor="isWorkingFld" className="p-checkbox-label">Работает</label>
                         </div>
+                        {!this.state.photoData ? 
+                            <img src={'/assets/images/personal.png'}  alt='Фото'></img> : 
+                            <img src = {this.state.photoData} width = {250} height={250}
+                                onError={(e) => e.target.src='/assets/images/personal.png'}/>
+                        }
+                        <FileUpload mode="basic" name="document" 
+                            accept="image/*" 
+                            maxFileSize={1024000} invalidFileSizeMessageSummary="Слишком большой файл" invalidFileSizeMessageDetail = "Максимально допустимый размер файла 1 Мб" 
+                            customUpload={true} uploadHandler={this.uploadHandler}
+                            auto chooseLabel="Загрузить фото">
+                        </FileUpload>
                     </div>
                     <div className = 'p-col  p-my-0'>
                         <div className="p-grid form-group " >

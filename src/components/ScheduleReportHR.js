@@ -54,11 +54,12 @@ export default class ScheduleReportHR extends React.Component{
             this.updateData(month, this.state.chosenPersonId)
     }
 
-    onSellerChange(personName, personId){
+    onSellerChange(personName, personId, coEmployees){
         this.setState(
             {chosenPerson: personName, chosenPersonId: personId}
         );
         this.updateData(this.state.chosenMonth,personId);
+        this.coEmployees = coEmployees
     }
 
     
@@ -80,6 +81,8 @@ export default class ScheduleReportHR extends React.Component{
                     messages = {this.messages}
                     dataService = {this.dataService} 
                     days = {this.state.days} 
+                    coEmployees = {this.coEmployees}
+                    history = {this.history}
                 />
             </div>
         );
@@ -90,6 +93,8 @@ class ScheduleResultTable extends React.Component{
 
     constructor(props){
         super(props);
+        this.history = props.history;
+        AppSets.getUser();
         this.messages = props.messages;
         this.state = {selectedRow: null,errorMsg: null};
         this.getRowClassName = this.getRowBackgroundClassName.bind(this);
@@ -101,18 +106,56 @@ class ScheduleResultTable extends React.Component{
         this.bodyLeavingFact = this.bodyLeavingFact.bind(this);
         this.bodyComingFact = this.bodyComingFact.bind(this);
         this.setBold = this.setBold.bind(this);
-        this.rowMenuModel = this.createHrMenuModel(this);
         this.acceptTime = this.acceptTime.bind(this)
         this.inputTextEditor = this.inputTimeEditor.bind(this);
         this.onEditorValueChange = this.onEditorValueChange.bind(this);
         this.onAcceptedTimeSubmit = this.onAcceptedTimeSubmit.bind(this);
         this.onAcceptedTimeCancel = this.onAcceptedTimeCancel.bind(this);
         this.changeRowType = this.changeRowType.bind(this);
+        this.rowModel = null;
         this.createHrMenuModel = this.createHrMenuModel.bind(this);
+        this.createOrdinalMenuModel = this.createOrdinalMenuModel.bind(this);
+        this.getContextMenuModel = this.getContextMenuModel.bind(this);
         this.inputNotesEditor = this.inputNotesEditor.bind(this);
         this.onNoteSubmit = this.onNoteSubmit.bind(this);
         this.actionBodyReason = this.actionBodyReason.bind(this);
+        this.openDayOffForm = this.openDayOffForm.bind(this);
         this.contextMenuMode = null;
+        this.moment = require('moment');
+    }
+
+    uploadSickLeaveDocument(){
+
+    }
+
+    downloadSickLeaveDocument(){
+        
+    }
+
+    getContextMenuModel(){
+        if (!this.rowModel){
+            const user = AppSets.getUser();
+            if (user){
+                let theModel = null; 
+                if (user.amIhr()){
+                    theModel = this.createHrMenuModel()
+                }else{
+                    theModel = this.createOrdinalMenuModel();
+                }
+                this.rowModel = theModel;
+                return theModel;
+            }
+        }else{
+            return this.rowModel;
+        }
+    }
+
+    createOrdinalMenuModel(){
+        return([
+            {label:"Больничный:", icon: 'pi pi-calendar-plus',
+            items: [
+                {label:"Отметить день", icon: 'pi pi-calendar-plus', command: () => this.openDayOffForm()},
+            ]}])
     }
 
     createHrMenuModel(){
@@ -140,9 +183,34 @@ class ScheduleResultTable extends React.Component{
                 {label:"Отменить отметку", command: () => this.changeRowType(0)},
             ]},
             {separator: true},
+            {label:"Больничный:", icon: 'pi pi-calendar-plus',
+            items: [
+                {label:"Внести данные", icon: 'pi pi-cloud-upload', command: () => this.openDayOffForm()},
+                {label:"Получить фото", icon: 'pi pi-download', command: () => this.downloadSickLeaveDocument()},
+            ]},
+            {separator: true},
             {label:"Закрыть это меню", icon: 'pi pi-sign-out'},
-
         ]);
+    }
+
+    openDayOffForm(){
+        let start = this.state.selectedRow.comingPlan;
+        const minTime = AppSets.minStartTime.split(":");
+        let startMoment = this.moment(start);
+        startMoment.hours(minTime[0]);
+        startMoment.minute(minTime[1]);
+        let end = this.state.selectedRow.leavingPlan;
+        const maxTime = AppSets.maxEndTime.split(":");
+        let endMoment = this.moment(end);
+        endMoment.hour(maxTime[0]);
+        endMoment.minute(maxTime[1]);
+        const employeeToChoose = this.props.coEmployees;
+        const chosenPerson = employeeToChoose.find(empl=>empl.id === this.state.selectedRow.employeeId);
+        this.history.push(
+            {pathname:'/day-off', state: {mode: 'create', employeeList: employeeToChoose, rowType: this.state.selectedRow.rowType,
+                            employee: chosenPerson, dateStart:startMoment.toDate(), dateEnd:endMoment.toDate()}}
+            );
+
     }
 
     changeRowType(rowType){
@@ -357,7 +425,7 @@ class ScheduleResultTable extends React.Component{
             <div className = 'p-grid'>
                 <div className = 'p-col-12 datatable-style-sched-repo'>
                     <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}}/>
-                    <ContextMenu model={this.rowMenuModel} ref={el => this.cm = el} onHide={() => this.setState({ selectedRow: null })}/>
+                    <ContextMenu model={this.getContextMenuModel()} ref={el => this.cm = el} onHide={() => this.setState({ selectedRow: null })}/>
                     <DataTable value={this.props.days} rowClassName={this.getRowBackgroundClassName} 
                         headerColumnGroup={header}
                         scrollable scrollHeight="800px"
@@ -450,7 +518,7 @@ class ScheduleFilter extends React.Component{
         if (this.state.employees){
             let foundEmployee = this.state.employees.filter(employee =>  employee.fullName.includes(event.target.value))
             if (foundEmployee)
-                this.props.onSellerChange(event.target.value, foundEmployee[0].id);
+                this.props.onSellerChange(event.target.value, foundEmployee[0].id, this.state.employees);
         }
         
     }

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import AppSets from '../service/AppSettings'
+import { row_types } from '../service/AppSettings';
 
 export default class ScheduleService {    
 
@@ -161,7 +162,9 @@ export default class ScheduleService {
                 res => res.data)
             .then(data => {
                 if (_this){
-                    _this.setState({ days: data });
+                    const notAcceptedFound = data.filter(row=>row.rowType === 0).find(row=>row.accepted === false)
+                    _this.setState({ days: data,  scheduleAccepted: (notAcceptedFound === undefined)});
+                    
                 }
                 return data;
             })
@@ -346,9 +349,27 @@ export default class ScheduleService {
                 action()
             })
             .catch(err => {
-                this.processRequestsCatch(err, 'Создание расписания.', _this.messages);
+                this.processRequestsCatch(err, 'Создание расписания', _this.messages);
             })
     }
+
+    acceptSchedule(payload, _this){
+        const server = AppSets.host;
+        const query = "/schedule/accept";
+        const url = server + query;
+        axios.post(url, payload, {timeout: AppSets.timeout})
+            .then((res)=>{
+                if (res.data === 'Ok'){
+                    _this.messages.show({ severity: 'success', summary: 'Выполнено успешно'});
+                }else{
+                    _this.messages.show({ severity: 'warn', summary: 'В расписании нет ни одной записей, которыые подлежат утверждению.'});
+                }
+            })
+            .catch(err => {
+                this.processRequestsCatch(err, 'Утверждение расписания', _this.messages);
+            })
+    }
+
 
     orgUnitRemove(id, _this, action){
         const server = AppSets.host;
@@ -607,9 +628,7 @@ export default class ScheduleService {
         const moment = require('moment');
         const formattedStart = moment(_this.state.start).format('YYYY-MM-DD')+" "+AppSets.minStartTime;
         const formattedEnd = moment(_this.state.end).format('YYYY-MM-DD')+" "+AppSets.maxEndTime;
-        const rowType = _this.state.eventType.code === 'DAY_OFF' ? 3 : 
-                        _this.state.eventType.code === 'REST' ? 2 : 
-                        _this.state.eventType.code === 'SICK_LEAVE' ? 4 : 0;
+        const rowType = row_types.find(rt=>rt.code === _this.state.eventType);
 
         axios.post(url, 
             {"employeeId" : _this.state.employee.id, "comingPlan":formattedStart, "leavingPlan":formattedEnd, "reason": _this.state.reason, "rowType": rowType}, 

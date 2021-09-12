@@ -15,6 +15,7 @@ import { addLocale } from 'primereact/api';
 import { Button } from 'primereact/button';
 import {Messages} from 'primereact/messages'
 import { Toolbar } from 'primereact/toolbar';
+import { Menu } from 'primereact/menu'
 import Confirmation from './Confirmation';
 import ScheduleCreateProxy from '../entities/ScheduleCreateProxy';
 
@@ -24,7 +25,7 @@ export default class SchedulePlan extends Component {
         chosenOrgUnit: null, orgUnits: [], filteredOrgUnits: [], 
         chosenEmployee: null, employees:[], filteredEmployees: [], 
         chosenShift: null, shifts: [], timeFrom:null, timeTo:null, showConfirm: false,
-        wasChanged: false};
+        wasChanged: false, scheduleAccepted: false};
 
     constructor(props) {
         super(props);
@@ -52,6 +53,7 @@ export default class SchedulePlan extends Component {
         this.intervalIsInPast = this.intervalIsInPast.bind(this);
         this.inputSimpleTimes = this.inputSimpleTimes.bind(this);
         this.clearEnteredShift = this.clearEnteredShift.bind(this);
+        this.displayCardHeader = this.displayCardHeader.bind(this);
         this.history = props.history;
         this.storage = window.sessionStorage;
     }
@@ -377,14 +379,46 @@ export default class SchedulePlan extends Component {
         </div>);
     }
 
+    displayCardHeader(){
+        const amIhr = AppSets.getUser().amIhr();
+        const cardTitle = (amIhr) ? "Планирование графика" : "Просмотр графика";
+        const planMenuModel = [{label: 'Утвердить', icon: 'pi pi-check', command: () => {
+                    this.toast.show({severity:'success', summary:'Будем уведомлять', detail:'Data Updated'});
+                }},]
+        if (amIhr){
+            return( <span className="card-title p-text-bold p-text-center">
+                <Menu model={planMenuModel} popup ref={el => this.menu = el} id="popup_menu" />
+                <Button icon="pi pi-bars" onClick={(event) => this.menu.toggle(event)} aria-controls="popup_menu" aria-haspopup></Button>
+                {cardTitle} </span>)
+        }else {
+            return <span>{cardTitle} </span>
+        }
+    }
+
+    acceptSchedule(){
+        if (this.intervalIsInPast()){
+            this.messages.show({severity:'error', summary: 'Нельзя утверждать расписание за прошедший период'});
+            return;
+        }
+        if (!this.state.chosenOrgUnit){
+            this.messages.show({severity:'error', summary: 'Не выбрано подразделение'});
+            return;
+        }
+        let employeeId = this.state.chosenEmployee ? this.state.chosenEmployee.id : null;
+        let payload = new ScheduleCreateProxy(this.state.chosenOrgUnit.id, 0, 
+            employeeId, null, this.interval, null, null)
+        this.dataService.acceptSchedule(payload, this);
+    }
+
     render() {
         if (!AppSets.getUser())
             { this.history.push("/login")}
-
         let storedIniDate = this.storage.getItem("initalCalDate");
         let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         const amIhr = (AppSets.getUser() && AppSets.getUser().amIhr());
-        const cardTitle = (amIhr) ? "Планирование графика" : "Просмотр графика";
+        const cardTitle = amIhr ? "Планирование графика" : "Просмотр графика"
+        const planMenuModel = [{label: 'Утвердить', icon: 'pi pi-check', command: () => {this.acceptSchedule()} },]
+
         return <div className="p-grid">
             <div className="p-col-12">
                 <Messages ref={(el) => this.messages = el} position="left"/>
@@ -394,7 +428,8 @@ export default class SchedulePlan extends Component {
                     {this.state.showConfirm && 
                     <Confirmation visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmBody}
                             accept={this.confirmAccept} reject={this.confirmReject} messages={this.messages} context={this}/>}
-                    <div className='p-card-title p-text-bold p-text-left' style={{fontSize:'large', color: '#1E88E5'}}>Планирование графика работы</div>
+                    <div className='p-card-title p-text-bold p-text-left' style={{fontSize:'large', color: '#1E88E5'}}>
+                        {this.state.scheduleAccepted ? 'Планирование графика работы' : 'Планирование графика работы (не утвержден)'}</div>
                     <FullCalendar 
                         initialDate={iniDate}
                         events={this.state.days} locale={ruLocale}
@@ -410,15 +445,19 @@ export default class SchedulePlan extends Component {
             </div>
             <div className="p-col-3">
                 <div className="card">
-                    <div className="card-title p-text-bold">{cardTitle}</div>
-                    {amIhr && 
-                        <span className="p-float-label" style={{marginBottom: '1em'}}>
+                    {amIhr && <div>
+                        <span className="card-title p-text-bold p-text-center">
+                            <Menu model={planMenuModel} popup ref={el => this.menu = el} id="popup_menu" />
+                            <Button icon="pi pi-bars" onClick={(event) => this.menu.toggle(event)} aria-controls="popup_menu" aria-haspopup></Button>
+                            <span style={{marginLeft:'1em'}}> {cardTitle} </span>
+                        </span>
+                        <span className="p-float-label" style={{marginTop: '1em', marginBottom:'1em'}}>
                             <CalendarFld  id="selectedDatesFld" selectionMode="multiple" readOnlyInput showIcon 
                                 dateFormat="dd/mm/yy" locale={'ru'}
                                 value={this.state.selectedDates}
                                 onChange={(dte) => this.setState({selectedDates: dte.value, wasChanged: true})}/>
                             <label htmlFor="selectedDatesFld">Даты - если график на отдельные дни</label>
-                        </span>
+                        </span></div>
                     }
                     <span className="p-float-label" >
                         <AutoComplete id = "orgUnitFld" dropdown

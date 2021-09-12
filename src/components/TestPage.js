@@ -18,17 +18,14 @@ export default class EmptyPage extends Component {
         const file = files.files.shift();
         const fileReader = new FileReader();
         fileReader.onload = (e) => {
-            this.uploadFile(e.target.result);
+            this.uploadEmployeePhoto(e.target.result, this);
         };
         fileReader.readAsDataURL(file);
     }
 
     uploadFile(file){
         const subject = "Отправка файла";
-        const config = {
-            headers: { 'content-type': 'image/png' }
-           }
-        axios.post(AppSets.host + '/files/image/save', file, {headers: { 'Content-Type': 'image/png' }})
+        axios.post(AppSets.host + '/files/image/save', file, {headers: { 'Content-Type': 'image/png', timeout: AppSets.timeout }})
             .then(
                 this.toast.show({severity:'info', summary:'Отправлено'}))
             .catch(err => {
@@ -67,7 +64,7 @@ export default class EmptyPage extends Component {
                 customUpload={true}
                 uploadHandler={this.uploadHandler}
                 accept="image/*" 
-                maxFileSize={1000000} 
+                maxFileSize={1024000} 
                 auto chooseLabel="Browse" />
         </div>
         )     

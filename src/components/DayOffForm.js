@@ -7,6 +7,7 @@ import App from '../App';
 import AppSets from '../service/AppSettings';
 import ScheduleService from '../service/ScheduleService';
 import { Dropdown } from 'primereact/dropdown';
+import { row_types } from '../service/AppSettings';
 
 
 export default class DayOffForm extends Component {
@@ -15,7 +16,7 @@ export default class DayOffForm extends Component {
     constructor(props) {
         super(props);
         this.dataService = new ScheduleService();
-        this.user = AppSets.user;
+        this.user = AppSets.getUser();
         this.history = props.history;
         this.editStartDate = this.editStartDate.bind(this);
         this.editEndDate = this.editEndDate.bind(this);
@@ -24,13 +25,7 @@ export default class DayOffForm extends Component {
         this.createNewRecord = this.createNewRecord.bind(this);
         this.onChangeType = this.onChangeType.bind(this);
         this.ownerId = 1;
-        this.disabledInput = true;
-        this.eventTypes = [
-            {code: 'HOLIDAY', name:'Праздник'},
-            {code: 'REST', name:'Плановый отпуск'},
-            {code: 'DAY_OFF', name:'Не оплачиваемый отпуск'}, 
-            {code: 'SICK_LEAVE', name:'Больничный'},
-        ];
+        this.eventTypeEditable = true;
         this.isDataValid = this.isDataValid.bind(this);
         
         const param = this.props.location.state;
@@ -42,13 +37,22 @@ export default class DayOffForm extends Component {
         if (! (param.hasOwnProperty('start')) && param.hasOwnProperty('end')){
             this.state.errorMsg = 'Некорректный режим открытия страницы'
             return;
-        }    
-        
-        this.state = {start: param.dateStart, end: param.dateEnd, employee: param.employee, errorMsg:'', employees: param.employeeList};
+        }   
+        let eventTypeName  = ''; 
+        if (param.hasOwnProperty('rowType')){
+            eventTypeName = row_types[param.rowType];
+            this.eventTypeEditable = false;
+        }
+        let emloyeeName = '';
+        if (param.hasOwnProperty('employee')){
+            emloyeeName = param.employee;
+        }
+    
+        this.state = {start: param.dateStart, end: param.dateEnd, employee: emloyeeName, errorMsg:'',
+            employees: param.employeeList, eventType: eventTypeName};
     }
 
     componentDidMount(){
-        //this.createNewRecord('create')
         this.editMode = true;
     }
 
@@ -58,7 +62,7 @@ export default class DayOffForm extends Component {
         const moment = require('moment');
         if (mode === 'create'){//создается новый
             if (this.state.eventType == null || this.state.eventType.toLowerCase().includes('отпуск')) {
-                //поля можно редактировать, миним  альная дата + заданное количество дней от сегодня
+                //поля можно редактировать, минимальная дата + заданное количество дней от сегодня
                 this.editMode = true;
                 let minDate = moment();
                 minDate.add(10, 'days');
@@ -76,7 +80,7 @@ export default class DayOffForm extends Component {
     }
     
     thisIsMy(){
-        return this.state.id == null || this.state.id === App.getUser.getId();
+        return this.state.id == null || this.state.id === App.getUser().getId();
     }
 
     isDataValid(){
@@ -131,7 +135,7 @@ export default class DayOffForm extends Component {
 
     render() {
         if (!AppSets.getUser())
-        { this.history.push("/login")}
+            { this.history.push("/login")}
         return(
         <div className="card" >
             <Messages ref={(msgE) => this.messages = msgE} style={{marginBottom: '1em'}}/>
@@ -151,7 +155,8 @@ export default class DayOffForm extends Component {
                 <div className="p-col-12  p-md-8">
                     <span className="p-float-label" >
                         <Dropdown id='reasonTypeFld' value={this.state.eventType} style={{width:'50%'}}
-                                options={this.eventTypes} optionLabel="name"
+                                disabled={! this.eventTypeEditable}
+                                options={row_types} optionLabel="name"
                                 required={true}
                                 onChange={chosenType => {this.onChangeType(chosenType)}}/>
                     </span>
