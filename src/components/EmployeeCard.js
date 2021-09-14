@@ -169,8 +169,8 @@ export default class EmployeeCard extends Component {
                             <label htmlFor="isWorkingFld" className="p-checkbox-label">Работает</label>
                         </div>
                         {!this.state.photoData ? 
-                            <img src={'/assets/images/personal.png'}  alt='Фото'></img> : 
-                            <img src = {this.state.photoData} width = {250} height={250}
+                            <img src={'/assets/images/personal.png'}  alt='Фотография сотрудника'></img> : 
+                            <img src = {this.state.photoData} width = {250} height={250} alt="Фотография сотрудника"
                                 onError={(e) => e.target.src='/assets/images/personal.png'}/>
                         }
                         <FileUpload mode="basic" name="document" 

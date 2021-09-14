@@ -25,7 +25,7 @@ export default class SchedulePlan extends Component {
         chosenOrgUnit: null, orgUnits: [], filteredOrgUnits: [], 
         chosenEmployee: null, employees:[], filteredEmployees: [], 
         chosenShift: null, shifts: [], timeFrom:null, timeTo:null, showConfirm: false,
-        wasChanged: false, scheduleAccepted: false};
+        wasChanged: false, scheduleAccepted: true};
 
     constructor(props) {
         super(props);

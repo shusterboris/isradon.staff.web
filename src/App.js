@@ -20,6 +20,7 @@ import './App.scss';
 import { DayEdit } from './components/DayEdit';
 import MonthScheduleDownload from './components/MonthScheduleDownload';
 import TestPage from './components/TestPage'
+import { DictionaryJT } from './components/DictionaryJT';
 
 const App = () => {
 
@@ -52,6 +53,7 @@ const App = () => {
             items: [
                 {label: 'Сотрудники', icon: 'pi pi-user-edit', to: '/employees-all'},
                 {label: 'Бывшие сотрудники', icon: 'pi pi-user-minus', to: '/employees-fired'},
+                {label: 'Должности сотрудников', icon: 'pi pi-users', to: '/titles-dictionary'},
                 {label: 'Подразделения', icon: 'pi pi-home', to: '/orgunit-list'},
             ]
         },
@@ -223,6 +225,7 @@ const App = () => {
         {path: "/edit-day:id", component:DayEdit},
         {path: "/data-download", component:MonthScheduleDownload},
         {path: "/login", component:Login},
+        {path: "/titles-dictionary", component:DictionaryJT},
         {path: "/test", component:TestPage},
 		{path: "/public/" },
     ];

@@ -121,12 +121,34 @@ export default class AppSets{
                 res => res.data)
             .then(data => {
                 _this.setState({ jobTitles: data });
-                return data;
             }).catch(err=>{
                 AppSets.processRequestsCatch(err, 'Список должностей.', this.messages, false)
             });
     }
     
+    static getJobTitlesDict(_this){
+        return axios.get(AppSets.host+'/dictionary/items/titles')
+            .then(
+                res => res.data)
+            .then(data => {
+                _this.setState({ values : data });
+            }).catch(err=>{
+                AppSets.processRequestsCatch(err, 'Список должностей.', this.messages, false)
+            });
+    }
+
+    static saveJobTitle(data, _this){
+        return axios.post(AppSets.host+'dictionary/titles/save', data)
+            .then(() => {
+                _this.messages.show({severity:'success', summary:'Успешно сохранено'});
+            })
+            .catch(err=>{
+                AppSets.processRequestsCatch(err, "Должность сотрудника", _this.messages, true)
+            })
+    }
+
+
+
     static processRequestsCatch(err, subject, messages, sticky){
         let errMsg = "";
         if (err.response== null || err.toString().includes(': Network')){

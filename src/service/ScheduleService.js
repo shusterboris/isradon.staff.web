@@ -187,6 +187,8 @@ export default class ScheduleService {
             errMsg = 'Сервер не может обработать запрос(500). Обратитесь в техническую поддержку';
         }else if (err.toString().includes('status code 403')){
             errMsg = 'Недостаточно прав. Обратитесь в IT-службу компании';
+        }else if (err.response.status = 303 && err.response.hasOwnProperty("data")){
+            errMsg = err.response.data;
         }else{
             console.log(err.response.data);
             errMsg = subject+'. Непредусмотренная ошибка';
@@ -679,5 +681,32 @@ export default class ScheduleService {
     });                    
 
     }
+
+    removeDictionaryItem(id, _this, finalProcedure){
+        const server = AppSets.host;
+        const url = server + '/dictionary/item/delete/'+id
+        axios.delete(url, {timeout: AppSets.timeout})
+            .then(() => {
+                finalProcedure()
+                _this.messages.show({severity: 'success', summary: 'Запись удалена'})
+            })
+            .catch(err=>{
+                this.processRequestsCatch(err, "Удаление записи из словаря", _this.messages, true);
+        });
+    }
+
+    saveDictionaryItem(data, _this, finalProcedure){
+        const server = AppSets.host;
+        const url = server + '/dictionary/item/save'
+        axios.post(url, data, {timeout: AppSets.timeout})
+            .then(() => {
+                finalProcedure();
+                _this.messages.show({severity: 'success', summary: 'Запись успешно сохранена'})
+            })
+            .catch(err=>{
+                this.processRequestsCatch(err, "Сохранение справочных данных", _this.messages, true);
+        });
+    }
+
 
 }
