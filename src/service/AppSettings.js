@@ -155,6 +155,8 @@ export default class AppSets{
             errMsg = subject+'. Сервер не отвечает. Возможно проблемы с подключением к сети...'
         }else if (err.toString().includes('status code 400')){
             errMsg = 'Неправильный запрос к системе(400). Обратитесь в техническую поддержку';
+        }else if (err.toString().includes('status code 415')){
+            errMsg = 'Неправильный запрос к системе(415). Обратитесь в техническую поддержку';
         }else if (err.toString().includes('status code 405')){
             errMsg = 'Неправильный запрос к системе(405). Обратитесь в техническую поддержку';
         }else if (err.toString().includes('status code 500')){
@@ -174,6 +176,16 @@ export default class AppSets{
             }else{
                 console.error(err.toString());
             }
+        }
+    }
+
+    static getRowType(key){
+        if (!key)
+            {return row_types[0]}
+        if (typeof key === 'number'){
+            return row_types.find(v=>v.id === key);
+        }else{
+            return row_types.find(v=>(v.code === key || v.name === key));
         }
     }
 }

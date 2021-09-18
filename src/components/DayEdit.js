@@ -78,8 +78,10 @@ export class DayEdit extends Component {
             this.setState({chosenEmployee: chosenEmployee, chosenOrgUnit: chosenOrgunit});
         }
         
+        const rowTypeNum = (rowData.rowType) ? rowData.rowType : (param.rowType ? param.rowType : 0);
+        const eventType = AppSets.getRowType(rowTypeNum);
         this.setState({start: startTime, end: endTime, note: rowData.note, reason: rowData.reason, 
-            orgUnitId: rowData.orgUnitId, employeeId: rowData.employeeId
+            orgUnitId: rowData.orgUnitId, employeeId: rowData.employeeId, chosenType: eventType
             });
     }
     

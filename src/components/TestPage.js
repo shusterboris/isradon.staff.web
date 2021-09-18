@@ -66,7 +66,6 @@ export default class EmptyPage extends Component {
                 accept="image/*" 
                 maxFileSize={1024000} 
                 auto chooseLabel="Browse" />
-        </div>
-        )     
+        </div>)     
     }
 }

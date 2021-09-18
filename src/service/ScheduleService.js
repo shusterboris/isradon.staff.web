@@ -36,13 +36,7 @@ export default class ScheduleService {
                 return data;
             })
             .catch(err => {
-                let errMsg = "";
-                if (err.toString().includes(': Network')){
-                    errMsg = 'Отработанное время. Сервер не отвечает.'
-                }else{
-                    errMsg = 'Отработанное время. Данные не получены';
-                }
-            _this.messages.show({ severity: 'warn', summary: errMsg});
+                this.processRequestsCatch(err, 'Отработанное время.', _this.messages);
             });
     }
 
@@ -181,6 +175,8 @@ export default class ScheduleService {
             errMsg = subject+'. Сервер не отвечает. Возможно проблемы с подключением к сети...'
         }else if (err.toString().includes('status code 400')){
             errMsg = 'Неправильный запрос к системе(400). Обратитесь в техническую поддержку';
+        }else if (err.toString().includes('status code 415')){
+            errMsg = 'Неправильный запрос к системе(415). Обратитесь в техническую поддержку';
         }else if (err.toString().includes('status code 405')){
             errMsg = 'Неправильный запрос к системе(405). Обратитесь в техническую поддержку';
         }else if (err.toString().includes('status code 500')){
@@ -630,10 +626,9 @@ export default class ScheduleService {
         const moment = require('moment');
         const formattedStart = moment(_this.state.start).format('YYYY-MM-DD')+" "+AppSets.minStartTime;
         const formattedEnd = moment(_this.state.end).format('YYYY-MM-DD')+" "+AppSets.maxEndTime;
-        const rowType = row_types.find(rt=>rt.code === _this.state.eventType);
 
         axios.post(url, 
-            {"employeeId" : _this.state.employee.id, "comingPlan":formattedStart, "leavingPlan":formattedEnd, "reason": _this.state.reason, "rowType": rowType}, 
+            {"employeeId" : _this.state.employee.id, "comingPlan":formattedStart, "leavingPlan":formattedEnd, "reason": _this.state.reason, "rowType": _this.state.eventType.id, photoFile: _this.state.photoFile}, 
             {timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
@@ -708,5 +703,46 @@ export default class ScheduleService {
         });
     }
 
+    openPhoto(_this){
+        if (!_this.state.photoFile)
+            {return}
+        const query = AppSets.host+'/files/getImageByName/'+_this.state.photoFile;
+        axios.get(query, { responseType: 'arraybuffer' },)
+        .then(response => {
+            const base64 = btoa(
+                new Uint8Array(response.data).reduce(
+                  (data, byte) => data + String.fromCharCode(byte),
+                  '',
+                ),
+              );
+            _this.setState({photoData: "data:;base64," + base64})
+        })
+        .catch(err=>{
+            this.processRequestsCatch(err, "Получение файла", _this.messages);
+        });
+    }
+
+    downloadFile(fileName, _this, showProgress=false){
+        const server = AppSets.host;
+        const query = "/files/getByName/"+fileName;
+        const url = server + query;
+        return axios.get(url, {
+            responseType: 'arraybuffer',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response=>{
+            const type = response.headers['content-type'];
+            const blob = new Blob([response.data], { type: type, encoding: 'UTF-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click()
+          })
+          .catch(err=>{
+              this.processRequestsCatch(err,"Загрузка файла",_this.messages)
+        });
+    }
 
 }

@@ -8,10 +8,13 @@ import AppSets from '../service/AppSettings';
 import ScheduleService from '../service/ScheduleService';
 import { Dropdown } from 'primereact/dropdown';
 import { row_types } from '../service/AppSettings';
-
+import { Tooltip } from 'primereact/tooltip';
+import { FileUpload } from 'primereact/fileupload';
+import Utils from '../service/utils';
+import axios from 'axios';
 
 export default class DayOffForm extends Component {
-    state = {eventType: null, reason: '', id: null, errorMsg:'', employees: []};
+    state = {eventType: null, reason: '', id: null, errorMsg:'', employees: [], photoFile:null, photoData: null};
 
     constructor(props) {
         super(props);
@@ -27,6 +30,8 @@ export default class DayOffForm extends Component {
         this.ownerId = 1;
         this.eventTypeEditable = true;
         this.isDataValid = this.isDataValid.bind(this);
+        this.uploadHandler = this.uploadHandler.bind(this);
+        this.downloadFile = this.downloadFile.bind(this);
         
         const param = this.props.location.state;
         if (! param.hasOwnProperty('mode')){
@@ -47,13 +52,19 @@ export default class DayOffForm extends Component {
         if (param.hasOwnProperty('employee')){
             emloyeeName = param.employee;
         }
-    
+
+        let photoFile = '';
+        if (param.hasOwnProperty('photoFile')){
+            photoFile = param.photoFile;
+        }
+        
         this.state = {start: param.dateStart, end: param.dateEnd, employee: emloyeeName, errorMsg:'',
-            employees: param.employeeList, eventType: eventTypeName};
+            employees: param.employeeList, eventType: eventTypeName, photoFile: photoFile};
     }
 
     componentDidMount(){
         this.editMode = true;
+        this.dataService.openPhoto(this);
     }
 
     createNewRecord(mode){
@@ -133,76 +144,136 @@ export default class DayOffForm extends Component {
         return (this.state.employee && this.state.eventType && this.state.start && this.state.end)
     }
 
+    uploadScan(file, extention, _this){
+        const cType = Utils.getContentTypeByExtention(extention);
+        const config = {headers: { 'Content-Type': cType, timeout: AppSets.timeout }}
+        axios.post(AppSets.host + '/files/image/save', file, config)
+            .then(res => {
+                _this.setState({photoFile: res.data});
+                this.dataService.saveDayOff(_this)
+            })
+            .catch(err=>{
+                this.dataService.processRequestsCatch(err, "Загрузка фото сотрудника", this.messages, true);
+            });
+            
+    }       
+
+    uploadHandler(event){
+        if (!this.isDataValid())
+            return;
+        
+        const fileName = event.files.shift();
+        const extention = Utils.getFileExtension(fileName.name)
+        if ((extention.length > 4 || extention.length < 2) || (!['jpg', 'jpeg', 'png', 'pdf'].includes(extention))){
+            this.messages.show({severity: 'error', summary: 'Неправильный тип файла. Разрешенными типами являются: png, pdf, jpg'});
+            return;
+        }
+        const fileReader = new FileReader();
+        fileReader.onload = (e) => {
+            this.uploadScan(e.target.result, extention, this);
+        };
+        fileReader.readAsDataURL(fileName);
+    }
+
+    downloadFile(){
+        if (AppSets.getUser().amIhr()){
+            this.dataService.downloadFile(this.state.photoFile, this);
+        }else{
+            this.messages.show({severity:'warn', summary:'У Вас нет полномочий получать чужой больничный'})
+        }
+    }
+
     render() {
-        if (!AppSets.getUser())
+        if (!AppSets.getUser()) 
             { this.history.push("/login")}
         return(
         <div className="card" >
             <Messages ref={(msgE) => this.messages = msgE} style={{marginBottom: '1em'}}/>
             
-            <div className="p-grid">
-                <div className="p-col-12  p-md-8">
-                    <span className="p-float-label" >
+            <div className="p-grid nested-grid">
+                <div className="p-col-4">
+                    <div className="p-col-12 p-float-label" >                        
                         <Dropdown id='employeeFld' value={this.state.employee} 
                             options={this.state.employees}
                             optionLabel="fullName" 
                             onChange = {pers=>this.setState({employee: pers.value})}
-                            style={{width:'50%'}}>
+                            style={{width:'100%'}}>
                         </Dropdown> 
                         <label htmlFor="employeeFld">Сотрудник</label>
-                    </span>
-                </div>
-                <div className="p-col-12  p-md-8">
-                    <span className="p-float-label" >
-                        <Dropdown id='reasonTypeFld' value={this.state.eventType} style={{width:'50%'}}
-                                disabled={! this.eventTypeEditable}
-                                options={row_types} optionLabel="name"
-                                required={true}
-                                onChange={chosenType => {this.onChangeType(chosenType)}}/>
-                    </span>
-                </div>
-                <div className="p-col-12  p-md-8">
-                    <span className="p-float-label" >
+                    </div>
+                    <div className="p-col-12 p-float-label">
+                        <Dropdown id='reasonTypeFld' value={this.state.eventType} style={{width:'100%'}}
+                            disabled={! this.eventTypeEditable}
+                            options={row_types} optionLabel="name"
+                            required={true}
+                            onChange={chosenType => {this.onChangeType(chosenType)}}/>
+                        <label htmlFor="reasonTypeFld">Причина</label>
+                    </div>
+                    <div className="p-col-12 p-float-label">
                         <InputText id='reasonFld' value={this.state.reason} 
                             onChange={(reasonText) => 
                                 this.setState({ reason: reasonText.target.value })}
-                            style={{width: '50%'}} ></InputText>
+                            style={{width: '100%'}} ></InputText>
                         <label htmlFor="reasonFld">Пояснения сотрудника</label>
-                    </span>
-                </div>
-            </div>
-            
-            <div className="p-grid" > 
-                <div className="p-col-2  p-md-2" >
-                    <span className="p-float-label" >
-                    <Calendar id='startCalendarFld' value={this.state.start} 
-                        showWeek showIcon dateFormat="dd/mm/yy" 
-                        minDate = {this.startDateMin} 
-                        onChange={(newStartDate) => this.editStartDate(newStartDate.value)}  />
-                        <label htmlFor="startCalendarFld">Дата начала*</label>
-                    </span>
-                </div>
-                <div className="p-col-2  p-md-2">
-                    <span className="p-float-label">
-                        <Calendar id='endCalendarFld' value={this.state.end} 
-                            showWeek showIcon dateFormat="dd/mm/yy"
-                            minDate={this.endDateMin}
-                            onChange={(newEndDate) => this.editEndDate(newEndDate.value)}  />
-                        <label htmlFor="endCalendarFld">Дата окончания*</label>
-                    </span>
-                </div>
-            </div>
+                    </div>
 
-            <div className="p-grid" style={{margin: '0 1em 0 1em'}}>
-                <div className="p-col-3  p-md-3">
-                    <Button label="Отменить" onClick={this.props.history.goBack} style={{marginRight: '1em'}}></Button>
-                    {this.isFilledOut() &&
-                    <Button label="Сохранить" onClick={this.save} style={{marginRight: '1em'}}></Button>}
+                    <div className="p-col-12">
+                        <div className="p-grid">
+                            <div className="p-col-6 p-float-label" >
+                                <Calendar id='startCalendarFld' value={this.state.start} 
+                                    showWeek showIcon dateFormat="dd/mm/yy" 
+                                    minDate = {this.startDateMin} 
+                                    onChange={(newStartDate) => this.editStartDate(newStartDate.value)}  />
+                                <label htmlFor="startCalendarFld">Дата начала*</label>
+                            </div>
+                            <div className="p-col-6 p-float-label">
+                                <Calendar id='endCalendarFld' value={this.state.end} 
+                                    showWeek showIcon dateFormat="dd/mm/yy"
+                                    minDate={this.endDateMin}
+                                    onChange={(newEndDate) => this.editEndDate(newEndDate.value)}  />
+                                <label htmlFor="endCalendarFld">Дата окончания*</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-col-12">
+                        <div className="p-grid">
+                            <div className="p-col-8">
+                                <Button label="Отменить" onClick={this.props.history.goBack} style={{marginRight: '1em'}}></Button>
+                                {this.isFilledOut() &&
+                                <Button label="Сохранить" onClick={this.save} style={{marginRight: '1em'}}></Button>}
+                            </div>
+                            <div className="p-col-4">
+                                {this.isFilledOut() &&
+                                <Button label="Удалить" style={{marginRight: '1em'}}></Button>}
+                            </div>                
+                        </div>
+                    </div>
                 </div>
-                <div className="p-col-4  p-md-4">
-                    {this.isFilledOut() &&
-                    <Button label="Удалить" style={{marginRight: '1em'}}></Button>}
-                </div>                
+                {this.state.eventType.id == AppSets.getRowType("SEAK_LEAVE").id && 
+                <div className="p-col-4">
+                    <Tooltip target=".scan" mouseTrack mouseTrackLeft={10}/>
+                    {this.state.photoFile ? 
+                        <img className="scan" src = {this.state.photoData} width = {250} height={300} alt="Скан-копия документа"
+                            onError={(e) => e.target.src='/assets/images/3-schedule.png'} data-pr-tooltip="Соответствующей кнопкой сюда можно загрузить документ"/> :
+                        <img className="scan" src = '/assets/images/3-schedule.png' width = {250} height={250} alt="Место для скан-копии документа"
+                            data-pr-tooltip="Соответствующей кнопкой сюда можно загрузить документ"/>
+                    }
+                    <div className="p-grid" style={{margin:"0.5em 0 0 0"}}>
+                        <FileUpload mode="basic" name="document" className="p-button-rounded" icon="pi pi-cloud-upload"
+                            customUpload={true}
+                            uploadHandler={this.uploadHandler}
+                            maxFileSize={1024000} 
+                            chooseLabel="Загрузить"
+                            auto  />
+                        {this.state.photoFile && 
+                        <Button className="p-button-rounded p-button-info" icon="pi pi-download" 
+                            label="Получить"
+                            tooltip="Скачать скан-копию документа"
+                            style={{marginLeft:"2em"}}
+                            onClick={this.downloadFile}/>
+                        }
+                    </div>
+                </div>}            
             </div>
         </div>
     )}

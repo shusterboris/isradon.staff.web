@@ -162,7 +162,7 @@ export default class SchedulePlan extends Component {
 
     onEventClick(info){
         this.props.history.push({
-            pathname: '/edit-day:id', state: {id: info.event.id, 
+            pathname: '/edit-day:id', state: {id: info.event.id, rowType: info.event.extendedProps.rowType,
                 chosenEmployee: this.state.chosenEmployee, employees: this.state.employees,
                 chosenOrgUnit: this.state.chosenOrgUnit, orgUnits: this.state.orgUnits}});
     }

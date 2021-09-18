@@ -68,6 +68,7 @@ export default class ScheduleReportHR extends React.Component{
             { this.history.push("/login") }
         return(
             <div>
+                <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}}/>
                 <ScheduleFilter 
                     summary = {this.state.summary}
                     messages = {this.messages}
@@ -121,15 +122,12 @@ class ScheduleResultTable extends React.Component{
         this.actionBodyReason = this.actionBodyReason.bind(this);
         this.openDayOffForm = this.openDayOffForm.bind(this);
         this.contextMenuMode = null;
+        this.downloadSickLeaveDocument = this.downloadSickLeaveDocument.bind(this);
         this.moment = require('moment');
     }
 
-    uploadSickLeaveDocument(){
-
-    }
-
     downloadSickLeaveDocument(){
-        
+        this.dataService.downloadFile(this.state.selectedRow.photoFile, this);  
     }
 
     getContextMenuModel(){
@@ -186,7 +184,7 @@ class ScheduleResultTable extends React.Component{
             {label:"Больничный:", icon: 'pi pi-calendar-plus',
             items: [
                 {label:"Внести данные", icon: 'pi pi-cloud-upload', command: () => this.openDayOffForm()},
-                {label:"Получить фото", icon: 'pi pi-download', command: () => this.downloadSickLeaveDocument()},
+                {label:"Получить документ", icon: 'pi pi-download', command: () => this.downloadSickLeaveDocument()},
             ]},
             {separator: true},
             {label:"Закрыть это меню", icon: 'pi pi-sign-out'},
@@ -195,20 +193,27 @@ class ScheduleResultTable extends React.Component{
 
     openDayOffForm(){
         let start = this.state.selectedRow.comingPlan;
-        const minTime = AppSets.minStartTime.split(":");
+        let end = this.state.selectedRow.leavingPlan;
         let startMoment = this.moment(start);
+        let endMoment = this.moment(end);
+        if (this.state.selectedRow.rowType != 0){
+            //т.е. мы не создаем новый, а открываем действующий выходной, отпуск и т.д.
+            //это может занимать несколько дней, поэтому ищем начало и конец
+            
+        }
+        const minTime = AppSets.minStartTime.split(":");
         startMoment.hours(minTime[0]);
         startMoment.minute(minTime[1]);
-        let end = this.state.selectedRow.leavingPlan;
         const maxTime = AppSets.maxEndTime.split(":");
-        let endMoment = this.moment(end);
+        
         endMoment.hour(maxTime[0]);
         endMoment.minute(maxTime[1]);
         const employeeToChoose = this.props.coEmployees;
         const chosenPerson = employeeToChoose.find(empl=>empl.id === this.state.selectedRow.employeeId);
         this.history.push(
             {pathname:'/day-off', state: {mode: 'create', employeeList: employeeToChoose, rowType: this.state.selectedRow.rowType,
-                            employee: chosenPerson, dateStart:startMoment.toDate(), dateEnd:endMoment.toDate()}}
+                            employee: chosenPerson, dateStart:startMoment.toDate(), dateEnd:endMoment.toDate(), 
+                            photoFile: this.state.selectedRow.photoFile}}
             );
 
     }

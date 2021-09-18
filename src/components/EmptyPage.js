@@ -14,6 +14,6 @@ export class EmptyPage extends Component {
                     <p>Начинаем отсюда</p>
                 </div>
             </div>
-        </div>
+    </div>
     }
 }
