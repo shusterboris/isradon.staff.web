@@ -5,7 +5,8 @@ export default class AppSets{
     static minStartTime = "09:00";
     static maxEndTime = "20:00";
     static timeBound = 10 * 60 * 1000; // допустимое время отклонения от запланированного времени прихода/ухода в милисекундах  
-    static dayOffTimeLag = 10; //за какое количество дней пользователь может планировать отпуск
+    static restTimeLag = 10; //за какое количество дней пользователь может планировать отпуск
+    static dayOffTimeLag = 2; //за какое количество дней пользователь может планировать отпуск за свой счет
     static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
     static timeout = 2000;
@@ -69,6 +70,16 @@ export default class AppSets{
         }
     }
 
+    static async getOrgUnitById(id, _this) {
+        try {
+            if (!id || !Number.isInteger(id))
+                {return};
+            const res = await axios.get(AppSets.host + '/dictionary/orgunit/findById/' + id);
+            _this.setState({ chosenOrgUnit: res.data });
+        } catch (err) {
+            AppSets.processRequestsCatch(err, "Данные о подразделении", _this.messages, false);
+        }
+    }    
 
     static getOrgUnitList(_this, includeDeleted = false) {
         let query = (!includeDeleted) ? '/dictionary/orgunit/list' : '/dictionary/orgunit/listAll'
@@ -177,6 +188,14 @@ export default class AppSets{
                 console.error(err.toString());
             }
         }
+    }
+
+    static rowTypesIsEqual(t1, t2){
+        if (! (t1 || t2))
+            {return false};
+        const type1 = AppSets.getRowType(t1);
+        const type2 = AppSets.getRowType(t2);
+        return type1.id == type2.id;
     }
 
     static getRowType(key){

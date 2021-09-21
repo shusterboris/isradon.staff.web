@@ -446,7 +446,8 @@ export default class ScheduleService {
                 if (_this && data){
                     const month = new Date(selected.comingPlan).getMonth();
                     _this.messages.show({ severity: 'success', summary: 'Выполнено успешно'});        
-                    _this.props.updateData(month, selected.employeeId);
+                    //_this.props.updateData(month, selected.employeeId);
+                    _this.props.updateDaysRow(data)
                 }
             })
             .catch(

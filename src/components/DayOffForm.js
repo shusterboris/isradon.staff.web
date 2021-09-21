@@ -20,12 +20,12 @@ export default class DayOffForm extends Component {
         super(props);
         this.dataService = new ScheduleService();
         this.user = AppSets.getUser();
-        this.history = props.history;
+        this.hismodetory = props.history;
         this.editStartDate = this.editStartDate.bind(this);
         this.editEndDate = this.editEndDate.bind(this);
         this.isDataValid = this.isDataValid.bind(this);
         this.save = this.save.bind(this);
-        this.createNewRecord = this.createNewRecord.bind(this);
+        this.setSingleUserEditMode     = this.setSingleUserEditMode    .bind(this);
         this.onChangeType = this.onChangeType.bind(this);
         this.ownerId = 1;
         this.eventTypeEditable = true;
@@ -43,10 +43,9 @@ export default class DayOffForm extends Component {
             this.state.errorMsg = 'Некорректный режим открытия страницы'
             return;
         }   
-        let eventTypeName  = ''; 
+        let eventType  = row_types[0]; 
         if (param.hasOwnProperty('rowType')){
-            eventTypeName = row_types[param.rowType];
-            this.eventTypeEditable = false;
+            eventType = row_types[param.rowType];
         }
         let emloyeeName = '';
         if (param.hasOwnProperty('employee')){
@@ -57,36 +56,127 @@ export default class DayOffForm extends Component {
         if (param.hasOwnProperty('photoFile')){
             photoFile = param.photoFile;
         }
-        
+
+        this.accepted = param.accepted;
+
+        this.mode = param.mode;
+        this.setEditMode(this.mode, eventType);
+
         this.state = {start: param.dateStart, end: param.dateEnd, employee: emloyeeName, errorMsg:'',
-            employees: param.employeeList, eventType: eventTypeName, photoFile: photoFile};
+            employees: param.employeeList, eventType: eventType, photoFile: photoFile};
     }
 
     componentDidMount(){
         this.editMode = true;
+        this.setEditMode(this.mode);
         this.dataService.openPhoto(this);
     }
 
-    createNewRecord(mode){
+    setEditMode(mode, eventTypeObj){
+        if (!AppSets.getUser().amIhr()){
+            this.setSingleUserEditMode(mode, eventTypeObj);
+        }else{
+            this.setHrEditMode(mode, eventTypeObj);
+        }
+
+    }
+
+    setHrEditMode(mode){
+
+    }
+
+    setSingleUserEditMode(mode, eventType){
         //открывает рядовой сотрудник
         //задача: определить, с какой даты можно планировать и можно ли редактировать даты
         const moment = require('moment');
         if (mode === 'create'){//создается новый
-            if (this.state.eventType == null || this.state.eventType.toLowerCase().includes('отпуск')) {
-                //поля можно редактировать, минимальная дата + заданное количество дней от сегодня
-                this.editMode = true;
+            this.editMode = true;
+            this.startDateDisabled = false;
+            this.endDateDisabled = false;
+            this.empoyeeEditDisabled = false;
+            this.typeEditDisabled = false;
+            if (eventType!=null && !AppSets.rowTypesIsEqual(eventType.id, "SEAK_LEAVE")){
+                let start = moment();
+                if (start.isSameOrBefore(moment())){
+                    //если дата начала уже прошла, а пользователь создает что-то, кроме больниченого - запрещаем
+                    this.empoyeeEditDisabled = true;
+                    this.typeEditDisabled = true;        
+                    this.startDateDisabled = true;
+                    this.endDateDisabled = true;
+                    return;   
+                }
+            }
+            if (eventType!=null && AppSets.rowTypesIsEqual(eventType.id, "REST")) {
+                //это отпуск минимальная дата + заданное количество дней от сегодня
                 let minDate = moment();
-                minDate.add(10, 'days');
+                minDate.add(AppSets.restTimeLag, 'days');
                 this.startDateMin = minDate.toDate();
-                this.endDateMin = minDate.toDate();               
-            }else if (this.state.eventType.toLowerCase().includes('больничный')){
+                this.endDateMin = minDate.add(1, 'days').toDate();               
+            }else if (eventType!=null && AppSets.rowTypesIsEqual(eventType.id, "DAY_OFF")) {
+                let minDate = moment();
+                minDate.add(AppSets.dayOffTimeLag, 'days');
+                this.startDateMin = minDate.toDate();
+                this.endDateMin = minDate.add(1, 'days').toDate();               
+            }else if (eventType!=null && AppSets.rowTypesIsEqual(eventType.id, "SEAK_LEAVE")){
                 //для больничного включен режим редактирования, можно задним числом, но не больше, чем на месяц
                 this.editMode = true;
                 let minDate = moment();
                 minDate.subtract(31, 'days');
                 this.startDateMin = minDate.toDate();
                 this.endDateMin = minDate.toDate();
+            }else{
+                this.startDateDisabled = true
+                this.endDateDisabled = true   
             }
+        }else{
+            //режим редактирования готовой записи
+            // нельзя менять сотрудника и тип записи
+            this.empoyeeEditDisabled = true;
+            this.typeEditDisabled = true;
+            let minDate = moment();
+            if (eventType!=null && AppSets.rowTypesIsEqual(eventType.id, "REST")) {
+                //это отпуск 
+                let start = moment(this.dateStart);
+                if (start.isSameOrBefore(moment())){//если отпуск уже начался - ничего изменить уже нельзя
+                    this.startDateDisabled = true;
+                    this.endDateDisabled = true;   
+                }else{//не утвержден - даем менять, но это будет проверено при попытке сохранения
+                    minDate.add(AppSets.restTimeLag, 'days');
+                    this.startDateMin = minDate.toDate();
+                    this.endDateMin = minDate.add(1, 'days').toDate();                   
+                }
+            }else if (eventType!=null && AppSets.rowTypesIsEqual(eventType.id, "DAY_OFF")) {
+                let start = moment(this.dateStart);
+                let minDate = moment(this.dateStart);
+                if (start.isSameOrBefore(moment())){//если отпуск уже начался - нельзя менять дату начала
+                    this.startDateDisabled = true;
+                }else{
+                    minDate.add(AppSets.dayOffTimeLag, 'days');
+                    this.startDateMin = minDate.toDate();    
+                }
+                let end = moment(this.dateEnd);
+                if (end.isSameOrBefore(moment())){//если дата окончания прошла - все
+                    this.endDateDisabled = true;
+                }else{
+                    minDate.add(1, 'days');
+                    this.startDateMin = minDate.toDate();
+                    this.endDateMin = minDate.add(1, 'days').toDate();               
+                }
+            }else if (eventType!=null && AppSets.rowTypesIsEqual(eventType.id, "SEAK_LEAVE")){
+                //для больничного включен режим редактирования, можно задним числом, но не больше, чем на месяц
+                this.editMode = true;
+                let minDate = moment();
+                minDate.subtract(31, 'days');
+                this.startDateMin = minDate.toDate();
+                this.endDateMin = minDate.toDate();
+            }else{
+                //работа
+
+                this.startDateDisabled = true
+                this.endDateDisabled = true   
+            }
+
+
         }
     }
     
@@ -137,6 +227,7 @@ export default class DayOffForm extends Component {
 
     onChangeType(chosenType){
         this.setState({eventType: chosenType.value});
+        this.setEditMode(this.mode, chosenType.target.value);
     }
 
     isFilledOut(){
@@ -195,6 +286,7 @@ export default class DayOffForm extends Component {
                     <div className="p-col-12 p-float-label" >                        
                         <Dropdown id='employeeFld' value={this.state.employee} 
                             options={this.state.employees}
+                            disabled={this.empoyeeEditDisabled}
                             optionLabel="fullName" 
                             onChange = {pers=>this.setState({employee: pers.value})}
                             style={{width:'100%'}}>
@@ -203,7 +295,7 @@ export default class DayOffForm extends Component {
                     </div>
                     <div className="p-col-12 p-float-label">
                         <Dropdown id='reasonTypeFld' value={this.state.eventType} style={{width:'100%'}}
-                            disabled={! this.eventTypeEditable}
+                            disabled={this.typeEditDisabled}
                             options={row_types} optionLabel="name"
                             required={true}
                             onChange={chosenType => {this.onChangeType(chosenType)}}/>
@@ -222,6 +314,7 @@ export default class DayOffForm extends Component {
                             <div className="p-col-6 p-float-label" >
                                 <Calendar id='startCalendarFld' value={this.state.start} 
                                     showWeek showIcon dateFormat="dd/mm/yy" 
+                                    disabled = {!this.state.eventType  || this.startDateDisabled}
                                     minDate = {this.startDateMin} 
                                     onChange={(newStartDate) => this.editStartDate(newStartDate.value)}  />
                                 <label htmlFor="startCalendarFld">Дата начала*</label>
@@ -229,6 +322,7 @@ export default class DayOffForm extends Component {
                             <div className="p-col-6 p-float-label">
                                 <Calendar id='endCalendarFld' value={this.state.end} 
                                     showWeek showIcon dateFormat="dd/mm/yy"
+                                    disabled = {!this.state.eventType || this.endDateDisabled}
                                     minDate={this.endDateMin}
                                     onChange={(newEndDate) => this.editEndDate(newEndDate.value)}  />
                                 <label htmlFor="endCalendarFld">Дата окончания*</label>
@@ -238,12 +332,12 @@ export default class DayOffForm extends Component {
                     <div className="p-col-12">
                         <div className="p-grid">
                             <div className="p-col-8">
-                                <Button label="Отменить" onClick={this.props.history.goBack} style={{marginRight: '1em'}}></Button>
+                                <Button label="Закрыть" onClick={this.props.history.goBack} style={{marginRight: '1em'}}></Button>
                                 {this.isFilledOut() &&
                                 <Button label="Сохранить" onClick={this.save} style={{marginRight: '1em'}}></Button>}
                             </div>
                             <div className="p-col-4">
-                                {this.isFilledOut() &&
+                                {(this.isFilledOut() && AppSets.getUser().amIhr()) &&
                                 <Button label="Удалить" style={{marginRight: '1em'}}></Button>}
                             </div>                
                         </div>

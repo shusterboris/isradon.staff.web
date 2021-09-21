@@ -32,6 +32,7 @@ export default class ScheduleReportHR extends React.Component{
         this.onSellerChange = this.onSellerChange.bind(this);
         this.updateData = this.updateData.bind(this);
         this.updateDaysState = this.updateDaysState.bind(this);
+        this.updateDaysRow = this.updateDaysRow.bind(this);
         this.history = props.history;
     }
 
@@ -44,6 +45,15 @@ export default class ScheduleReportHR extends React.Component{
     updateDaysState(value){
         this.setState({days: value});
         this.dataService.updateSummary(value, this);
+    }
+
+    updateDaysRow(row){
+        //обновление одной строки в таблице
+        const index = this.state.days.findIndex(day=>(row.id === day.id));
+        let value = this.state.days;
+        value[index] = row;
+        this.updateDaysState(value);
+        //this.dataService.updateSummary(value, this); наверное, надо это сделать...
     }
 
     onCalendarChange(month){
@@ -79,6 +89,7 @@ export default class ScheduleReportHR extends React.Component{
                 <ScheduleResultTable
                     updateData = {this.updateData}
                     updateDaysState = {this.updateDaysState}
+                    updateDaysRow = {this.updateDaysRow}   
                     messages = {this.messages}
                     dataService = {this.dataService} 
                     days = {this.state.days} 
@@ -196,10 +207,11 @@ class ScheduleResultTable extends React.Component{
         let end = this.state.selectedRow.leavingPlan;
         let startMoment = this.moment(start);
         let endMoment = this.moment(end);
+        let mode = "create";
         if (this.state.selectedRow.rowType != 0){
             //т.е. мы не создаем новый, а открываем действующий выходной, отпуск и т.д.
             //это может занимать несколько дней, поэтому ищем начало и конец
-            
+            mode = "edit"
         }
         const minTime = AppSets.minStartTime.split(":");
         startMoment.hours(minTime[0]);
@@ -210,10 +222,11 @@ class ScheduleResultTable extends React.Component{
         endMoment.minute(maxTime[1]);
         const employeeToChoose = this.props.coEmployees;
         const chosenPerson = employeeToChoose.find(empl=>empl.id === this.state.selectedRow.employeeId);
+        const accepted = (this.state.selectedRow.comingAccepted) ? true : false;       
         this.history.push(
-            {pathname:'/day-off', state: {mode: 'create', employeeList: employeeToChoose, rowType: this.state.selectedRow.rowType,
+            {pathname:'/day-off', state: {mode: mode, employeeList: employeeToChoose, rowType: this.state.selectedRow.rowType,
                             employee: chosenPerson, dateStart:startMoment.toDate(), dateEnd:endMoment.toDate(), 
-                            photoFile: this.state.selectedRow.photoFile}}
+                            photoFile: this.state.selectedRow.photoFile, accepted: accepted}}
             );
 
     }
@@ -393,7 +406,7 @@ class ScheduleResultTable extends React.Component{
     onAcceptedTimeSubmit(fieldName, data){
         const enteredValue = data.columnProps.rowData[fieldName];
         const selected = data.columnProps.rowData;
-        this.props.dataService.acceptJobTimeUpdate(fieldName, selected, enteredValue);
+        this.props.dataService.acceptJobTimeUpdate(fieldName, selected, enteredValue, this);
     }
 
     onAcceptedTimeCancel(fieldName, data){
@@ -522,14 +535,27 @@ class ScheduleFilter extends React.Component{
         this.setState({chosenPerson: event.target.value});
         if (this.state.employees){
             let foundEmployee = this.state.employees.filter(employee =>  employee.fullName.includes(event.target.value))
-            if (foundEmployee)
+            if (foundEmployee){
                 this.props.onSellerChange(event.target.value, foundEmployee[0].id, this.state.employees);
+                window.sessionStorage.setItem("chosenEmployee", JSON.stringify(foundEmployee[0]));
+            }
         }
         
     }
 
     componentDidMount() {
         AppSets.getEmployees(this);
+        try{
+            const storedEmployeeStr = window.sessionStorage.getItem("chosenEmployee");
+            if (storedEmployeeStr!=null){
+                const storedEmployee = JSON.parse(storedEmployeeStr);
+                this.setState({chosenPerson: storedEmployee.fullName});
+                this.props.onSellerChange(storedEmployee.fullName, storedEmployee.id, [storedEmployee]);
+            }    
+        }catch(err){
+            console.log(err)
+        };
+
     }
 
     render(){

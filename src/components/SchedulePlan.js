@@ -55,13 +55,20 @@ export default class SchedulePlan extends Component {
         this.clearEnteredShift = this.clearEnteredShift.bind(this);
         this.displayCardHeader = this.displayCardHeader.bind(this);
         this.history = props.history;
-        this.storage = window.sessionStorage;
     }
 
     componentDidMount(){
         AppSets.getOrgUnitList(this);
         AppSets.getEmployees(this);
-        const storedOrgUnit = this.storage.getItem("chosenOrgUnit")
+        const storedEmployeeStr = window.sessionStorage.getItem("chosenEmployee")
+        let storedEmployee = null;
+        if (storedEmployeeStr != null){
+            storedEmployee = JSON.parse(storedEmployeeStr);
+            this.setState({chosenEmployee: storedEmployee})
+            this.chosenEmployee = storedEmployee;
+            valuesRestored = true
+        }
+        const storedOrgUnit = window.sessionStorage.getItem("chosenOrgUnit")
         let valuesRestored = false;
         let ou = null;
         if (storedOrgUnit != null){
@@ -69,14 +76,9 @@ export default class SchedulePlan extends Component {
             this.setState({chosenOrgUnit: ou});
             valuesRestored = true;
             this.dataService.getOrgUnitShifts(ou.id, this);
-        }
-        const storedEmployee = this.storage.getItem("chosenEmployee")
-        if (storedEmployee != null){
-            const empl = JSON.parse(storedEmployee);
-            this.setState({chosenEmployee: empl})
-            this.chosenEmployee = empl;
-            valuesRestored = true
-        }
+        }else if (storedEmployee != null){
+            AppSets.getOrgUnitById(storedEmployee.orgUnitId, this);
+        };
         if (valuesRestored) 
             {this.updateCalendar(ou)}
     }
@@ -97,7 +99,7 @@ export default class SchedulePlan extends Component {
         let mend = this.moment(eventInfo.view.currentEnd);
         this.interval = [mstart.format("YYYY-MM-DD") + " 00:00",
                         mend.subtract(1, 'days').format("YYYY-MM-DD") + " " +AppSets.maxEndTime]
-        this.storage.setItem("initalCalDate", mstart.toDate())
+        window.sessionStorage.setItem("initalCalDate", mstart.toDate())
         this.updateCalendar();
     }
 
@@ -131,7 +133,7 @@ export default class SchedulePlan extends Component {
         this.setState({chosenOrgUnit: ouInfo, chosenShift:null, wasChanged: true});
         this.dataService.getOrgUnitShifts(ouInfo.id, this);
         this.updateCalendar(ouInfo);
-        this.storage.setItem("chosenOrgUnit", JSON.stringify(ouInfo));
+        window.sessionStorage.setItem("chosenOrgUnit", JSON.stringify(ouInfo));
     }
 
     onShiftChange(shft){
@@ -157,7 +159,7 @@ export default class SchedulePlan extends Component {
         this.chosenEmployee = empl;
         this.setState({chosenEmployee: empl, wasChanged: true});
         this.updateCalendar();
-        this.storage.setItem("chosenEmployee", JSON.stringify(empl)); 
+        window.sessionStorage.setItem("chosenEmployee", JSON.stringify(empl)); 
     }
 
     onEventClick(info){
@@ -228,7 +230,7 @@ export default class SchedulePlan extends Component {
     }
 
     finalizeCalendarView(){
-        this.setState({selectedDates:null, wasChanged: false});
+        this.setState({selectedDates:[], wasChanged: false});
         this.updateCalendar()
     }
 
@@ -413,7 +415,7 @@ export default class SchedulePlan extends Component {
     render() {
         if (!AppSets.getUser())
             { this.history.push("/login")}
-        let storedIniDate = this.storage.getItem("initalCalDate");
+        let storedIniDate = window.sessionStorage.getItem("initalCalDate");
         let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         const amIhr = (AppSets.getUser() && AppSets.getUser().amIhr());
         const cardTitle = amIhr ? "Планирование графика" : "Просмотр графика"
