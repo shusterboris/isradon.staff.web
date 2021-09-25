@@ -10,11 +10,13 @@ import { Dropdown } from 'primereact/dropdown';
 import { row_types } from '../service/AppSettings';
 import { Tooltip } from 'primereact/tooltip';
 import { FileUpload } from 'primereact/fileupload';
+import { SplitButton} from 'primereact/splitbutton';
+import Confirmation from './Confirmation';
 import Utils from '../service/utils';
 import axios from 'axios';
 
 export default class DayOffForm extends Component {
-    state = {eventType: null, reason: '', id: null, errorMsg:'', employees: [], photoFile:null, photoData: null};
+    state = {eventType: null, reason: '', id: null, errorMsg:'', employees: [], photoFile:null, photoData: null, showConfirm: false};
 
     constructor(props) {
         super(props);
@@ -32,6 +34,13 @@ export default class DayOffForm extends Component {
         this.isDataValid = this.isDataValid.bind(this);
         this.uploadHandler = this.uploadHandler.bind(this);
         this.downloadFile = this.downloadFile.bind(this);
+        this.onBtnRemoveClick = this.onBtnRemoveClick.bind(this);
+        this.onBtnAcceptClick = this.onBtnAcceptClick.bind(this);
+        this.delete = this.delete.bind(this);
+        this.accept = this.accept.bind(this);
+        this.afterDelete = this.afterDelete.bind(this);
+        this.inThePast = this.inThePast.bind(this);
+        this.hideConfirmationDlg = this.hideConfirmationDlg.bind(this);
         
         const param = this.props.location.state;
         if (! param.hasOwnProperty('mode')){
@@ -43,33 +52,97 @@ export default class DayOffForm extends Component {
             this.state.errorMsg = 'Некорректный режим открытия страницы'
             return;
         }   
-        let eventType  = row_types[0]; 
-        if (param.hasOwnProperty('rowType')){
-            eventType = row_types[param.rowType];
-        }
-        let emloyeeName = '';
-        if (param.hasOwnProperty('employee')){
-            emloyeeName = param.employee;
-        }
-
-        let photoFile = '';
-        if (param.hasOwnProperty('photoFile')){
-            photoFile = param.photoFile;
-        }
+        const eventType  = (param.hasOwnProperty('rowType')) ? row_types[param.rowType] : row_types[0]; 
+        const emloyeeName = (param.hasOwnProperty('employee')) ? param.employee : '';
+        const id = (param.hasOwnProperty('id')) ? param.id : '';
+        const photoFile = (param.hasOwnProperty('photoFile')) ? param.photoFile : '';
 
         this.accepted = param.accepted;
-
         this.mode = param.mode;
         this.setEditMode(this.mode, eventType);
 
-        this.state = {start: param.dateStart, end: param.dateEnd, employee: emloyeeName, errorMsg:'',
-            employees: param.employeeList, eventType: eventType, photoFile: photoFile};
+        this.state = {start: param.dateStart, end: param.dateEnd, employee: emloyeeName, errorMsg:'', id: id,
+            employees: param.employeeList, eventType: eventType, photoFile: photoFile, addButtons: []};
     }
 
     componentDidMount(){
         this.editMode = true;
         this.setEditMode(this.mode);
+        let addButtons = [];
+        addButtons.push({label: 'Удалить', icon: 'pi pi-trash', command: () => {this.onBtnRemoveClick()}});
+
+        //если еще не утверждено - добавить кнопку утверждения    
+        if (!this.accepted){
+            addButtons.push({label: 'Утвердить', icon: 'pi pi-thumbs-up', command: () => {this.onBtnAcceptClick()}});
+        }
+        this.setState({addButtons: addButtons});
         this.dataService.openPhoto(this);
+    }
+
+    inThePast(){
+        const moment = require('moment');
+        return moment(this.state.start).isSameOrBefore(moment());
+    }
+
+    onBtnRemoveClick(){
+        if (this.inThePast()){
+            this.confirmHeader='ВНИМАНИЕ! ДАТА уже прошла';
+            this.confirmBody='ЗАДНИМ ЧИСЛОМ удалить всю информацию про ' + this.state.eventType.name + "?"; 
+            this.icons = "pi pi-exclamation-triangle"
+        }else if (this.accepted){
+            this.icons = "pi pi-exclamation-triangle"
+            this.confirmHeader='УЖЕ УТВЕРЖДЕНО!';
+            this.confirmBody='Удалить УТВЕРЖДЕННЫЙ ' + this.state.eventType.name + "?"; 
+        }else{
+            this.icons = null;
+            this.confirmHeader='Подтвердите';
+            this.confirmBody='Хотите удалить ' + this.state.eventType.name + "?"; 
+        }
+        this.confirmAccept=this.delete;
+        this.confirmReject=this.hideConfirmationDlg;    
+        this.setState({showConfirm: true});
+    }
+
+    onBtnAcceptClick(){
+        if (AppSets.rowTypesIsEqual("SEAK_LEAVE") && this.state.photoFile === ''){
+            this.messages.show({severity:'error', summary: 'Нельзя утвердить больничный, пока не загружен подтверждающий документ'});
+            return;
+        }
+        this.confirmAccept=this.accept;
+        this.confirmReject=this.hideConfirmationDlg;    
+        this.confirmHeader='Подтвердите';
+        this.confirmBody='Хотите утвердить ' + this.state.eventType.name + "?"; 
+        this.setState({showConfirm: true});
+    }
+
+    accept(){
+        if (!AppSets.getUser.amIhr()){
+            this.dataService.deleteDaysOff(this, this.afterDelete);        
+        }
+    }
+
+    hideConfirmationDlg(){
+        this.setState({showConfirm: false});
+    }
+
+    delete(){
+        if (!AppSets.getUser.amIhr()){
+            const moment = require('moment');
+            if (moment(this.state.start).isSameOrBefore(moment())){
+                this.messages.show({severity:'error', summary: 'Запрещено. Срок уже прошел.', sticky:true});
+                return;
+            }
+            if (this.accepted){
+                const msg = 'Невозможно! Руководитель уже утвердил этот ' + this.state.eventType.name;
+                this.messages.show({severity:'error', summary: msg, sticky:true});
+                return;
+            }
+        }
+        this.dataService.deleteDayOff(this, this.afterDelete);
+    }
+
+    afterDelete(){
+        this.props.history.goBack();
     }
 
     setEditMode(mode, eventTypeObj){
@@ -97,7 +170,7 @@ export default class DayOffForm extends Component {
             this.typeEditDisabled = false;
             if (eventType!=null && !AppSets.rowTypesIsEqual(eventType.id, "SEAK_LEAVE")){
                 let start = moment();
-                if (start.isSameOrBefore(moment())){
+                if (start.isSameOrBefore(moment())){    
                     //если дата начала уже прошла, а пользователь создает что-то, кроме больниченого - запрещаем
                     this.empoyeeEditDisabled = true;
                     this.typeEditDisabled = true;        
@@ -331,15 +404,17 @@ export default class DayOffForm extends Component {
                     </div>
                     <div className="p-col-12">
                         <div className="p-grid">
-                            <div className="p-col-8">
-                                <Button label="Закрыть" onClick={this.props.history.goBack} style={{marginRight: '1em'}}></Button>
-                                {this.isFilledOut() &&
-                                <Button label="Сохранить" onClick={this.save} style={{marginRight: '1em'}}></Button>}
+                            <div className="p-col-9">
+                            {this.state.showConfirm && 
+                                <Confirmation visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmBody} icons = {this.icons}
+                                            accept={this.confirmAccept} reject={this.confirmReject} messages={this.messages} context={this}/>}
+                                <Button label="Закрыть" onClick={this.props.history.goBack} icon="pi pi-arrow-left" style={{marginRight: '1em'}}/>
+                                {this.isFilledOut() && 
+                                    !AppSets.getUser().amIhr() ? 
+                                        <Button label="Сохранить" onClick={this.save} style={{marginRight: '1em'}}/> : 
+                                        <SplitButton label="Сохранить" onClick={this.save} model={this.state.addButtons} style={{marginRight: '1em'}}/>
+                                }
                             </div>
-                            <div className="p-col-4">
-                                {(this.isFilledOut() && AppSets.getUser().amIhr()) &&
-                                <Button label="Удалить" style={{marginRight: '1em'}}></Button>}
-                            </div>                
                         </div>
                     </div>
                 </div>

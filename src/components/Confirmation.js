@@ -14,6 +14,7 @@ export default class Confirmation extends Component{
         this.visibility = true;
         this.onHide = this.onHide.bind(this);
         this.reject = props.reject;
+        this.icons = props.icons;
     }
 
     onAccept(){
@@ -38,6 +39,7 @@ export default class Confirmation extends Component{
         );
         return(
             <Dialog  header={this.header} footer={footer} visible={this.visibility} onHide={this.reject} style={{width:'50vw'}}>
+                <p><i className={this.icons}/> </p> <br/>
                 {this.body}
             </Dialog>
             

@@ -31,7 +31,6 @@ export default class MonthCalendar extends Component{
         this.storage = window.sessionStorage;
         this.filterChecked = true;
         this.history = props.history;
-        this.storage = window.sessionStorage;
     }
 
     componentDidMount(){
@@ -60,7 +59,8 @@ export default class MonthCalendar extends Component{
     chosenMonthChanged(eventInfo){
         this.startStr = eventInfo.start.toISOString().split('T')[0] + " 00:00";
         this.endStr = eventInfo.end.toISOString().split('T')[0] + " " +AppSets.maxEndTime;
-        this.storage.setItem("initalCalDate", eventInfo.start)
+        const middleInterval = new Date((eventInfo.start.getTime() + eventInfo.end.getTime()) / 2);
+        this.storage.setItem("initalCalDate", middleInterval);
         this.updateData()
     }
 
@@ -91,14 +91,12 @@ export default class MonthCalendar extends Component{
         this.chosenEmployee = event.value;
         this.setState({chosenPerson: event.value});
         this.updateData()
-        //this.storage.setItem("chosenEmployee", event.value);
     }
 
     onClearChosenPerson(){
         this.chosenEmployee = null;
         this.setState({chosenPerson:null});
         this.updateData();
-        //this.storage.removeItem("chosenEmployee");
     }
 
     updateData(){
@@ -129,7 +127,6 @@ export default class MonthCalendar extends Component{
         this.setState({chosenOrgUnit:ou.value});
         this.getEmployeeList(ou.value);
         this.updateData();
-//        this.storage.setItem("chosenOrgUnit", ou.value);
     }
 
     onCheckFilter(event){

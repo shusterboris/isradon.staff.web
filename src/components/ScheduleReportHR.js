@@ -194,9 +194,10 @@ class ScheduleResultTable extends React.Component{
             {separator: true},
             {label:"Больничный:", icon: 'pi pi-calendar-plus',
             items: [
-                {label:"Внести данные", icon: 'pi pi-cloud-upload', command: () => this.openDayOffForm()},
                 {label:"Получить документ", icon: 'pi pi-download', command: () => this.downloadSickLeaveDocument()},
             ]},
+            {separator: true},
+            {label:"Открыть", icon: "pi pi-eye", command: () => this.openDayOffForm()},
             {separator: true},
             {label:"Закрыть это меню", icon: 'pi pi-sign-out'},
         ]);
@@ -225,7 +226,7 @@ class ScheduleResultTable extends React.Component{
         const accepted = (this.state.selectedRow.comingAccepted) ? true : false;       
         this.history.push(
             {pathname:'/day-off', state: {mode: mode, employeeList: employeeToChoose, rowType: this.state.selectedRow.rowType,
-                            employee: chosenPerson, dateStart:startMoment.toDate(), dateEnd:endMoment.toDate(), 
+                            employee: chosenPerson, dateStart:startMoment.toDate(), dateEnd:endMoment.toDate(), id:this.state.selectedRow.id,
                             photoFile: this.state.selectedRow.photoFile, accepted: accepted}}
             );
 
@@ -497,12 +498,12 @@ class ScheduleFilter extends React.Component{
         this.dataService = props.dataService;
         this.sellersSuggestions = [];
         this.messages = props.messages;
-        this.chosenDate = new Date()
         this.chosenPerson = '';
         this.onChangeCalendar = this.onChangeCalendar.bind(this);
         this.onChangeSeller = this.onChangeSeller.bind(this);
         this.filterSellers = this.filterSellers.bind(this); 
         this.state.summary = props.summary;
+        this.moment =  require('moment');
         addLocale('ru', ru);   
     }
 
@@ -523,7 +524,6 @@ class ScheduleFilter extends React.Component{
     onChangeCalendar(event){
         if (event){
             const theDate = event.value;
-            //this.chosenDate = AppSets.mmyyFormat.format(theDate)
             let month = new Date(Date.parse(theDate)).getMonth()
             this.props.onCalendarChange(month)
         }else{
@@ -559,6 +559,8 @@ class ScheduleFilter extends React.Component{
     }
 
     render(){
+        let storedIniDate = window.sessionStorage.getItem("initalCalDate");
+        let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());        
         return(
             <div className = 'p-grid'>
                 <div className = 'p-col-12'>

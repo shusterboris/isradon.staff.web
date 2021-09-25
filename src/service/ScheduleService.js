@@ -1,8 +1,13 @@
 import axios from 'axios'
+import ScheduleCreateProxy from '../entities/ScheduleCreateProxy';
 import AppSets from '../service/AppSettings'
-import { row_types } from '../service/AppSettings';
 
-export default class ScheduleService {    
+export default class ScheduleService {
+    constructor(){
+        axios.defaults.baseURL = AppSets.host;
+        axios.defaults.headers.common['Authorization'] = window.sessionStorage.getItem('token');
+        axios.defaults.headers.post['Content-Type'] = 'application/json';
+    }    
 
     getScheduleRecordById(id, _this, processResult){
         const server = AppSets.host;
@@ -142,14 +147,18 @@ export default class ScheduleService {
             _this.setState({ days: []});
             return
         }
+        const orgUnitId = (orgUnit && orgUnit.hasOwnProperty('id') ? ('/' + orgUnit.id) : '');
+        const personId = (person && person.hasOwnProperty('id') ? ('/' + person.id) : '');
         const server = AppSets.host;
         let url = server + '/calendar/'+start+"/"+end;
+        //orgUnitId, chosenShiftId, chosenEmployeeId, selectedDates, selectedInterval, timeFrom, timeTo, onlyWork=true
+        //query = new ScheduleCreateProxy(orgUnitId, null, personId,[],[start,end],null,null,onlyAbsense);
         url = url + ((onlyAbsense) ? ('/' + true) : ('/' + false));
         if (orgUnit){
-            url = url + (orgUnit.hasOwnProperty('id') ? ('/' + orgUnit.id) : '');    
+            url = url + orgUnitId;    
         }
         if (person){
-            url = url + (person.hasOwnProperty('id') ? ('/' + person.id) : '');
+                url = (orgUnit) ? (url + personId) : (url + "/0"  + personId);
         }
         return axios.get(url)
             .then(
@@ -627,9 +636,10 @@ export default class ScheduleService {
         const moment = require('moment');
         const formattedStart = moment(_this.state.start).format('YYYY-MM-DD')+" "+AppSets.minStartTime;
         const formattedEnd = moment(_this.state.end).format('YYYY-MM-DD')+" "+AppSets.maxEndTime;
-
-        axios.post(url, 
-            {"employeeId" : _this.state.employee.id, "comingPlan":formattedStart, "leavingPlan":formattedEnd, "reason": _this.state.reason, "rowType": _this.state.eventType.id, photoFile: _this.state.photoFile}, 
+        const data = {"employeeId" : _this.state.employee.id, "orgUnitId": _this.state.employee.orgUnitId,
+            "comingPlan":formattedStart, "leavingPlan":formattedEnd, 
+            "reason": _this.state.reason, "rowType": _this.state.eventType.id, photoFile: _this.state.photoFile}
+        axios.post(url, data, 
             {timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
@@ -643,6 +653,39 @@ export default class ScheduleService {
                     'Запись об отсутствии на работе. Сервер не отвечает.' : "Не удалось записать запись: "+_this.state.eventType;
                 _this.messages.show({ severity: 'warn', summary: errMsg})
             });
+    }
+
+    deleteDayOff(_this, finalActions){
+        const server = AppSets.host;
+        const moment = require('moment');
+        const formattedStart = moment(_this.state.start).format('YYYY-MM-DD');
+        const url = server + '/calendar/deleteVacationForPerson/'+_this.state.id + "/" +formattedStart;
+        axios.delete(url, {timeout: AppSets.timeout})
+            .then(() => {
+                if (finalActions)
+                    {finalActions()}
+            })
+            .catch(err=>{
+                _this.hideConfirmationDlg();
+                this.processRequestsCatch(err, "Удаление записи об отсутствии", _this.messages, true);
+            })
+    }
+
+    acceptDaysOff(_this, finalActions){
+        const server = AppSets.host;
+        const moment = require('moment');
+        const formattedStart = moment(_this.state.start).format('YYYY-MM-DD');
+        const url = server + '/calendar/acceptDaysOff/'+_this.state.id + "/" +formattedStart;
+        axios.delete(url, {timeout: AppSets.timeout})
+            .then(() => {
+                if (finalActions)
+                    {finalActions()}
+            })
+            .catch(err=>{
+                _this.hideConfirmationDlg();
+                this.processRequestsCatch(err, "Удаление записи об отсутствии", _this.messages, true);
+            })
+
     }
 
     saveRow(_this){
