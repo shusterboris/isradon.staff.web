@@ -29,11 +29,13 @@ export default class AppSets{
 				window.sessionStorage.setItem("user", userString);
                 window.location = "/";
 			})
-            .catch((err)=>{(
-                    !err.response) ?  
+            .catch((err)=>{
+                    console.log("cant get list of authority ");
+                    (!err.response) ?  
                     showMessage({severity: 'error', summary: 'Нет связи с сервером!'}) : 
                     showMessage({severity: 'error', summary: 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку'})})})
 		.catch((err)=>{
+            console.log("auth failed ");
             if (!err.response){
                 showMessage({severity: 'error', summary: 'Нет связи с сервером!'});
             }else{
@@ -109,7 +111,13 @@ export default class AppSets{
 
     static saveEmployee(data, _this){
         if (data.orgUnit){
-            data.orgUnit = data.orgUnit.id;
+            if (Number.isInteger(data.orgUnit)){
+                data.orgUnitId = data.orgUnit;
+                data.orgUnit = "";
+            }else{
+                data.orgUnitId = data.orgUnit.id;
+                data.orgUnit = data.orgUnit.name;
+            }
         }
         return axios.post(AppSets.host+'/employee/save', data)
             .then(() => {
@@ -195,7 +203,7 @@ export default class AppSets{
             {return false};
         const type1 = AppSets.getRowType(t1);
         const type2 = AppSets.getRowType(t2);
-        return type1.id == type2.id;
+        return type1.id === type2.id;
     }
 
     static getRowType(key){

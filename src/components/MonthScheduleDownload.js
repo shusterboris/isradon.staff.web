@@ -4,6 +4,7 @@ import { AutoComplete } from 'primereact/autocomplete';
 import {Calendar} from 'primereact/calendar';
 import { Toolbar } from 'primereact/toolbar';
 import { Toast } from 'primereact/toast';
+import { RadioButton} from 'primereact/radiobutton';
 import AppSets from '../service/AppSettings'
 import { ru } from '../service/AppSettings';
 import { addLocale } from 'primereact/api';
@@ -11,12 +12,15 @@ import axios from 'axios';
 
 
 export default class MonthScheduleDownload extends Component{
-    state = {chosenOrgUnit: null, chosenDate: Date.now(), fileName:null, orgUnits: [], filteredOrgUnits: []}
+    state = {chosenOrgUnit: null, chosenDate: Date.now(), fileName:null, orgUnits: [], filteredOrgUnits: [],
+            chosenEmployee: null, filteredEmployees: [], employees: [], selector : "Факт"}
     constructor(props){
         super(props);
         this.displayToolbar = this.displayToolbar.bind(this);
         this.searchOrgUnit = this.searchOrgUnit.bind(this);
         this.onOrgUnitChoose = this.onOrgUnitChoose.bind(this);
+        this.searchEmployee = this.searchEmployee.bind(this);
+        this.onEmployeeChoose = this.onEmployeeChoose.bind(this);
         this.onChangeCalendar = this.onChangeCalendar.bind(this);
         this.sendQuery = this.sendQuery.bind(this);
         this.downloadFile = this.downloadFile.bind(this);
@@ -27,11 +31,12 @@ export default class MonthScheduleDownload extends Component{
 
     componentDidMount(){
         AppSets.getOrgUnitList(this);
+        AppSets.getEmployees(this);
     }
 
     displayToolbar(){
         const leftBar = (<React.Fragment>
-            {(this.state.chosenOrgUnit && this.state.chosenDate) &&
+            {((this.state.chosenOrgUnit || this.state.chosenEmployee) && this.state.chosenDate) &&
             <Button label="Начать" icon="pi pi-check" 
                 tooltip = "Сформировать файл для выгрузки данных на сервере"
                 onClick={this.sendQuery} style={{marginRight: '1em'}}/>
@@ -50,7 +55,16 @@ export default class MonthScheduleDownload extends Component{
     sendQuery(){
         const date = this.moment(this.state.chosenDate);
         const server = AppSets.host;
-        const query = "/schedule/exportcsv/"+this.state.chosenOrgUnit.id+"/"+(date.month()+1)+"/"+date.year();
+        const month = date.month()+1;
+        let year = month>1 ? date.year() : (date.year() - 1);
+        let query = query = "/schedule/exportplan/" + this.state.chosenEmployee.id + "/" + month + "/" + year;
+        if (this.state.selector === "Факт"){
+            if (this.state.chosenOrgUnit){
+                query = "/schedule/exportcsv/"+this.state.chosenOrgUnit.id+"/" + month + "/" + year;
+            }else{
+                query = "/schedule/exportcsv/person/" + this.state.chosenEmployee.id + "/" + month + "/" + year;
+            }
+        }
         const url = server + query;
         axios.get(url)
         .then(response=>{
@@ -89,6 +103,24 @@ export default class MonthScheduleDownload extends Component{
         });
     }
 
+    searchEmployee(event){
+        let filteredValues
+        if (!event.query.trim().length) {
+            filteredValues = [...this.state.employees];
+        }else{
+            filteredValues = this.state.employees.filter(
+                (empl) => {
+                    return empl.fullName.toLowerCase().includes(event.query.toLowerCase())
+                }
+            )
+        }
+        this.setState({filteredEmployees: filteredValues});
+    }
+
+    onEmployeeChoose(info){
+        this.setState({chosenEmployee: info, fileName:null});
+    }
+
     searchOrgUnit(event){
         let filteredValues
         if (!event.query.trim().length) {
@@ -121,22 +153,44 @@ export default class MonthScheduleDownload extends Component{
             { this.history.push("/login")}
         return (<div className="card" style={{width:'50vw'}}>
             <Toast ref={(el) => this.messages = el } position="top-left"/>
-            <div className="card-title p-text-bold">Выгрузка данных об отработанном времени</div>
-            <div>
-                <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц для выгрузки" view="month" 
+            <div className="card-title p-text-bold">Выгрузка данных о времени</div>
+            <div className="p-field-radiobutton">
+                <RadioButton inputId="selPlan" name="selector" value="План" onChange={(e) => this.setState({selector: e.value})} checked={this.state.selector === 'План'} />
+                    <label htmlFor="selPlan">План</label>
+            </div>
+            <div className="p-field-radiobutton">
+                <RadioButton inputId="selFact" name="selector" value="Факт" onChange={(e) => this.setState({selector: e.value})} checked={this.state.selector === 'Факт'} />
+                <label htmlFor="selFact">Факт</label>
+            </div>
+            <div >
+                <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" view="month" 
                         locale={"ru"}
-                        value={this.chosenDate}
+                        value={this.chosenDate ? this.chosenDate : (new Date())}
                         onSelect={(e) => {this.onChangeCalendar(e)}}/>
             </div>
-
-            <span className="p-float-label" style={{margin:'1em 0 0 0 '}}>
-                <AutoComplete id = "orgUnitFld" dropdown 
-                    value={this.state.chosenOrgUnit} 
-                    suggestions={this.state.filteredOrgUnits} 
-                    completeMethod={this.searchOrgUnit} field="name" 
-                    onChange={(ouInfo) => this.onOrgUnitChoose(ouInfo.value)} />
-                <label htmlFor="orgUnitFld">Подразделение</label>
-            </span>
+            <div className="p-grid">
+                <div className="p-col-5">
+                    <span className="p-float-label" style={{margin:'1em 0 0 0 '}}>
+                        <AutoComplete id = "employeeFld" dropdown 
+                            value={this.state.chosenEmployee} 
+                            suggestions={this.state.filteredEmployees} 
+                            completeMethod={this.searchEmployee} field="fullName" 
+                            onChange={(emInfo) => this.onEmployeeChoose(emInfo.value)} />
+                        <label htmlFor="employeeFld">Сотрудник</label>
+                    </span>
+                </div>
+                {this.state.selector === "Факт" && <div className="p-col-1" style={{marginTop:'auto'}}>ИЛИ</div>}
+                {this.state.selector === "Факт" && <div className="p-col-5">
+                    <span className="p-float-label" style={{margin:'1em 0 0 0 '}}>
+                    <AutoComplete id = "orgUnitFld" dropdown 
+                            value={this.state.chosenOrgUnit} 
+                            suggestions={this.state.filteredOrgUnits} 
+                            completeMethod={this.searchOrgUnit} field="name" 
+                            onChange={(ouInfo) => this.onOrgUnitChoose(ouInfo.value)} />
+                        <label htmlFor="orgUnitFld">Подразделение</label>
+                    </span>
+                </div>}
+            </div>
             {this.displayToolbar()}
         </div>);
     };

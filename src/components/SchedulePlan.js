@@ -112,7 +112,7 @@ export default class SchedulePlan extends Component {
             result.push(current.toDate());
             current = current.add(1, 'days');
         }
-        this.setState({selectedDates: result});
+        this.setState({selectedDates: result, wasChanged: true});
     }
 
     searchOrgUnit(event){
@@ -341,14 +341,14 @@ export default class SchedulePlan extends Component {
                 <label htmlFor="simpleTimeFrom">C</label>
                 <InputMask id="simpleTimeFrom"
                     value={this.state.timeFrom} mask="99:99" style={{width:'5em'}}
-                    onChange={(e) => this.setState({timeFrom:e.target.value, chosenShift:null})}>
+                    onChange={(e) => this.setState({timeFrom:e.target.value, chosenShift:null, wasChanged: true})}>
                 </InputMask>
             </div>
             <div className="p-field p-col-2 p-md-2">
                 <label htmlFor="simpleTimeTo">По</label>
                 <InputMask id="simpleTimeTo"
                     value={this.state.timeTo} mask="99:99" style={{width:'5em'}}
-                    onChange={(e) => this.setState({timeTo:e.target.value, chosenShift:null})}>
+                    onChange={(e) => this.setState({timeTo:e.target.value, chosenShift:null, wasChanged: true})}>
                 </InputMask>
             </div>
         </div>);

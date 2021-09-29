@@ -10,6 +10,8 @@ import { AutoComplete } from 'primereact/autocomplete';
 import ScheduleService from '../service/ScheduleService';
 import { Messages } from 'primereact/messages';
 import { FileUpload } from 'primereact/fileupload';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { parsePhoneNumberFromString } from 'libphonenumber-js'
 
 export default class EmployeeCard extends Component {
     state = {
@@ -22,7 +24,7 @@ export default class EmployeeCard extends Component {
         filteredJobTitles:[],
         firstName:'', lastName:'',nickName:'',
         phone:'',email:'',birthday:'', shiftLength:8, daysInWeek:5, shiftLengthOnFriday:0, addConditions:'',
-        photoFile: null, photoData: null
+        photoFile: null, photoData: null,
     }
     
     constructor(props) {
@@ -107,7 +109,7 @@ export default class EmployeeCard extends Component {
         }
         else {
             results = this.state.orgUnits.filter((orgunit) => {
-                return orgunit.toLowerCase().includes(event.query.toLowerCase());
+                return orgunit.name.toLowerCase().includes(event.query.toLowerCase());
             });
         }
         this.setState({filteredOrgUnits: results});
@@ -136,10 +138,16 @@ export default class EmployeeCard extends Component {
         const config = {headers: { 'Content-Type': 'image/png', timeout: AppSets.timeout }}
         axios.post(AppSets.host + '/files/image/save', file, config)
             .then(res => {
-                _this.setState({photoFile: res.data});
-                AppSets.saveEmployee(_this.state, _this);
+                    if (!res.data.startsWith("Ошибка")){
+                        _this.setState({photoFile: res.data});
+                        AppSets.saveEmployee(_this.state, _this);
+                    }else{
+                        _this.messages.show({severity:'warn', summary:res.data});
+                    }
+                    _this.setState({pleaseWait: false});
             })
             .catch(err=>{
+                _this.setState({pleaseWait: false});
                 this.dataService.processRequestsCatch(err, "Загрузка фото сотрудника", this.messages, true);
             });
             
@@ -175,7 +183,8 @@ export default class EmployeeCard extends Component {
                         }
                         <FileUpload mode="basic" name="document" 
                             accept="image/*" 
-                            maxFileSize={1024000} invalidFileSizeMessageSummary="Слишком большой файл" invalidFileSizeMessageDetail = "Максимально допустимый размер файла 1 Мб" 
+                            onBeforeUpload={x=>this.showSpinner(x)}
+                            onClick= {x=>this.showSpinner(x)}
                             customUpload={true} uploadHandler={this.uploadHandler}
                             auto chooseLabel="Загрузить фото">
                         </FileUpload>
@@ -235,32 +244,33 @@ export default class EmployeeCard extends Component {
                                     <InputMask mask='99/99/9999' slotChar='dd/mm/yyyy'  id="birthdayFld" 
                                         value={this.state.birthday} onChange={(e) => this.setState({birthday:e.target.value, wasChanged: true})} />
                                     <label htmlFor="birthdayFld">День рождения</label>
+                                    {this.props.pleaseWait && <ProgressSpinner />}
                                 </span>
                             </div>
                             <div className="p-col-2 p-mx-2">                            
                                 <span className="p-float-label">
-                                    <InputText id='shiftDurFld' value={this.state.shiftLength} width='3em' 
+                                    <InputText id='shiftDurFld' value={this.state.shiftLength} width='3em' keyfilter="num"
                                            onChange={(sl) => this.setState({shiftLength:sl.target.value, wasChanged: true})}/>
                                     <label htmlFor="shiftDurFld"> Смена, ч </label>
                                 </span>
                             </div>
                             <div className="p-col-2 p-mx-2">
                                 <span className="p-float-label">
-                                    <InputText id="daysInWeekFld" value={this.state.daysInWeek} width='3em' 
+                                    <InputText id="daysInWeekFld" value={this.state.daysInWeek} width='3em' keyfilter="int"
                                             onChange={(diw) => this.setState({daysInWeek:diw.target.value, wasChanged: true})}/>
                                     <label htmlFor='daysInWeekFld'> Дней/нед. </label>
                                 </span>
                             </div>
                             <div className="p-col-7 p-mx-2">
                                 <span className="p-float-label">
-                                    <InputText id="shiftDurFryFld" value={this.state.shiftLengthOnFriday} width='3em' 
+                                    <InputText id="shiftDurFryFld" value={this.state.shiftLengthOnFriday} width='3em' keyfilter="num" 
                                             onChange={(diw) => this.setState({shiftLengthOnFriday:diw.target.value, wasChanged: true})}/>
                                     <label htmlFor='shiftDurFryFld'> В пятницу </label>
                                 </span>
                             </div>
                             
                             <div className="p-col-12 p-mx-2" >  
-                                <InputText value={this.state.addConditions} placeholder="Дополнительная информация"
+                                <InputText value={this.state.addConditions} placeholder="Дополнительная информация" 
                                            style={{width:"40%"}}
                                            onChange={(addc) => this.setState({addConditions:addc.target.value, wasChanged: true})}/>
                             </div>
@@ -288,9 +298,50 @@ export default class EmployeeCard extends Component {
             errFields.push('Номер телефона')
         }
         if (errFields.length !== 0){
-            const lstFlds = errFields.join(", ")
-            const msg = "Не введены: "+lstFlds+". Все поля, обозначенные символом * должны быть обязательно заполнены!";
-            messages.show({severity: 'error', summary: msg});
+            let lstFlds = errFields.join(", ")
+            let msg = "Не введены: "+lstFlds+". Все поля, обозначенные символом * должны быть обязательно заполнены!";
+            messages.show({severity: 'error', summary: msg, sticky: true});
+            return false;
+        }
+        errFields = [];
+        if (this.state.shiftLength && (this.state.shiftLength <= 0 || this.state.shiftLength > 12)){
+            errFields.push("Длительность смены должна быть больше 0 и меньше 12");
+        }
+        if (this.state.shiftLengthOnFriday && (this.state.shiftLengthOnFriday <= 0 || this.state.shiftLengthOnFriday > 12)){
+            errFields.push("Длительность смены  в пятницу должна быть больше 0 и меньше 12");
+        }
+        if (this.state.daysInWeek && (this.state.daysInWeek <= 0 || this.state.daysInWeek > 7)){
+            errFields.push("Количество рабочих дней в неделе должно быть числом от 1 до 7");
+        }
+        if (this.state.birthday){
+            try{
+                const birthday = this.moment(this.state.birthday);
+                if (!birthday.isValid()){
+                    throw "Введена неправильная дата рождения";
+                }            
+                const minInt = this.moment().subtract(16,'years');
+                const maxInt = this.moment().subtract(80,'years');
+                if (!birthday.isBetween(minInt,maxInt,'year','()')){
+                    errFields.push('Неправильная дата рождения (странный возраст)')
+                }
+            }catch(err){
+                errFields.push("Введена неправильная дата рождения")
+            }
+        }
+        if (this.state.phone){
+            let enteredPhone = this.state.phone;
+            if (enteredPhone.startsWith('0')){
+                enteredPhone =  enteredPhone.replace('0', '+972');
+            }
+            const phoneNumber = parsePhoneNumberFromString(enteredPhone);
+            if (!phoneNumber){
+                errFields.push("Номер телефона неправильный");
+            }
+        }
+        if (errFields.length !== 0){
+            let lstFlds = errFields.join(", ")
+            let msg = "При вводе данных обнаружены следующие ошибки. "+lstFlds;
+            messages.show({severity: 'error', summary: msg, sticky: true});
             return false;
         }
         return true;

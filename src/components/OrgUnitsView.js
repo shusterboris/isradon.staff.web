@@ -312,11 +312,13 @@ export default class OrgUnitView extends Component {
                     </DataTable>
                 </div>
                 <div className="p-col-12 p-md-2">
+                    {this.state.selectedRow ?  
                     <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}} >Подразделение
                         <Button id="btnCreateOrgUnit" icon="pi pi-plus" className="p-button-rounded" 
                             style={{margin: '0 0 0 1em'}}
-                            onClick={this.onCreateOrgUnit} tooltip='Нажмите для создания нового подразделения'/>
-                    </div>
+                            onClick={this.onCreateOrgUnit} tooltip='Нажмите для создания нового подразделения'/> </div> : 
+                        <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}} >Подразделение </div>
+                    }
                     <div className = 'p-field'>
                         <label htmlFor="orgUnitNameFld">Название подразделения</label>
                         <InputText id="orgUnitNameFld" value={this.state.orgUnitName} placeholder="Введите название подразделения"
@@ -339,10 +341,13 @@ export default class OrgUnitView extends Component {
                 </div>  
 
                 <div className="p-col-12 p-md-6" >                
+                    {this.state.chosenShift ? 
                     <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}}>Расписание смен
                         <Button id="btnCreateShift" icon="pi pi-plus" className="p-button-rounded" style={{margin: '0 0 0 1em'}}
                             onClick={this.onCreateShift} tooltip='Нажмите для создания новой смены'/>
-                    </div>
+                    </div> :
+                    <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}}>Расписание смен</div>
+                    }
                     {this.state.showConfirm && 
                         <Confirmation header={this.confirmHeader} body={this.confirmMessage} 
                             accept={this.confirmAccept} reject={this.confirmReject} visibility={true} parentContext={this}> 

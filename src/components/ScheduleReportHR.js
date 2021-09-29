@@ -209,7 +209,7 @@ class ScheduleResultTable extends React.Component{
         let startMoment = this.moment(start);
         let endMoment = this.moment(end);
         let mode = "create";
-        if (this.state.selectedRow.rowType != 0){
+        if (this.state.selectedRow.rowType !== 0){
             //т.е. мы не создаем новый, а открываем действующий выходной, отпуск и т.д.
             //это может занимать несколько дней, поэтому ищем начало и конец
             mode = "edit"

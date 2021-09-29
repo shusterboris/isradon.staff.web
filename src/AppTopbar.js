@@ -4,11 +4,13 @@ import AppMenu from './AppMenu';
 import { InputText } from 'primereact/inputtext';
 import { Ripple } from 'primereact/ripple';
 import AppSets from './service/AppSettings'
+import { useHistory} from 'react-router-dom';
 
 const AppTopbar = (props) => {
 
 	let topbarMenuClassName = classNames('layout-profile-menu fadeInDown ', { 'layout-profile-menu-active': props.topbarUserMenuActive });
 	let menuButtonClassName = classNames('layout-menubutton ', { 'layout-menubutton-active': props.menuActive })
+	const history = useHistory();
 
 	const getInk = (el) => {
         for (let i = 0; i < el.children.length; i++) {
@@ -38,7 +40,7 @@ const AppTopbar = (props) => {
 		if (itemNo === 2){
 			window.sessionStorage.clear();
 		}
-		window.location = "/login"
+		history.push("/login")
 	}
 
 	return (

@@ -197,7 +197,7 @@ export default class MonthCalendar extends Component{
                 <div className="p-field-checkbox">
                     <Checkbox id="checkFilterFld" checked={this.state.filterChecked} 
                             onChange={(chk)=>this.onCheckFilter(chk)}></Checkbox>
-                    <label htmlFor="checkFilterFld" >Только отпуска</label>
+                    <label htmlFor="checkFilterFld" >Без рабочих дней</label>
                 </div>
             </div>
         </div>

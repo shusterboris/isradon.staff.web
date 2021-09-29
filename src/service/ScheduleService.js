@@ -1,5 +1,4 @@
 import axios from 'axios'
-import ScheduleCreateProxy from '../entities/ScheduleCreateProxy';
 import AppSets from '../service/AppSettings'
 
 export default class ScheduleService {
@@ -199,6 +198,7 @@ export default class ScheduleService {
             errMsg = subject+'. Непредусмотренная ошибка';
         }
         if (messages){
+            errMsg = (subject) ? subject + '. ' + errMsg : errMsg; 
             messages.show({ severity: 'error', summary: errMsg, sticky: sticky});
         }else{
             console.error(errMsg);
@@ -490,7 +490,8 @@ export default class ScheduleService {
         .then(res => res.data)
         .then(res => {
             _this.messages.show({severity:'success', summary:'Сохранено успешно!'});
-            window.location.reload();
+            //window.location.reload();
+            AppSets.getOrgUnitList(_this);
             }
         )
         .catch(
@@ -691,7 +692,7 @@ export default class ScheduleService {
     saveRow(_this){
         let payload = {"comingPlan": _this.state.rowData.comingPlan, "start": _this.state.start, "end": _this.state.end, 
                         "rowType": _this.state.chosenType.id,
-                        "chosenEmployeeId": _this.state.chosenEmployee.id, "chosenOrgUnitId": _this.state.chosenEmployee.id, 
+                        "chosenEmployeeId": _this.state.chosenEmployee.id, "chosenOrgUnitId": _this.state.chosenOrgUnit.id, 
                         "id": _this.state.rowData.id}
         const server = AppSets.host;
         const url = server + '/schedule/row/update'
@@ -762,7 +763,7 @@ export default class ScheduleService {
             _this.setState({photoData: "data:;base64," + base64})
         })
         .catch(err=>{
-            this.processRequestsCatch(err, "Получение файла", _this.messages);
+            this.processRequestsCatch(err, "Получение скан-копии документа", _this.messages);
         });
     }
 
