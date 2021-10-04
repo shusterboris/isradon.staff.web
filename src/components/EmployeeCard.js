@@ -149,6 +149,7 @@ export default class EmployeeCard extends Component {
                     }
                     _this.setState({pleaseWait: false});
             })
+            .then(()=>this.openPhoto())
             .catch(err=>{
                 _this.setState({pleaseWait: false});
                 this.dataService.processRequestsCatch(err, "Загрузка фото сотрудника", this.messages, true);

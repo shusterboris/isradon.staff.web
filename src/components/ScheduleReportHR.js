@@ -495,7 +495,7 @@ class ScheduleResultTable extends React.Component{
                         <Column body={this.bodyTotalDif} ></Column>
                         <Column field='total'></Column>
                         {(AppSets.getUser() && AppSets.getUser().amIhr()) ?
-                            <Column field={this.note} style={{width: '10%', margin:'0', padding: '0'}}/> : 
+                            <Column field='note' style={{width: '10%', margin:'0', padding: '0', fontSize:'smaller'}}/> : 
                             <Column field='note' 
                                     editor = {props=>this.inputNotesEditor(props)}
                                     onEditorSubmit = {props=>this.onNoteSubmit(props)}
