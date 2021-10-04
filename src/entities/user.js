@@ -1,6 +1,7 @@
 export default class User{
     constructor(userData){
         this.employeeName = userData.employeeName;
+        this.employeeId = userData.employeeId;
         this.userName = userData.userName;
         this.jobTitle = userData.jobTitle;
         this.orgUnit = userData.orgUnit;

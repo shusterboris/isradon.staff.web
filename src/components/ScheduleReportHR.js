@@ -53,15 +53,15 @@ export default class ScheduleReportHR extends React.Component{
         let value = this.state.days;
         value[index] = row;
         this.updateDaysState(value);
-        //this.dataService.updateSummary(value, this); наверное, надо это сделать...
     }
 
     onCalendarChange(month){
         this.setState(
             {chosenMonth: month}
         )
-        if (this.state.chosenPersonId !== null)
+        if (this.state.chosenPersonId !== null){
             this.updateData(month, this.state.chosenPersonId)
+        }
     }
 
     onSellerChange(personName, personId, coEmployees){
@@ -120,7 +120,6 @@ class ScheduleResultTable extends React.Component{
         this.setBold = this.setBold.bind(this);
         this.acceptTime = this.acceptTime.bind(this)
         this.inputTextEditor = this.inputTimeEditor.bind(this);
-        this.onEditorValueChange = this.onEditorValueChange.bind(this);
         this.onAcceptedTimeSubmit = this.onAcceptedTimeSubmit.bind(this);
         this.onAcceptedTimeCancel = this.onAcceptedTimeCancel.bind(this);
         this.changeRowType = this.changeRowType.bind(this);
@@ -129,6 +128,9 @@ class ScheduleResultTable extends React.Component{
         this.createOrdinalMenuModel = this.createOrdinalMenuModel.bind(this);
         this.getContextMenuModel = this.getContextMenuModel.bind(this);
         this.inputNotesEditor = this.inputNotesEditor.bind(this);
+        this.inputReasonEditor = this.inputReasonEditor.bind(this);
+        this.onNoteValueChange = this.onNoteValueChange.bind(this);
+        this.onReasonValueChange = this.onReasonValueChange.bind(this);
         this.onNoteSubmit = this.onNoteSubmit.bind(this);
         this.actionBodyReason = this.actionBodyReason.bind(this);
         this.openDayOffForm = this.openDayOffForm.bind(this);
@@ -349,7 +351,7 @@ class ScheduleResultTable extends React.Component{
     }
 
     actionBodyReason(rowData){
-        if (rowData.rowType === 0){
+        if (rowData.rowType === 0 || rowData.reason){
             return (<div>{rowData.reason}</div>)
         }else{
             let reasonPrefix = "";
@@ -362,28 +364,31 @@ class ScheduleResultTable extends React.Component{
             }else {
                 reasonPrefix = "Прогул"
             }
-            return (reasonPrefix) ? (<div>{reasonPrefix + ". " + rowData.reason}</div>) : (<div>{rowData.reason}</div>)
+            return (!rowData.reason) ? (<div>{reasonPrefix}</div>) : (<div>{rowData.reason + " " + rowData.reason}</div>)
         }
     }
     
 
-    onEditorValueChange(props, value) {
+    onNoteValueChange(props, value) {
         let updatedSchedule = [...props.value];
-        updatedSchedule[props.rowIndex][props.field] = value;
+        updatedSchedule[props.rowIndex]['note'] = value;
         this.props.updateDaysState(updatedSchedule)
     }
 
-    inputNotesEditor(fieldName, props) {
-        let val = '';
-        let user = AppSets.user;
-        if (fieldName.startsWith('note')){
-            if (user.amIhr()){
-                val = props.rowData['note'];
-            }else{
-                val = props.rowData['reason'];
-            }
-        }
-        return <InputText type="text" value={val}  onChange={(e) => this.onEditorValueChange(props, e.target.value)} />;
+    onReasonValueChange(props, value) {
+        let updatedSchedule = [...props.value];
+        updatedSchedule[props.rowIndex]['reason'] = value;
+        this.props.updateDaysState(updatedSchedule)
+    }
+
+    inputNotesEditor(props) {
+        return <InputText type="text" value={props.rowData.note}  style={{width: '100%',textAlign: 'left', fontSize:'smaller'}}
+            onChange={(e) => this.onNoteValueChange(props, e.target.value)} />;
+    }
+
+    inputReasonEditor(props) {
+        return <InputText type="text" value={props.rowData.reason}  style={{width: '100%',textAlign: 'left', fontSize:'smaller'}}
+            onChange={(e) => this.onReasonValueChange(props, e.target.value)} />;
     }
 
     inputTimeEditor(fieldName, props) {
@@ -400,8 +405,11 @@ class ScheduleResultTable extends React.Component{
     }
 
     onNoteSubmit(data){
-        let fieldName = (AppSets.user && AppSets.user.amIhr()) ? "note" : "reason";
-        this.props.dataService.notesUpdate(data.columnProps.rowData, fieldName, this);
+        this.props.dataService.notesUpdate(data.columnProps.rowData, "note", this);
+    }
+
+    onReasonSubmit(data){
+        this.props.dataService.notesUpdate(data.columnProps.rowData, "reason", this);
     }
 
     onAcceptedTimeSubmit(fieldName, data){
@@ -425,8 +433,8 @@ class ScheduleResultTable extends React.Component{
                 <Column header="Уход с работы" colSpan={4} />
                 <Column header="Всего, +/-" rowSpan={2}/>
                 <Column header="Раб. время" rowSpan={2}/>
-                <Column header="Примечания сотрудника" rowSpan={2} />
-                <Column header='Примечания HR' rowSpan={2} />
+                <Column header="Примечания сотрудника" rowSpan={2} style={{width: '10%'}}/>
+                <Column header='Примечания HR' rowSpan={2} style={{width: '10%'}}/>
             </Row>
             <Row>
                 <Column header='План'/>
@@ -477,11 +485,18 @@ class ScheduleResultTable extends React.Component{
                         <Column body={this.bodyLeavingDif} ></Column>
                         <Column body={this.bodyTotalDif} ></Column>
                         <Column field='total'></Column>
-                        <Column field='note' 
-                                editor = {props=>this.inputNotesEditor('note', props)}
-                                onEditorSubmit = {props=>this.onNoteSubmit(props)}
-                                style={{width: '10%', textAlign: 'left', fontSize:'smaller'}}></Column>
-                        <Column body={this.actionBodyReason} style={{width: '10%', fontSize:'smaller'}}/>
+                        {(AppSets.getUser() && AppSets.getUser().amIhr()) ?
+                            <Column field={this.note} style={{width: '10%', margin:'0', padding: '0'}}/> : 
+                            <Column field='note' 
+                                    editor = {props=>this.inputNotesEditor(props)}
+                                    onEditorSubmit = {props=>this.onNoteSubmit(props)}
+                                    style={{width: '10%', margin:'0', padding: '0', fontSize:'smaller'}}/>}
+                        {(AppSets.getUser() && AppSets.getUser().amIhr()) ?
+                            <Column field='reason' 
+                                    editor = {props=>this.inputReasonEditor(props)}
+                                    onEditorSubmit = {props=>this.onReasonSubmit(props)}
+                                    style={{width: '10%', margin:'0', padding: '0', fontSize:'smaller'}}/> :
+                            <Column body={this.actionBodyReason} style={{width: '10%', fontSize:'smaller'}}/>}
                     </DataTable>
                 </div>
             </div>
@@ -526,7 +541,7 @@ class ScheduleFilter extends React.Component{
             const theDate = this.moment(event.value);
             let month = theDate.month();
             this.props.onCalendarChange(month)
-            window.sessionStorage.setItem("initalCalDate", theDate.toDate());
+            window.localStorage.setItem("initalCalDate", theDate.toDate());
         }else{
             this.chosenDate = '';
         }
@@ -553,7 +568,7 @@ class ScheduleFilter extends React.Component{
                 this.setState({chosenPerson: storedEmployee.fullName});
                 this.props.onSellerChange(storedEmployee.fullName, storedEmployee.id, [storedEmployee]);
             }    
-            let storedIniDate = window.sessionStorage.getItem("initalCalDate");
+            let storedIniDate = window.localStorage.getItem("initalCalDate");
             let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
             this.setState({chosenDate: iniDate});
         }catch(err){
@@ -563,8 +578,6 @@ class ScheduleFilter extends React.Component{
     }
 
     render(){
-        let storedIniDate = window.sessionStorage.getItem("initalCalDate");
-        let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());        
         return(
             <div className = 'p-grid'>
                 <div className = 'p-col-12'>
@@ -573,7 +586,7 @@ class ScheduleFilter extends React.Component{
                 <div className = 'p-col-4'>
                     <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" 
                         locale={"ru"}
-                        value={this.chosenDate}
+                        value={this.state.chosenDate}
                         onSelect={(e) => {this.onChangeCalendar(e)}}/>
                 </div>
                 <div className = 'p-col-4'>

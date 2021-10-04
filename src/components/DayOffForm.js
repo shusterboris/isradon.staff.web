@@ -14,9 +14,13 @@ import { SplitButton} from 'primereact/splitbutton';
 import Confirmation from './Confirmation';
 import Utils from '../service/utils';
 import axios from 'axios';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { ListBox} from 'primereact/listbox';
 
 export default class DayOffForm extends Component {
-    state = {eventType: null, reason: '', id: null, errorMsg:'', employees: [], photoFile:null, photoData: null, showConfirm: false};
+    state = {eventType: null, reason: '', id: null, errorMsg:'', employees: [], 
+                photoFile:null, photoData: null, salesInfo: [], showConfirm: false};
 
     constructor(props) {
         super(props);
@@ -41,6 +45,7 @@ export default class DayOffForm extends Component {
         this.afterDelete = this.afterDelete.bind(this);
         this.inThePast = this.inThePast.bind(this);
         this.hideConfirmationDlg = this.hideConfirmationDlg.bind(this);
+        this.displaySalesRow = this.displaySalesRow.bind(this)
         
         const param = this.props.location.state;
         if (! param.hasOwnProperty('mode')){
@@ -77,6 +82,10 @@ export default class DayOffForm extends Component {
         }
         this.setState({addButtons: addButtons});
         this.dataService.openPhoto(this);
+        if (AppSets.rowTypesIsEqual(this.state.eventType,AppSets.getRowType('ORDINAL'))){
+            this.dataService.getSalesInfo(this.state.employee.id, this.state.start, this);
+        }
+
     }
 
     inThePast(){
@@ -328,7 +337,7 @@ export default class DayOffForm extends Component {
         
         const fileName = event.files.shift();
         const extention = Utils.getFileExtension(fileName.name)
-        if ((extention.length > 4 || extention.length < 2) || (!['jpg', 'jpeg', 'png', 'pdf'].includes(extention))){
+        if ((!extention || extention.length > 4 || extention.length < 2) || (!['jpg', 'jpeg', 'png', 'pdf'].includes(extention.toLowerCase()))){
             this.messages.show({severity: 'error', summary: 'Неправильный тип файла. Разрешенными типами являются: png, pdf, jpg'});
             return;
         }
@@ -346,6 +355,11 @@ export default class DayOffForm extends Component {
             this.messages.show({severity:'warn', summary:'У Вас нет полномочий получать чужой больничный'})
         }
     }
+    
+    displaySalesRow(rowData){
+        return(rowData)
+    }
+
 
     render() {
         if (!AppSets.getUser()) 
@@ -418,6 +432,10 @@ export default class DayOffForm extends Component {
                         </div>
                     </div>
                 </div>
+                {(!this.state.eventType && this.state.eventType.id !== 0 && this.state.salesInfo) && 
+                    <div className="p-col-4">
+                        <ListBox options={this.state.salesInfo} liststyle={{padding:'0 0 0 0'}}/>
+                    </div>}
                 {this.state.eventType.id == AppSets.getRowType("SEAK_LEAVE").id && 
                 <div className="p-col-4">
                     <Tooltip target=".scan" mouseTrack mouseTrackLeft={10}/>

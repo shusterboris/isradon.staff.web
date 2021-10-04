@@ -6,6 +6,7 @@ export default class ScheduleService {
         axios.defaults.baseURL = AppSets.host;
         axios.defaults.headers.common['Authorization'] = window.sessionStorage.getItem('token');
         axios.defaults.headers.post['Content-Type'] = 'application/json';
+        this.moment = require('moment');
     }    
 
     getScheduleRecordById(id, _this, processResult){
@@ -469,7 +470,7 @@ export default class ScheduleService {
     notesUpdate(data, fieldName, _this){
         const server = AppSets.host;
         const id = data.id;
-        const notes = data.note;
+        const notes = data[fieldName];
         const query = "/schedule/notesUpdate/" + id + "/" + fieldName + "/" + notes;
         const url = server + query;
         axios.put(url, )
@@ -632,9 +633,8 @@ export default class ScheduleService {
     saveDayOff(_this){
         const server = AppSets.host;
         const url = server + '/schedule/newVacation'
-        const moment = require('moment');
-        const formattedStart = moment(_this.state.start).format('YYYY-MM-DD')+" "+AppSets.minStartTime;
-        const formattedEnd = moment(_this.state.end).format('YYYY-MM-DD')+" "+AppSets.maxEndTime;
+        const formattedStart = this.moment(_this.state.start).format('YYYY-MM-DD')+" "+AppSets.minStartTime;
+        const formattedEnd = this.moment(_this.state.end).format('YYYY-MM-DD')+" "+AppSets.maxEndTime;
         const data = {"employeeId" : _this.state.employee.id, "orgUnitId": _this.state.employee.orgUnitId,
             "comingPlan":formattedStart, "leavingPlan":formattedEnd, 
             "reason": _this.state.reason, "rowType": _this.state.eventType.id, photoFile: _this.state.photoFile}
@@ -656,8 +656,7 @@ export default class ScheduleService {
 
     deleteDayOff(_this, finalActions){
         const server = AppSets.host;
-        const moment = require('moment');
-        const formattedStart = moment(_this.state.start).format('YYYY-MM-DD');
+        const formattedStart = this.moment(_this.state.start).format('YYYY-MM-DD');
         const url = server + '/calendar/deleteVacationForPerson/'+_this.state.id + "/" +formattedStart;
         axios.delete(url, {timeout: AppSets.timeout})
             .then(() => {
@@ -672,8 +671,7 @@ export default class ScheduleService {
 
     acceptDaysOff(_this, finalActions){
         const server = AppSets.host;
-        const moment = require('moment');
-        const formattedStart = moment(_this.state.start).format('YYYY-MM-DD');
+        const formattedStart = this.moment(_this.state.start).format('YYYY-MM-DD');
         const url = server + '/calendar/acceptDaysOff/'+_this.state.id + "/" +formattedStart;
         axios.delete(url, {timeout: AppSets.timeout})
             .then(() => {
@@ -788,4 +786,18 @@ export default class ScheduleService {
         });
     }
 
+    getSalesInfo(employeeId, date, _this){
+        if (!(employeeId && date))
+            { return };
+        const dateStr = this.moment(date).format('yyyy-MM-DD')
+        const server = AppSets.host;
+        const query = "/employee/getSales/" + employeeId + "/" + dateStr;
+        const url = server + query;
+        return axios.get(url, {timeout: AppSets.timeout})
+            .then(response => {
+                _this.setState({salesInfo: response.data})})
+            .catch(err=>{
+                this.processRequestsCatch(err,"Получение данных о продажах",_this.messages)                       
+            });
+    }
 }

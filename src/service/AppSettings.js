@@ -205,8 +205,8 @@ export default class AppSets{
     static rowTypesIsEqual(t1, t2){
         if (! (t1 || t2))
             {return false};
-        const type1 = AppSets.getRowType(t1);
-        const type2 = AppSets.getRowType(t2);
+        const type1 = t1.hasOwnProperty('id') ? t1 : AppSets.getRowType(t1);
+        const type2 = t2.hasOwnProperty('id') ? t2 : AppSets.getRowType(t2);
         return type1.id === type2.id;
     }
 
