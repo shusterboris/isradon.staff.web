@@ -795,7 +795,8 @@ export default class ScheduleService {
         const url = server + query;
         return axios.get(url, {timeout: AppSets.timeout})
             .then(response => {
-                _this.setState({salesInfo: response.data})})
+                _this.setState({salesInfo: response.data})
+            })
             .catch(err=>{
                 this.processRequestsCatch(err,"Получение данных о продажах",_this.messages)                       
             });

@@ -432,7 +432,7 @@ export default class DayOffForm extends Component {
                         </div>
                     </div>
                 </div>
-                {(!this.state.eventType && this.state.eventType.id !== 0 && this.state.salesInfo) && 
+                {(this.state.eventType && this.state.eventType.id === 0 && this.state.salesInfo) && 
                     <div className="p-col-4">
                         <ListBox options={this.state.salesInfo} liststyle={{padding:'0 0 0 0'}}/>
                     </div>}
