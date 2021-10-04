@@ -24,7 +24,7 @@ export default class EmployeeCard extends Component {
         filteredJobTitles:[],
         firstName:'', lastName:'',nickName:'',
         phone:'',email:'',birthday:'', shiftLength:8, daysInWeek:5, shiftLengthOnFriday:0, addConditions:'',
-        photoFile: null, photoData: null,
+        photoFile: null, photoData: null, working: true,
     }
     
     constructor(props) {
@@ -40,6 +40,7 @@ export default class EmployeeCard extends Component {
         this.onWorkStatusChange = this.onWorkStatusChange.bind(this);
         this.uploadEmployeePhoto = this.uploadEmployeePhoto.bind(this);
         this.uploadHandler = this.uploadHandler.bind(this);
+        this.isUploadButtonVisible = this.isUploadButtonVisible.bind(this);
         this.history = props.history;
         this.moment = require('moment');
     }
@@ -55,14 +56,16 @@ export default class EmployeeCard extends Component {
         }   else{
                 AppSets.getOrgUnitList(this);
             }
-            const id = param.id;
-            axios.get(AppSets.host+'/employee/byId/'+id)
-            .then(res => {
-                this.initiateFields(res.data);
-                this.openPhoto();
-            })
-            .catch(error => 
-                this.messages.show({ severity: 'error', summary: "Не удается получить данные о пользователе", sticky: true}));
+            if (param.hasOwnProperty('id')){
+                const id = param.id;
+                axios.get(AppSets.host+'/employee/byId/'+id)
+                .then(res => {
+                    this.initiateFields(res.data);
+                    this.openPhoto();
+                })
+                .catch(error => 
+                    this.messages.show({ severity: 'error', summary: "Не удается получить данные о пользователе", sticky: true}));
+            }
         }
     }    
 
@@ -162,6 +165,18 @@ export default class EmployeeCard extends Component {
         fileReader.readAsDataURL(file);
     }
 
+    isUploadButtonVisible(){
+        console.log(this.state.phone.includes('_'))
+        if (!((this.state.firstName || this.state.lastName) && this.state.phone && this.state.jobTitle)){
+            return false;
+        }else if (this.state.phone === '' || this.state.phone.includes('_')){
+            return false
+        }else{
+            //введены ключевые данные, включая полностью телефон, проверяем телефон
+            return this.isPhoneValid(this.state.phone);
+        }
+    }
+
     render() {
         if (!AppSets.getUser())
             { this.history.push("/login")}
@@ -181,13 +196,14 @@ export default class EmployeeCard extends Component {
                             <img src = {this.state.photoData} width = {250} height={250} alt="Фотография сотрудника"
                                 onError={(e) => e.target.src='/assets/images/personal.png'}/>
                         }
+                        {this.isUploadButtonVisible() && 
                         <FileUpload mode="basic" name="document" 
                             accept="image/*" 
                             onBeforeUpload={x=>this.showSpinner(x)}
                             onClick= {x=>this.showSpinner(x)}
                             customUpload={true} uploadHandler={this.uploadHandler}
                             auto chooseLabel="Загрузить фото">
-                        </FileUpload>
+                        </FileUpload>}
                     </div>
                     <div className = 'p-col  p-my-0'>
                         <div className="p-grid form-group " >
@@ -282,10 +298,17 @@ export default class EmployeeCard extends Component {
                     {this.state.wasChanged && 
                         <Button label="Сохранить" icon="pi pi-check" style={{marginRight: '1em'}} onClick={this.onSavePressed}/>
                     }
-                    <Button label="Отменить" icon="pi pi-times" className="p-button-secondary" onClick={this.goBack}/>
+                    <Button label="Закрыть" icon="pi pi-times" className="p-button-secondary" onClick={this.goBack}/>
                 </span>
             </Card>
         </div>
+    }
+
+    isPhoneValid(enteredPhone){
+        if (enteredPhone.startsWith('0')){
+            enteredPhone =  enteredPhone.replace('0', '+972');
+        }
+        return parsePhoneNumberFromString(enteredPhone);
     }
 
     isDataValid(messages){
@@ -315,13 +338,13 @@ export default class EmployeeCard extends Component {
         }
         if (this.state.birthday){
             try{
-                const birthday = this.moment(this.state.birthday);
+                const birthday = this.moment(this.state.birthday,"dd/MM/yyyy");
                 if (!birthday.isValid()){
                     throw "Введена неправильная дата рождения";
                 }            
                 const minInt = this.moment().subtract(16,'years');
                 const maxInt = this.moment().subtract(80,'years');
-                if (!birthday.isBetween(minInt,maxInt,'year','()')){
+                if (!birthday.isBetween(maxInt,minInt)){
                     errFields.push('Неправильная дата рождения (странный возраст)')
                 }
             }catch(err){
@@ -329,11 +352,7 @@ export default class EmployeeCard extends Component {
             }
         }
         if (this.state.phone){
-            let enteredPhone = this.state.phone;
-            if (enteredPhone.startsWith('0')){
-                enteredPhone =  enteredPhone.replace('0', '+972');
-            }
-            const phoneNumber = parsePhoneNumberFromString(enteredPhone);
+            let phoneNumber = this.isPhoneValid(this.state.phone);
             if (!phoneNumber){
                 errFields.push("Номер телефона неправильный");
             }

@@ -169,7 +169,7 @@ export default class DayOffForm extends Component {
             this.empoyeeEditDisabled = false;
             this.typeEditDisabled = false;
             if (eventType!=null && !AppSets.rowTypesIsEqual(eventType.id, "SEAK_LEAVE")){
-                let start = moment();
+                let start = moment(this.state.start);
                 if (start.isSameOrBefore(moment())){    
                     //если дата начала уже прошла, а пользователь создает что-то, кроме больниченого - запрещаем
                     this.empoyeeEditDisabled = true;
@@ -423,7 +423,7 @@ export default class DayOffForm extends Component {
                     <Tooltip target=".scan" mouseTrack mouseTrackLeft={10}/>
                     {this.state.photoFile ? 
                         <img className="scan" src = {this.state.photoData} width = {250} height={300} alt="Скан-копия документа"
-                            onError={(e) => e.target.src='/assets/images/3-schedule.png'} data-pr-tooltip="Соответствующей кнопкой сюда можно загрузить документ"/> :
+                            onError={(e) => e.target.src='/assets/images/3-schedule.png'} data-pr-tooltip="Соответствующей кнопкой сюда можно загрузить документ (png, jpeg, pdf) до 1 Мб размером"/> :
                         <img className="scan" src = '/assets/images/3-schedule.png' width = {250} height={250} alt="Место для скан-копии документа"
                             data-pr-tooltip="Соответствующей кнопкой сюда можно загрузить документ"/>
                     }

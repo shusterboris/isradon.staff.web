@@ -60,6 +60,7 @@ export default class SchedulePlan extends Component {
     componentDidMount(){
         AppSets.getOrgUnitList(this);
         AppSets.getEmployees(this);
+        let valuesRestored = false;
         const storedEmployeeStr = window.sessionStorage.getItem("chosenEmployee")
         let storedEmployee = null;
         if (storedEmployeeStr != null){
@@ -69,7 +70,6 @@ export default class SchedulePlan extends Component {
             valuesRestored = true
         }
         const storedOrgUnit = window.sessionStorage.getItem("chosenOrgUnit")
-        let valuesRestored = false;
         let ou = null;
         if (storedOrgUnit != null){
             ou = JSON.parse(storedOrgUnit)
@@ -77,7 +77,8 @@ export default class SchedulePlan extends Component {
             valuesRestored = true;
             this.dataService.getOrgUnitShifts(ou.id, this);
         }else if (storedEmployee != null){
-            AppSets.getOrgUnitById(storedEmployee.orgUnitId, this);
+            AppSets.getOrgUnitById(storedEmployee.orgUnitId, this, this.updateCalendar);
+            return;
         };
         if (valuesRestored) 
             {this.updateCalendar(ou)}

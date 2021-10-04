@@ -20,7 +20,7 @@ export default class ScheduleReportHR extends React.Component{
         days: [],
         employees: [],
         selectedRow: null,
-        chosenMonth: 4,
+        chosenMonth: (new Date()).getMonth(),
         summary: '',
     }
     
@@ -236,14 +236,14 @@ class ScheduleResultTable extends React.Component{
         this.dataService.changeRowType(rowType, this);
     }
 
-    acceptTime(mode){
+    acceptTime(mode){   
         if (mode === 0){
             if (!this.props.days || this.props.days.length === 0){
                 return;
             }
             let idsList="";
             for(let row of this.props.days){
-                if (row.comingDif === "" && row.leavingDif === ""){
+                if (!(row.comingAccepted && row.leavingAccepted)){
                     idsList = (idsList !== "") ? (idsList+","+row.id) : row.id;
                 }
             }
@@ -523,9 +523,10 @@ class ScheduleFilter extends React.Component{
 
     onChangeCalendar(event){
         if (event){
-            const theDate = event.value;
-            let month = new Date(Date.parse(theDate)).getMonth()
+            const theDate = this.moment(event.value);
+            let month = theDate.month();
             this.props.onCalendarChange(month)
+            window.sessionStorage.setItem("initalCalDate", theDate.toDate());
         }else{
             this.chosenDate = '';
         }
@@ -552,6 +553,9 @@ class ScheduleFilter extends React.Component{
                 this.setState({chosenPerson: storedEmployee.fullName});
                 this.props.onSellerChange(storedEmployee.fullName, storedEmployee.id, [storedEmployee]);
             }    
+            let storedIniDate = window.sessionStorage.getItem("initalCalDate");
+            let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
+            this.setState({chosenDate: iniDate});
         }catch(err){
             console.log(err)
         };
@@ -567,7 +571,7 @@ class ScheduleFilter extends React.Component{
                     <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}}/>
                 </div>
                 <div className = 'p-col-4'>
-                    <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" view="month" 
+                    <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" 
                         locale={"ru"}
                         value={this.chosenDate}
                         onSelect={(e) => {this.onChangeCalendar(e)}}/>

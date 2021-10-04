@@ -146,12 +146,10 @@ export default class ScheduleService {
             _this.setState({ days: []});
             return
         }
-        const orgUnitId = (orgUnit && orgUnit.hasOwnProperty('id') ? ('/' + orgUnit.id) : '');
+        const orgUnitId = (orgUnit && orgUnit.hasOwnProperty('id') ? ('/' + orgUnit.id) : Number.isInteger(orgUnit) ? orgUnit : '');
         const personId = (person && person.hasOwnProperty('id') ? ('/' + person.id) : '');
         const server = AppSets.host;
         let url = server + '/calendar/'+start+"/"+end;
-        //orgUnitId, chosenShiftId, chosenEmployeeId, selectedDates, selectedInterval, timeFrom, timeTo, onlyWork=true
-        //query = new ScheduleCreateProxy(orgUnitId, null, personId,[],[start,end],null,null,onlyAbsense);
         url = url + ((onlyAbsense) ? ('/' + true) : ('/' + false));
         if (orgUnit){
             url = url + orgUnitId;    
@@ -407,9 +405,9 @@ export default class ScheduleService {
     acceptJobTimeByPlan(ids, startDate, employeeId, _this){
         const server = AppSets.host;
         const month = new Date(startDate).getMonth();
-        const query = "/schedule/acceptTimeMonth/" + ids;
+        const query = "/schedule/acceptTimeMonth/" + ids + "/" + AppSets.timeBoundMinutes;
         const url = server + query;
-        axios.get(url)
+        axios.put(url)
             .then(res => res.data)
             .then(data => {
                 if (_this && data){

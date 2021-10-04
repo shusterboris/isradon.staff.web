@@ -21,6 +21,7 @@ import { DayEdit } from './components/DayEdit';
 import MonthScheduleDownload from './components/MonthScheduleDownload';
 import TestPage from './components/TestPage'
 import { DictionaryJT } from './components/DictionaryJT';
+import AppSets from './service/AppSettings';
 
 const App = () => {
 
@@ -38,26 +39,6 @@ const App = () => {
     const [ripple, setRipple] = useState(true);
 
     PrimeReact.ripple = true;
-
-    const menu = [
-        {label: 'Сводка', icon: 'pi pi-th-large', to: '/'},
-        {
-            label: 'График работы', icon: 'pi pi-list',
-            items: [
-                {label: 'Календарь смен', icon: 'pi pi-sitemap', to: '/shed-plan-orgunit'},
-                {label: 'Календарь отпусков', icon: 'pi pi-users', to: '/shed-plan'},
-                {label: 'Выгрузка расписания', icon: 'pi pi-download', to: '/data-download'},
-            ]
-        },
-        {label: 'Настройки', icon: 'pi pi-cog', 
-            items: [
-                {label: 'Сотрудники', icon: 'pi pi-user-edit', to: '/employees-all'},
-                {label: 'Бывшие сотрудники', icon: 'pi pi-user-minus', to: '/employees-fired'},
-                {label: 'Должности сотрудников', icon: 'pi pi-users', to: '/titles-dictionary'},
-                {label: 'Подразделения', icon: 'pi pi-home', to: '/orgunit-list'},
-            ]
-        },
-    ];
 
     let menuClick;
     let userMenuClick;
@@ -230,12 +211,44 @@ const App = () => {
 		{path: "/public/" },
     ];
 
+    const getAppMenu = () => {
+        const menu = (AppSets.getUser() && AppSets.getUser().amIhr()) ? [
+            {label: 'Сводка', icon: 'pi pi-th-large', to: '/'},
+            {
+                label: 'График работы', icon: 'pi pi-list',
+                items: [
+                    {label: 'Календарь смен', icon: 'pi pi-sitemap', to: '/shed-plan-orgunit'},
+                    {label: 'Календарь отпусков', icon: 'pi pi-users', to: '/shed-plan'},
+                    {label: 'Выгрузка расписания', icon: 'pi pi-download', to: '/data-download'},
+                ]
+            },
+            {label: 'Настройки', icon: 'pi pi-cog', 
+                items: [
+                    {label: 'Сотрудники', icon: 'pi pi-user-edit', to: '/employees-all'},
+                    {label: 'Бывшие сотрудники', icon: 'pi pi-user-minus', to: '/employees-fired'},
+                    {label: 'Должности сотрудников', icon: 'pi pi-users', to: '/titles-dictionary'},
+                    {label: 'Подразделения', icon: 'pi pi-home', to: '/orgunit-list'},
+                ]
+            },
+        ] : [
+            {label: 'Сводка', icon: 'pi pi-th-large', to: '/'},
+            {
+                label: 'График работы', icon: 'pi pi-list',
+                items: [
+                    {label: 'Календарь смен', icon: 'pi pi-sitemap', to: '/shed-plan-orgunit'},
+                    {label: 'Календарь отпусков', icon: 'pi pi-users', to: '/shed-plan'},
+                ]
+            },
+        ];  
+        return menu;  
+    }
+
     return (
         <div className={layoutContainerClassName} onClick={onWrapperClick}>
             <div className="layout-top">
                 <AppTopbar topbarUserMenuActive={topbarUserMenuActive} menuActive={menuActive} menuHoverActive={menuHoverActive}
                     onMenuButtonClick={onMenuButtonClick} onTopbarUserMenuButtonClick={onTopbarUserMenuButtonClick}
-                    onTopbarUserMenuClick={onTopbarUserMenuClick} model={menu} horizontal={horizontal} onSidebarClick={onSidebarClick}
+                    onTopbarUserMenuClick={onTopbarUserMenuClick} model={getAppMenu()} horizontal={horizontal} onSidebarClick={onSidebarClick}
                     onRootMenuItemClick={onRootMenuItemClick} onMenuItemClick={onMenuItemClick} isMobile={isMobile} />
 
                 <div className="layout-topbar-separator" />

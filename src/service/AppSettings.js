@@ -4,7 +4,8 @@ import User from '../entities/user';
 export default class AppSets{
     static minStartTime = "09:00";
     static maxEndTime = "20:00";
-    static timeBound = 10 * 60 * 1000; // допустимое время отклонения от запланированного времени прихода/ухода в милисекундах  
+    static timeBoundMinutes = 5;
+    static timeBound = AppSets.timeBoundMinutes * 60 * 1000; // допустимое время отклонения от запланированного времени прихода/ухода в милисекундах  
     static restTimeLag = 10; //за какое количество дней пользователь может планировать отпуск
     static dayOffTimeLag = 2; //за какое количество дней пользователь может планировать отпуск за свой счет
     static host = 'http://localhost:8080';
@@ -72,12 +73,15 @@ export default class AppSets{
         }
     }
 
-    static async getOrgUnitById(id, _this) {
+    static async getOrgUnitById(id, _this, actions) {
         try {
             if (!id || !Number.isInteger(id))
                 {return};
             const res = await axios.get(AppSets.host + '/dictionary/orgunit/findById/' + id);
             _this.setState({ chosenOrgUnit: res.data });
+            if (actions){
+                actions(res.data);
+            }
         } catch (err) {
             AppSets.processRequestsCatch(err, "Данные о подразделении", _this.messages, false);
         }
@@ -127,7 +131,7 @@ export default class AppSets{
                     data.birthday = birthday;
                 }
                 _this.messages.show({severity:'success', summary:'Успешно сохранено'});
-                _this.goBack();
+                //_this.goBack();
             })
             .catch(err=>{
                 AppSets.processRequestsCatch(err, "Информация о сотруднике", _this.messages, true)

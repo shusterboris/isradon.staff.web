@@ -19,6 +19,8 @@ export default class EmployeeView extends React.Component{
         this.nameBody = this.nameBody.bind(this);
         this.history = props.history;
         this.dataService = new ScheduleService();
+        this.displayHeader1 = this.displayHeader1.bind(this);
+        this.startEditEmployee = this.startEditEmployee.bind(this);
     }
 
 
@@ -39,6 +41,12 @@ export default class EmployeeView extends React.Component{
         this.props.history.push({pathname: '/employee-edit', state: {id: rowData.id, orgUnitList: orgUnitList}});
     }
 
+    startCreateEmployee(rowData){
+        this.setState({selectedRow: null})
+        let orgUnitList = JSON.stringify(this.state.orgUnits)
+        this.props.history.push({pathname: '/employee-edit', state: {orgUnitList: orgUnitList}});
+    }
+
     nameBody(rowData){
         if (rowData.lastName == null)
             {rowData.lastName=''}
@@ -57,6 +65,14 @@ export default class EmployeeView extends React.Component{
         this.messages.show({severity:'error', summary: 'Проблема', detail:'Не удалось получить данные с сервера. Возможно, плохая связь', life: 3000});
     }
 
+    displayHeader1(){
+        return(<div >
+            <Button className="p-button-rounded p-button-secondary" icon="pi pi-plus"                
+                onClick={()=>this.startCreateEmployee()}>
+            </Button>
+        </div>)
+    }
+
     render(){
         if (!AppSets.getUser())
             { this.history.push("/login")}        
@@ -65,10 +81,10 @@ export default class EmployeeView extends React.Component{
                 <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}} />
                 <div className = 'p-col-12 datatable-style-sched-repo'></div>
                 <DataTable value={this.state.employees}
-                    scrollable scrollHeight="800px"
+                    scrollable scrollHeight="500px"
                     emptyMessage='Нет сведений для данного сотрудника за выбранный период' >
-                        <Column body={this.actionBodyTemplate} 
-                            headerStyle={{width: '3.5em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}></Column>
+                        <Column body={this.actionBodyTemplate} header={this.displayHeader1()}
+                            headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}></Column>
                         <Column body={this.nameBody} header="Полное имя"></Column>
                         <Column field="jobTitle" header="Должность"></Column>
                         <Column field="orgUnit" header="Место работы"></Column>
