@@ -60,7 +60,7 @@ export default class MonthCalendar extends Component{
         this.startStr = eventInfo.start.toISOString().split('T')[0] + " 00:00";
         this.endStr = eventInfo.end.toISOString().split('T')[0] + " " +AppSets.maxEndTime;
         const middleInterval = new Date((eventInfo.start.getTime() + eventInfo.end.getTime()) / 2);
-        this.localStorage.setItem("initalCalDate", middleInterval);
+        window.localStorage.setItem("initalCalDate", middleInterval);
         this.updateData()
     }
 
@@ -101,7 +101,9 @@ export default class MonthCalendar extends Component{
 
     updateData(){
         if (!this.startStr || !this.endStr)
-            return;
+            { return };
+        if (!this.chosenOrgUnit && !this.chosenEmployee)
+            { return };
         this.dataService.getWorkCalendar(this.startStr, this.endStr, this.filterChecked,
             this.chosenOrgUnit, this.chosenEmployee,  this);
     }
@@ -208,7 +210,7 @@ export default class MonthCalendar extends Component{
         const user = AppSets.getUser();
         if (!AppSets.getUser())
             { this.history.push("/login") }
-        let storedIniDate = this.localStorage.getItem("initalCalDate");
+        let storedIniDate = window.localStorage.getItem("initalCalDate");
         let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         return (
             <div>
