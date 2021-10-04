@@ -34,6 +34,14 @@ export default class ScheduleReportHR extends React.Component{
         this.updateDaysState = this.updateDaysState.bind(this);
         this.updateDaysRow = this.updateDaysRow.bind(this);
         this.history = props.history;
+        this.moment = require('moment');
+        this.restoreInitalDate();
+    }
+
+    restoreInitalDate(){
+        let storedIniDate = window.localStorage.getItem("initalCalDate");
+        let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
+        this.setState({chosenDate: iniDate, chosenMonth: iniDate.getMonth()});
     }
 
     updateData(chosenMonth, chosenPersonId){
@@ -64,11 +72,12 @@ export default class ScheduleReportHR extends React.Component{
         }
     }
 
-    onSellerChange(personName, personId, coEmployees){
+    onSellerChange(personName, personId, coEmployees, chosenDate=null){
         this.setState(
             {chosenPerson: personName, chosenPersonId: personId}
         );
-        this.updateData(this.state.chosenMonth,personId);
+        let month = (!chosenDate) ? this.state.chosenMonth : chosenDate.getMonth()
+        this.updateData(month,personId);
         this.coEmployees = coEmployees
     }
 
@@ -552,7 +561,7 @@ class ScheduleFilter extends React.Component{
         if (this.state.employees){
             let foundEmployee = this.state.employees.filter(employee =>  employee.fullName.includes(event.target.value))
             if (foundEmployee){
-                this.props.onSellerChange(event.target.value, foundEmployee[0].id, this.state.employees);
+                this.props.onSellerChange(event.target.value, foundEmployee[0].id, this.state.employees, );
                 window.sessionStorage.setItem("chosenEmployee", JSON.stringify(foundEmployee[0]));
             }
         }
@@ -563,14 +572,14 @@ class ScheduleFilter extends React.Component{
         AppSets.getEmployees(this);
         try{
             const storedEmployeeStr = window.sessionStorage.getItem("chosenEmployee");
-            if (storedEmployeeStr!=null){
-                const storedEmployee = JSON.parse(storedEmployeeStr);
-                this.setState({chosenPerson: storedEmployee.fullName});
-                this.props.onSellerChange(storedEmployee.fullName, storedEmployee.id, [storedEmployee]);
-            }    
             let storedIniDate = window.localStorage.getItem("initalCalDate");
             let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
             this.setState({chosenDate: iniDate});
+            if (storedEmployeeStr!=null){
+                const storedEmployee = JSON.parse(storedEmployeeStr);
+                this.setState({chosenPerson: storedEmployee.fullName});
+                this.props.onSellerChange(storedEmployee.fullName, storedEmployee.id, [storedEmployee], iniDate);
+            }    
         }catch(err){
             console.log(err)
         };
@@ -584,7 +593,7 @@ class ScheduleFilter extends React.Component{
                     <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}}/>
                 </div>
                 <div className = 'p-col-4'>
-                    <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" 
+                    <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" view="month"
                         locale={"ru"}
                         value={this.state.chosenDate}
                         onSelect={(e) => {this.onChangeCalendar(e)}}/>

@@ -60,7 +60,7 @@ export default class MonthCalendar extends Component{
         this.startStr = eventInfo.start.toISOString().split('T')[0] + " 00:00";
         this.endStr = eventInfo.end.toISOString().split('T')[0] + " " +AppSets.maxEndTime;
         const middleInterval = new Date((eventInfo.start.getTime() + eventInfo.end.getTime()) / 2);
-        this.storage.setItem("initalCalDate", middleInterval);
+        this.localStorage.setItem("initalCalDate", middleInterval);
         this.updateData()
     }
 
@@ -208,7 +208,7 @@ export default class MonthCalendar extends Component{
         const user = AppSets.getUser();
         if (!AppSets.getUser())
             { this.history.push("/login") }
-        let storedIniDate = this.storage.getItem("initalCalDate");
+        let storedIniDate = this.localStorage.getItem("initalCalDate");
         let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         return (
             <div>

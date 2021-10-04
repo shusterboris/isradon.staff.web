@@ -100,7 +100,7 @@ export default class SchedulePlan extends Component {
         let mend = this.moment(eventInfo.view.currentEnd);
         this.interval = [mstart.format("YYYY-MM-DD") + " 00:00",
                         mend.subtract(1, 'days').format("YYYY-MM-DD") + " " +AppSets.maxEndTime]
-        window.sessionStorage.setItem("initalCalDate", mstart.toDate())
+        window.localStorage.setItem("initalCalDate", mstart.toDate())
         this.updateCalendar();
     }
 
@@ -416,7 +416,7 @@ export default class SchedulePlan extends Component {
     render() {
         if (!AppSets.getUser())
             { this.history.push("/login")}
-        let storedIniDate = window.sessionStorage.getItem("initalCalDate");
+        let storedIniDate = window.localStorage.getItem("initalCalDate");
         let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         const amIhr = (AppSets.getUser() && AppSets.getUser().amIhr());
         const cardTitle = amIhr ? "Планирование графика" : "Просмотр графика"
