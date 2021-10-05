@@ -1,6 +1,6 @@
 {
     "name": "isradon-staff",
-    "version": "0.9.6",
+    "version": "0.9.9.5",
     "homepage": ".",
     "private": true,
     "dependencies": {

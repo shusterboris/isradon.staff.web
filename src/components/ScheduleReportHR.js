@@ -180,7 +180,7 @@ class ScheduleResultTable extends React.Component{
 
     createHrMenuModel(){
         return([
-            {label:"Подвердить по факту:", icon: 'pi pi-thumbs-up',
+            {label:"Посчитать по факту:", icon: 'pi pi-thumbs-up',
             items: [
                 {label:"Приход и уход", command: () => this.acceptTime(3)},
                 {label:"Приход", command: () => this.acceptTime(1)},
@@ -188,7 +188,7 @@ class ScheduleResultTable extends React.Component{
                 {label:"Все, что по плану", command: () => this.acceptTime(0)}
             ]},
             {separator: true},
-            {label:"Подвердить по плану:", icon: 'pi pi-thumbs-down',
+            {label:"Посчитать по плану:", icon: 'pi pi-thumbs-down',
             items: [
                 {label:"Приход и уход", command: () => this.acceptTime(13)},
                 {label:"Приход", command: () => this.acceptTime(11)},

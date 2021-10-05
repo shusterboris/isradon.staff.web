@@ -6,7 +6,7 @@ import { InputText } from 'primereact/inputtext';
 import { InputMask } from 'primereact/inputmask';
 import {Button} from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar'
-import {Dropdown} from 'primereact/dropdown'
+import { ListBox} from 'primereact/listbox'
 import ScheduleService from '../service/ScheduleService';
 import { Messages } from 'primereact/messages';
 import { ProgressSpinner } from 'primereact/progressspinner';
@@ -24,7 +24,7 @@ export default class OrgUnitView extends Component {
         chosenShift: null,
         shiftNo: '',
         start1:'', end1:'', start2:'', end2:'', start3:'', end3:'', start4:'', end4:'', start5:'', end5:'', start6:'', end6:'', start7:'', end7:'', notes:'',
-        waitPlease: true, showConfirm: false, showDeletedUnits: false
+        waitPlease: true, showConfirm: false, showDeletedUnits: false, shiftNo:'', notes: ''
     }
 
     constructor(props) {
@@ -50,6 +50,8 @@ export default class OrgUnitView extends Component {
         this.onRemoveOrgUnit = this.onRemoveOrgUnit.bind(this);
         this.afterOrgUnitRemoving = this.afterOrgUnitRemoving.bind(this);
         this.checkShowDeleted = this.checkShowDeleted.bind(this);
+        this.shiftTemplate = this.shiftTemplate.bind(this);
+        this.copyHours = this.copyHours.bind(this);
         this.history = props.history;
     }
 
@@ -61,7 +63,8 @@ export default class OrgUnitView extends Component {
         //выбрано новое подразделение в таблице, берем список смен
         if (!val.deleted){
             this.setState({selectedRow: val, orgUnitName: val.name,start1: '', start2: '', start3: '', start4: '', start5: '', start6: '', start7: '',
-                end1: '', end2: '', end3: '', end4: '', end5: '', end6: '', end7: '',shiftChanged: false, orgUnitChanged: false});
+                end1: '', end2: '', end3: '', end4: '', end5: '', end6: '', end7: '',shiftChanged: false, orgUnitChanged: false,
+                shiftNo: '', notes: ''});
             this.dataService.getOrgUnitShifts(val.id, this);
         }else{
             this.messages.show({severity: 'warn', summary: 'Нельзя выбирать удаленное подразделение!'})
@@ -224,7 +227,8 @@ export default class OrgUnitView extends Component {
     onCreateShift(){
         const row = this.state.selectedRow;
         this.setState({selectedRow: row, chosenShift: null, shiftNo: '', start1: '', start2: '', start3: '', start4: '', start5: '', start6: '', start7: '',
-        end1: '', end2: '', end3: '', end4: '', end5: '', end6: '', end7: '',shiftChanged: false, orgUnitChanged: false});
+        end1: '', end2: '', end3: '', end4: '', end5: '', end6: '', end7: '',shiftChanged: false, orgUnitChanged: false, 
+        shiftNo: '', notes: '' });
     }
 
     displayButtonBar(){
@@ -284,6 +288,19 @@ export default class OrgUnitView extends Component {
         AppSets.getOrgUnitList(this, chkEvent.checked)
     }
 
+    shiftTemplate(option) {
+        return (
+            <div>
+                {option.no}. {option.notes}
+            </div>
+        );
+    }
+    copyHours(){
+        let s = this.state.start1;
+        let e = this.state.end1;
+        this.setState({start2: s, start3: s, start4: s, start5: s, end2: e, end3: e, end4: e, end5: e})
+    }
+
     renderOuHeader(){
         return(
             <Checkbox checked={this.state.showDeletedUnits} onChange={(chkEvent)=>this.checkShowDeleted(chkEvent)}/>
@@ -300,7 +317,8 @@ export default class OrgUnitView extends Component {
                 <Messages ref={(el) => this.messages = el}/>
             <div className='p-fluid p-grid'>
                 <div className="p-col-12 p-md-4">
-                    <DataTable value={this.state.orgUnits} scrollable emptyMessage='Нет сведений'                                
+                    <DataTable value={this.state.orgUnits} emptyMessage='Нет сведений'                                
+                                scrollable scrollHeight='600px'
                                 selectionMode="single" selection={this.state.selectedRow} dataKey="id"
                                 onSelectionChange={e => {
                                     this.onRowSelect(e.value)}} >
@@ -320,16 +338,16 @@ export default class OrgUnitView extends Component {
                         <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}} >Подразделение </div>
                     }
                     <div className = 'p-field'>
-                        <label htmlFor="orgUnitNameFld">Название подразделения</label>
+                        <label htmlFor="orgUnitNameFld" style={{fontWeight:'bold'}}>Название подразделения</label>
                         <InputText id="orgUnitNameFld" value={this.state.orgUnitName} placeholder="Введите название подразделения"
                                             onChange={(e) => this.setState({orgUnitName:e.target.value, orgUnitChanged: true})}/>
                     </div>
-                    <Dropdown style={{margin:'1em 0 0 0'}}
+                    <label htmlFor="shiftList" style={{fontWeight:'bold'}}>Список смен (шаблонов)</label>
+                    <ListBox id="shiftList" style={{margin:'0.5em 0 0 0'}} listStyle={{margin:'1em 0 0 0' }}
                         value={this.state.chosenShift}
-                        options={this.state.shifts} optionLabel="no" optionValue='no'
+                        options={this.state.shifts} itemTemplate={this.shiftTemplate} optionValue='no' 
                         onChange={(e)=>this.onChooseOrgUnitShift(e.target.value)}
-                        placeholder='Выберите смену'>
-                    </Dropdown>
+                        tooltip="Выберите смену (шаблон)"/>
                     {this.state.orgUnitChanged && 
                     <div style={{margin: '1.5em 1em 1em 1em'}}>
                         <span >
@@ -363,6 +381,9 @@ export default class OrgUnitView extends Component {
                                 style={{margin:'0 0 0 1em', width:'5em'}}
                                 value={this.state.end1} 
                                 onChange={(e) => this.setState({end1:e.target.value, shiftChanged: true})}/>
+                        <Button icon="pi pi-copy" style={{marginLeft:'1em'}} 
+                                    onClick={this.copyHours}
+                                    tooltip="Скопировать на понедельник-четверг"/>
                     </div>                        
                             
                     <div className="p-grid  form-group" style={{padding:'1em 0 0 0'}}>
@@ -445,7 +466,7 @@ export default class OrgUnitView extends Component {
                                 onChange={(e) => this.setState({shiftNo: e.target.value, shiftChanged: true})}/>
                             <InputText id='shiftNotesFld'  placeholder='доп.информация о смене'
                                 value={this.state.notes}
-                                style={{width: '70%'}}
+                                style={{width: '60%', margin: '0 0 0 1em'}}
                                 onChange={(e) => this.setState({notes: e.target.value, shiftChanged: true})}/>
                         </div>
 
