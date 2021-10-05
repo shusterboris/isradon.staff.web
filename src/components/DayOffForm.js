@@ -14,8 +14,6 @@ import { SplitButton} from 'primereact/splitbutton';
 import Confirmation from './Confirmation';
 import Utils from '../service/utils';
 import axios from 'axios';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { ListBox} from 'primereact/listbox';
 
 export default class DayOffForm extends Component {
@@ -349,6 +347,10 @@ export default class DayOffForm extends Component {
     }
 
     downloadFile(){
+        if (!this.state.photoFile){
+            this.messages.show({severity:'error', summary:'Для данной записи нет документа, который можно загрузить!'})
+            return;
+        }
         if (AppSets.getUser().amIhr()){
             this.dataService.downloadFile(this.state.photoFile, this);
         }else{
@@ -434,7 +436,7 @@ export default class DayOffForm extends Component {
                 </div>
                 {(this.state.eventType && this.state.eventType.id === 0 && this.state.salesInfo) && 
                     <div className="p-col-4">
-                        <ListBox options={this.state.salesInfo} liststyle={{padding:'0 0 0 0'}}/>
+                        <ListBox options={this.state.salesInfo} listStyle={{maxHeight: '250px'}}/>
                     </div>}
                 {this.state.eventType.id == AppSets.getRowType("SEAK_LEAVE").id && 
                 <div className="p-col-4">

@@ -140,6 +140,7 @@ class ScheduleResultTable extends React.Component{
         this.inputReasonEditor = this.inputReasonEditor.bind(this);
         this.onNoteValueChange = this.onNoteValueChange.bind(this);
         this.onReasonValueChange = this.onReasonValueChange.bind(this);
+        this.onEditorValueChange = this.onEditorValueChange.bind(this);
         this.onNoteSubmit = this.onNoteSubmit.bind(this);
         this.actionBodyReason = this.actionBodyReason.bind(this);
         this.openDayOffForm = this.openDayOffForm.bind(this);
@@ -149,6 +150,10 @@ class ScheduleResultTable extends React.Component{
     }
 
     downloadSickLeaveDocument(){
+        if (!this.state.selectedRow.photoFile){
+            this.messages.show({severity:'error', summary:'Для данной записи нет документа, который можно загрузить!'})
+            return;
+        }
         this.dataService.downloadFile(this.state.selectedRow.photoFile, this);  
     }
 
@@ -376,7 +381,13 @@ class ScheduleResultTable extends React.Component{
             return (!rowData.reason) ? (<div>{reasonPrefix}</div>) : (<div>{rowData.reason + " " + rowData.reason}</div>)
         }
     }
-    
+
+    onEditorValueChange(props, value) {
+        let updatedSchedule = [...props.value];
+        updatedSchedule[props.rowIndex][props.field] = value;
+        this.props.updateDaysState(updatedSchedule)
+    }
+
 
     onNoteValueChange(props, value) {
         let updatedSchedule = [...props.value];
@@ -559,10 +570,10 @@ class ScheduleFilter extends React.Component{
     onChangeSeller(event){
         this.setState({chosenPerson: event.target.value});
         if (this.state.employees){
-            let foundEmployee = this.state.employees.filter(employee =>  employee.fullName.includes(event.target.value))
-            if (foundEmployee){
-                this.props.onSellerChange(event.target.value, foundEmployee[0].id, this.state.employees, );
-                window.sessionStorage.setItem("chosenEmployee", JSON.stringify(foundEmployee[0]));
+            let foundEmployee = this.state.employees.find(employee =>  employee.fullName.includes(event.target.value))
+            if (foundEmployee && foundEmployee.hasOwnProperty("id")){
+                this.props.onSellerChange(event.target.value, foundEmployee.id, this.state.employees, );
+                window.sessionStorage.setItem("chosenEmployee", JSON.stringify(foundEmployee));
             }
         }
         

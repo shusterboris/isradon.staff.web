@@ -129,13 +129,19 @@ export default class ScheduleService {
             }
         }
         let summary = "";
+        let hhmm = "";
+        let s = "";
         if (totalDays !== 0){
             summary = "Отработано, дней:"+totalDays+", часов:"+this.minutesToTimeStr(difFactMinutes)+", по плану:"+this.minutesToTimeStr(difPlanMinutes)
             if (latenessTime !== 0){
-                summary += (". Опоздания: " + latenessCount +" раз, "+ this.minutesToTimeStr(latenessTime) + " час");    
+                hhmm = this.minutesToTimeStr(latenessTime).split(":");
+                s = (hhmm[0] === "00") ? (hhmm[1] + " минут ") : (hhmm[0] + " часов "+hhmm[1] + " минут ")
+                summary += (". Опоздания: " + latenessCount +" раз, "+ s);    
             }
             if (overtimeCount !== 0){
-                summary += (". Переработка: " + overtimeCount +" раз, "+ this.minutesToTimeStr(overtimeTime) + " час");    
+                hhmm = this.minutesToTimeStr(overtimeTime).split(":");
+                s = (hhmm[0] === "00") ? (hhmm[1] + " минут ") : (hhmm[0] + " часов "+hhmm[1] + " минут ")
+                summary += (". Переработка: " + overtimeCount +" раз, "+ s);    
             }
         }
         _this.setState({summary: summary});
@@ -643,7 +649,7 @@ export default class ScheduleService {
             .then(res => res.data)
             .then(data => {
                 if (_this){
-                    _this.props.history.goBack()
+                    //_this.props.history.goBack()
                 }
                 return data;
             })
