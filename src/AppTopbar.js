@@ -79,7 +79,7 @@ const AppTopbar = (props) => {
 						<li role="menuitem">
 							<button type="button" className="p-link p-ripple" onClick={(e)=>onItemClick(e,1)}>
 								<i className="pi pi-key"></i>
-								<span>Регистрация</span>
+								<span>Вход в систему</span>
                                 <Ripple />
 							</button>
 						</li>

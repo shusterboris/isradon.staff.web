@@ -27,7 +27,7 @@ export const Login = (props) => {
 					<div className="p-grid">
 						<div className="p-col-12">
 							<h1>HR - портал</h1>
-							<h2>Пожалуйста, зарегистрируйтесь</h2>
+							<h2>Пожалуйста, введите пользователя и пароль для входа</h2>
 						</div>
 						<div className="p-col-12">
 							<span className="p-float-label">
