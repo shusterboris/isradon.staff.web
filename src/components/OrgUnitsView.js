@@ -11,6 +11,7 @@ import ScheduleService from '../service/ScheduleService';
 import { Messages } from 'primereact/messages';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import {Checkbox} from 'primereact/checkbox'
+import { Tooltip } from 'primereact/tooltip'
 import Confirmation from './Confirmation'
 
 export default class OrgUnitView extends Component {
@@ -52,7 +53,12 @@ export default class OrgUnitView extends Component {
         this.checkShowDeleted = this.checkShowDeleted.bind(this);
         this.shiftTemplate = this.shiftTemplate.bind(this);
         this.copyHours = this.copyHours.bind(this);
+        this.ouDateSendBody = this.ouDateSendBody.bind(this);
+        this.ouDateApprovalBody = this.ouDateApprovalBody.bind(this);
+        this.renderOuSendHeader = this.renderOuSendHeader.bind(this);
+        this.renderOuApproveHeader = this.renderOuApproveHeader.bind(this);
         this.history = props.history;
+        this.moment = require('moment');
     }
 
     componentDidMount(){
@@ -283,6 +289,18 @@ export default class OrgUnitView extends Component {
         }
     }
 
+    ouDateApprovalBody(rowData){
+        if (!rowData.dateVerify)
+            {return "-"}
+        return this.moment(rowData.dateVerify).format("DD/MM");
+    }
+
+    ouDateSendBody(rowData){
+        if (!rowData.dateSend)
+            {return "-"}
+        return this.moment(rowData.dateSend).format("DD/MM");
+    }
+
     checkShowDeleted(chkEvent){
         this.setState({showDeletedUnits: chkEvent.checked});
         AppSets.getOrgUnitList(this, chkEvent.checked)
@@ -307,6 +325,18 @@ export default class OrgUnitView extends Component {
         )
     }
 
+    renderOuApproveHeader(){
+        return(
+            <img src="/assets/images/mail_black_24dp.svg" width="20px" height="20px" alt="Дата утверждения расписания"/>
+        )
+    }
+
+    renderOuSendHeader(){
+        return(
+            <i className="pi pi-thumbs-up" placeholder="Дата отправки уведомления"></i>
+        )
+    }
+
     render() {
         if (!AppSets.getUser())
             { this.history.push("/login")} 
@@ -323,7 +353,11 @@ export default class OrgUnitView extends Component {
                                 onSelectionChange={e => {
                                     this.onRowSelect(e.value)}} >
                         <Column field='name' style={{margin: '1em 0 0 0' }} header="Список подразделений"/>
-                        <Column body={this.actionBodyTemplate} header={chrHeader}
+                        <Column body={this.ouDateSendBody} header={this.renderOuSendHeader()} 
+                            style={{margin: '0 0 0 0', padding: '0 0 0 0'}} headerStyle={{width: '3em', textAlign: 'center'}} />
+                        <Column body={this.ouDateApprovalBody} header={this.renderOuApproveHeader()} 
+                            headerStyle={{width: '3em', textAlign: 'center'}} style={{margin: '0 0 0 0', padding: '0 0 0 0'}}/>
+                        <Column body={this.actionBodyTemplate} header={this.renderOuHeader()}
                             headerStyle={{width: '4.5em', textAlign: 'center'}} 
                             bodyStyle={{padding: '2px 0 0 0'}} />
 
