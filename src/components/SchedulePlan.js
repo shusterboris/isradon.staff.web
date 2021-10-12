@@ -449,9 +449,11 @@ export default class SchedulePlan extends Component {
             <div className="p-col-3">
                 <div className="card">
                     {amIhr && <div>
-                        <span className="card-title p-text-bold p-text-center">
-                            <Menu model={planMenuModel} popup ref={el => this.menu = el} id="popup_menu" />
-                            <Button icon="pi pi-bars" onClick={(event) => this.menu.toggle(event)} aria-controls="popup_menu" aria-haspopup></Button>
+                        <span className="card-title p-text-bold">
+                            {(this.state.chosenOrgUnit) && <div>
+                                <Menu model={planMenuModel} popup ref={el => this.menu = el} id="popup_menu" />
+                                <Button icon="pi pi-bars" onClick={(event) => this.menu.toggle(event)} aria-controls="popup_menu" aria-haspopup ></Button>
+                            </div>}
                             <span style={{marginLeft:'1em'}}> {cardTitle} </span>
                         </span>
                         <span className="p-float-label" style={{marginTop: '1em', marginBottom:'1em'}}>

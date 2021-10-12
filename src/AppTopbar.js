@@ -39,6 +39,7 @@ const AppTopbar = (props) => {
 	const processTopbarMenuClick = (itemNo) =>{
 		if (itemNo === 2){
 			window.sessionStorage.clear();
+			AppSets.clearUser();
 		}
 		history.push("/login")
 	}
@@ -69,12 +70,6 @@ const AppTopbar = (props) => {
 						<img src="assets/layout/images/avatar.png" alt="Profile" />
 					</button>
 					<ul className={topbarMenuClassName} onClick={props.onTopbarUserMenuClick}>
-						<li className="layout-profile-menu-search">
-							<span className="p-float-label">
-								<InputText type="text" />
-								<label>Search</label>
-							</span>
-						</li>
 
 						<li role="menuitem">
 							<button type="button" className="p-link p-ripple" onClick={(e)=>onItemClick(e,1)}>

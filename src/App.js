@@ -212,7 +212,10 @@ const App = () => {
     ];
 
     const getAppMenu = () => {
-        const menu = (AppSets.getUser() && AppSets.getUser().amIhr()) ? [
+        let menu = [];
+        if (!AppSets.getUser())
+            {return menu}
+        menu = AppSets.getUser().amIhr() ? [
             {label: 'Сводка', icon: 'pi pi-th-large', to: '/'},
             {
                 label: 'График работы', icon: 'pi pi-list',

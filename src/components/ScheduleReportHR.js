@@ -8,6 +8,7 @@ import {AutoComplete} from 'primereact/autocomplete';
 import {ContextMenu} from 'primereact/contextmenu';
 import {ColumnGroup} from 'primereact/columngroup';
 import {Row} from 'primereact/row';
+import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import {Messages} from 'primereact/messages';
 import classNames from 'classnames';
@@ -94,6 +95,7 @@ export default class ScheduleReportHR extends React.Component{
                     dataService = {this.dataService} 
                     onCalendarChange = {this.onCalendarChange}
                     onSellerChange = {this.onSellerChange}
+                    history = {this.history}
                 />
                 <ScheduleResultTable
                     updateData = {this.updateData}
@@ -537,6 +539,8 @@ class ScheduleFilter extends React.Component{
         this.onChangeCalendar = this.onChangeCalendar.bind(this);
         this.onChangeSeller = this.onChangeSeller.bind(this);
         this.filterSellers = this.filterSellers.bind(this); 
+        this.checkInOut = this.checkInOut.bind(this);
+        this.checkout = this.checkout.bind(this);
         this.state.summary = props.summary;
         this.moment =  require('moment');
         addLocale('ru', ru);   
@@ -597,6 +601,19 @@ class ScheduleFilter extends React.Component{
 
     }
 
+    checkout(){
+        this.history.push({pathname:'/login', state: {details: 'Вы отметили уход и вышли из системы.'}});
+    }
+
+    checkInOut(){
+        this.confirmHeader = "Внимание!"
+        this.confirmMessage = "Удалить из базы данных смену, которая сейчас отображается на экране?"
+        this.confirmAccept = this.onRemoveShift;
+        this.confirmReject = this.hideConfirmDlg;
+        this.setState({showConfirm: true});
+
+    }
+
     render(){
         return(
             <div className = 'p-grid'>
@@ -610,12 +627,19 @@ class ScheduleFilter extends React.Component{
                         onSelect={(e) => {this.onChangeCalendar(e)}}/>
                 </div>
                 <div className = 'p-col-4'>
-                    <AutoComplete 
-                        dropdown = {true}
-                        value = {this.state.chosenPerson}
-                        suggestions={this.state.filteredSellers}
-                        completeMethod = {this.filterSellers} 
-                        onChange = {(e) => {this.onChangeSeller(e) }}/>
+                    {AppSets.getUser() && !AppSets.getUser().hasAuthority("manualCheking") ?
+                        <AutoComplete 
+                            dropdown = {true}
+                            value = {this.state.chosenPerson}
+                            suggestions={this.state.filteredSellers}
+                            completeMethod = {this.filterSellers} 
+                            onChange = {(e) => {this.onChangeSeller(e) }}/> :
+                    <div>
+                        <Button label="Отметиться" className="p-button-secondary p-button-rounded" 
+                            onClick={this.checkInOut()}
+                            tooltip="Отметить приход или уход">
+                        </Button>
+                    </div>}
                 </div>
                 <div className = 'p-col-4'>
                     <span style={{color:'white'}}>{this.props.summary}</span>

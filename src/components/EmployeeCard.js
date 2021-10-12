@@ -12,10 +12,12 @@ import { Messages } from 'primereact/messages';
 import { FileUpload } from 'primereact/fileupload';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { parsePhoneNumberFromString } from 'libphonenumber-js'
+import Utils from '../service/utils';
 
 export default class EmployeeCard extends Component {
     state = {
         wasChanged: false,
+        id : null,
         orgUnits:[], 
         orgUnit:null,
         jobTitles:[],
@@ -41,6 +43,7 @@ export default class EmployeeCard extends Component {
         this.uploadEmployeePhoto = this.uploadEmployeePhoto.bind(this);
         this.uploadHandler = this.uploadHandler.bind(this);
         this.isUploadButtonVisible = this.isUploadButtonVisible.bind(this);
+        this.getEmployeeById = this.getEmployeeById.bind(this);
         this.history = props.history;
         this.moment = require('moment');
     }
@@ -53,21 +56,27 @@ export default class EmployeeCard extends Component {
             if (orgUnitListParam){
                 const orgUnitList = JSON.parse(orgUnitListParam);
                 this.setState({orgUnits: orgUnitList});
-        }   else{
+            }else{
                 AppSets.getOrgUnitList(this);
             }
             if (param.hasOwnProperty('id')){
                 const id = param.id;
-                axios.get(AppSets.host+'/employee/byId/'+id)
-                .then(res => {
-                    this.initiateFields(res.data);
-                    this.openPhoto();
-                })
-                .catch(error => 
-                    this.messages.show({ severity: 'error', summary: "Не удается получить данные о пользователе", sticky: true}));
+                this.getEmployeeById(id);
             }
         }
     }    
+
+    getEmployeeById(id){
+        if (!id)
+            {id = this.state.id}
+        axios.get(AppSets.host+'/employee/byId/'+id)
+        .then(res => {
+            this.initiateFields(res.data);
+            this.openPhoto();
+        })
+        .catch(error => 
+            this.messages.show({ severity: 'error', summary: "Не удается получить данные о пользователе", sticky: true}));
+    }
 
     initiateFields(data){
         this.employee = data;
@@ -251,7 +260,7 @@ export default class EmployeeCard extends Component {
                             </div>
                             <div className="p-col-2 p-mx-2">                            
                                 <span className="p-float-label">
-                                    <InputText id="eMailFld" value={this.state.email}  
+                                    <InputText id="eMailFld" type="email" value={this.state.email}  
                                         onChange={(e) => this.setState({email:e.target.value, wasChanged: true})}/>
                                     <label htmlFor="eMailFld">Электронная почта</label>
                                 </span>
@@ -264,13 +273,6 @@ export default class EmployeeCard extends Component {
                                     {this.props.pleaseWait && <ProgressSpinner />}
                                 </span>
                             </div>
-                            <div className="p-col-2 p-mx-2">                            
-                                <span className="p-float-label">
-                                    <InputText id='shiftDurFld' value={this.state.shiftLength} width='3em' keyfilter="num"
-                                           onChange={(sl) => this.setState({shiftLength:sl.target.value, wasChanged: true})}/>
-                                    <label htmlFor="shiftDurFld"> Смена, ч </label>
-                                </span>
-                            </div>
                             <div className="p-col-2 p-mx-2">
                                 <span className="p-float-label">
                                     <InputText id="daysInWeekFld" value={this.state.daysInWeek} width='3em' keyfilter="int"
@@ -278,11 +280,18 @@ export default class EmployeeCard extends Component {
                                     <label htmlFor='daysInWeekFld'> Дней/нед. </label>
                                 </span>
                             </div>
+                            <div className="p-col-2 p-mx-2">                            
+                                <span className="p-float-label">
+                                    <InputText id='shiftDurFld' value={this.state.shiftLength} width='3em' keyfilter="num"
+                                           onChange={(sl) => this.setState({shiftLength:sl.target.value, wasChanged: true})}/>
+                                    <label htmlFor="shiftDurFld"> Смена, ч </label>
+                                </span>
+                            </div>
                             <div className="p-col-7 p-mx-2">
                                 <span className="p-float-label">
                                     <InputText id="shiftDurFryFld" value={this.state.shiftLengthOnFriday} width='3em' keyfilter="num" 
                                             onChange={(diw) => this.setState({shiftLengthOnFriday:diw.target.value, wasChanged: true})}/>
-                                    <label htmlFor='shiftDurFryFld'> В пятницу </label>
+                                    <label htmlFor='shiftDurFryFld'> В пятницу, ч </label>
                                 </span>
                             </div>
                             
@@ -328,6 +337,15 @@ export default class EmployeeCard extends Component {
             return false;
         }
         errFields = [];
+        if (this.state.orgUnit && !this.state.orgUnits.find((ou)=>(ou.name === this.state.orgUnit))){
+            errFields.push('Неправильное значение подразделения');
+        }
+        if (!this.state.jobTitles.find((jt)=>(jt === this.state.jobTitle))){
+            errFields.push('Неправильное значение должности');
+        }
+        if (this.state.email && !Utils.emailIsValid(this.state.email)){
+            errFields.push('Неправильный формат электронной почты');
+        }
         if (this.state.shiftLength && (this.state.shiftLength <= 0 || this.state.shiftLength > 12)){
             errFields.push("Длительность смены должна быть больше 0 и меньше 12");
         }
@@ -339,7 +357,7 @@ export default class EmployeeCard extends Component {
         }
         if (this.state.birthday){
             try{
-                const birthday = this.moment(this.state.birthday,"dd/MM/yyyy");
+                const birthday = this.moment(this.state.birthday,"DD/MM/yyyy");
                 if (!birthday.isValid()){
                     throw "Введена неправильная дата рождения";
                 }            

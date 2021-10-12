@@ -365,7 +365,7 @@ export default class ScheduleService {
             })
     }
 
-    acceptSchedule(payload, _this){
+    acceptSchedule(payload, _this, finalize=null){
         const server = AppSets.host;
         const query = "/schedule/accept";
         const url = server + query;
@@ -373,6 +373,8 @@ export default class ScheduleService {
             .then((res)=>{
                 if (res.data === 'Ok'){
                     _this.messages.show({ severity: 'success', summary: 'Выполнено успешно'});
+                    if (finalize)
+                        {finalize()}
                 }else{
                     _this.messages.show({ severity: 'warn', summary: 'В расписании нет ни одной записей, которыые подлежат утверждению.'});
                 }
@@ -477,7 +479,8 @@ export default class ScheduleService {
         const server = AppSets.host;
         const id = data.id;
         const notes = data[fieldName];
-        const query = "/schedule/notesUpdate/" + id + "/" + fieldName + "/" + notes;
+        let note = notes ? notes : '-';
+        const query = "/schedule/notesUpdate/" + id + "/" + fieldName + "/" + note;
         const url = server + query;
         axios.put(url, )
             .then(_this.messages.show({severity: 'success', summary: 'Выполнено успешно'}))

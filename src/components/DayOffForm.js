@@ -81,7 +81,9 @@ export default class DayOffForm extends Component {
         this.setState({addButtons: addButtons});
         this.dataService.openPhoto(this);
         if (AppSets.rowTypesIsEqual(this.state.eventType,AppSets.getRowType('ORDINAL'))){
-            this.dataService.getSalesInfo(this.state.employee.id, this.state.start, this);
+            if (this.state.employee && this.state.employee.id){
+                this.dataService.getSalesInfo(this.state.employee.id, this.state.start, this);
+            }
         }
 
     }

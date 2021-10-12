@@ -27,6 +27,7 @@ export const Login = (props) => {
 					<div className="p-grid">
 						<div className="p-col-12">
 							<h1>HR - портал</h1>
+							{props.reason && <h2>{props.reason}</h2>}
 							<h2>Пожалуйста, введите пользователя и пароль для входа</h2>
 						</div>
 						<div className="p-col-12">
@@ -48,8 +49,9 @@ export const Login = (props) => {
 						</div>
 						<div className="p-col-6" style={{ textAlign: 'right' }}>
 							<Button label="Дальше" onClick={()=>AppSets.authenticateUser(userName, password, showMessage, history)} style={{ width: '100%' }} />
-						</div>
+						</div>						
 					</div>
+					<div className="p-text-right p-m-1 p-p-1" style={{fontSize:'xx-small', color:'#b3d1ff'}}>ver.1.0.2</div>
 				</div>
 			</div>
 		</div>

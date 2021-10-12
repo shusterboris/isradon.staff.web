@@ -49,6 +49,10 @@ export default class AppSets{
         });
     }
 
+    static clearUser(){
+        AppSets.user = null;
+    }
+
     static getUser(){
         if (AppSets.user){
             return AppSets.user;
@@ -113,7 +117,7 @@ export default class AppSets{
             });
     }
 
-    static saveEmployee(data, _this){
+    static saveEmployee(data, _this, finalize){
         if (data.orgUnit){
             if (Number.isInteger(data.orgUnit)){
                 data.orgUnitId = data.orgUnit;
@@ -124,14 +128,16 @@ export default class AppSets{
             }
         }
         return axios.post(AppSets.host+'/employee/save', data)
-            .then(() => {
+            .then((result) => {
                 if (data.birtday){
                     const classic = data.birtday;
                     const birthday = this.moment(classic,"DD/MM/yyyy").format("yyyy-MM-DD")
                     data.birthday = birthday;
                 }
+                _this.setState({id: result.data});
                 _this.messages.show({severity:'success', summary:'Успешно сохранено'});
-                //_this.goBack();
+                if (finalize)
+                    { finalize() }
             })
             .catch(err=>{
                 AppSets.processRequestsCatch(err, "Информация о сотруднике", _this.messages, true)

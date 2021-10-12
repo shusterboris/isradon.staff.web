@@ -95,8 +95,8 @@ export default class MonthCalendar extends Component{
 
     onClearChosenPerson(){
         this.chosenEmployee = null;
-        this.setState({chosenPerson:null});
-        this.updateData();
+        this.setState({chosenPerson:null, chosenOrgUnit: null, days: []});
+        //this.updateData();
     }
 
     updateData(){

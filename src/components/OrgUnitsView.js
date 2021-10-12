@@ -11,8 +11,10 @@ import ScheduleService from '../service/ScheduleService';
 import { Messages } from 'primereact/messages';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import {Checkbox} from 'primereact/checkbox'
-import { Tooltip } from 'primereact/tooltip'
+import { ContextMenu } from 'primereact/contextmenu'
 import Confirmation from './Confirmation'
+import ScheduleCreateProxy from '../entities/ScheduleCreateProxy';
+import axios from 'axios'
 
 export default class OrgUnitView extends Component {
     state = {
@@ -57,8 +59,15 @@ export default class OrgUnitView extends Component {
         this.ouDateApprovalBody = this.ouDateApprovalBody.bind(this);
         this.renderOuSendHeader = this.renderOuSendHeader.bind(this);
         this.renderOuApproveHeader = this.renderOuApproveHeader.bind(this);
+        this.approveSchedule = this.approveSchedule.bind(this);
+        this.sendSchedule = this.sendSchedule.bind(this);
+        this.createSheduleReport = this.createSheduleReport.bind(this);
         this.history = props.history;
         this.moment = require('moment');
+        this.ouMenuModel = [
+            {label: 'Утвердить', icon: 'pi pi-thumbs-up', command: () => this.approveSchedule(this.state.selectedRow)},
+            {label: 'Загрузить', icon: 'pi pi-send', command: () => this.createSheduleReport(this.state.selectedRow)}
+        ];
     }
 
     componentDidMount(){
@@ -75,6 +84,61 @@ export default class OrgUnitView extends Component {
         }else{
             this.messages.show({severity: 'warn', summary: 'Нельзя выбирать удаленное подразделение!'})
         }
+    }
+
+    approveSchedule(selRow){
+        //если числа текущего месяца - первые, берем интервалом текущий месяц, иначе - будущий
+        let today = this.moment();
+        if (today.day > 20){
+            today.add(1,'month');
+        }
+        let interval = [today.startOf('month').format('yyyy-MM-DD HH:mm'), today.endOf('month').format('yyyy-MM-DD HH:mm')]
+        let payload = new ScheduleCreateProxy(selRow.id, 0, 
+            null, null, interval, null, null)
+        this.dataService.acceptSchedule(payload, this);    
+    }
+
+    createSheduleReport(selRow){
+        let today = this.moment();
+        if (today.day > 20){
+            today.add(1,'month');
+        }
+        //тут проверить наличие утверждения
+        let month = today.month();
+        const orgUnitId = selRow.id;
+        const server = AppSets.host;
+        month = 5
+        const query = "/schedule/getCoworkers/" + month + "/" + orgUnitId;
+        const url = server + query;
+        axios.get(url, {timeout: AppSets.timeout})
+            .then((res)=>{
+                if (res.data.length !== 0){
+                    this.sendSchedule(selRow, res.data);
+                }else{
+                    this.messages.show({ severity: 'warn', summary: 'Нет утвержденного расписания для данного подразделения'});
+                }
+            })
+            .catch(err => {
+                this.dataService.processRequestsCatch(err, 'Формирование извещений для расписания', this.messages);
+            })
+    }
+
+    sendSchedule(selRow, employeeIds = []){
+        let today = this.moment();
+        if (today.day > 20){
+            today.add(1,'month');
+        }
+        let interval = [today.startOf('month').format('yyyy-MM-DD HH:mm'), today.endOf('month').format('yyyy-MM-DD HH:mm')]
+        let payload = null;
+        if (employeeIds.length === 0){
+            payload = new ScheduleCreateProxy(selRow.id, 0, null, null, interval, null, null)
+        }else{
+            for (let i=0; i < employeeIds.length; i++ ){
+                let employeeId = employeeIds[i];
+                let payload = new ScheduleCreateProxy(selRow.id, 0, employeeId, null, interval, null, null);
+            }
+        }
+
     }
 
     createTime(timeStr){
@@ -327,13 +391,13 @@ export default class OrgUnitView extends Component {
 
     renderOuApproveHeader(){
         return(
-            <img src="/assets/images/mail_black_24dp.svg" width="20px" height="20px" alt="Дата утверждения расписания"/>
+            <i className="pi pi-thumbs-up"></i>
         )
     }
 
     renderOuSendHeader(){
         return(
-            <i className="pi pi-thumbs-up" placeholder="Дата отправки уведомления"></i>
+            <i className="pi pi-send" placeholder="Дата отправки уведомления"></i>
         )
     }
 
@@ -341,22 +405,27 @@ export default class OrgUnitView extends Component {
         if (!AppSets.getUser())
             { this.history.push("/login")} 
 
-        let chrHeader = this.renderOuHeader();
         return <div className="content-section implementation">
             <div className="p-card">
                 <Messages ref={(el) => this.messages = el}/>
             <div className='p-fluid p-grid'>
                 <div className="p-col-12 p-md-4">
+                    <ContextMenu model={this.ouMenuModel} ref={el => this.cm = el} onHide={() => this.setState({ selectedRow: null })}/>
                     <DataTable value={this.state.orgUnits} emptyMessage='Нет сведений'                                
-                                scrollable scrollHeight='600px'
+                                scrollable scrollHeight='600px' showGridlines
+                                contextMenuSelection={this.state.selectedRow}
+                                onContextMenuSelectionChange={e => this.setState({ selectedRow: e.value })}
+                                onContextMenu={e => this.cm.show(e.originalEvent)}
+                                emptyMessage='Нет сведений о подразделениях'       
                                 selectionMode="single" selection={this.state.selectedRow} dataKey="id"
-                                onSelectionChange={e => {
-                                    this.onRowSelect(e.value)}} >
+                                onSelectionChange={e => {this.onRowSelect(e.value)}} >
                         <Column field='name' style={{margin: '1em 0 0 0' }} header="Список подразделений"/>
                         <Column body={this.ouDateSendBody} header={this.renderOuSendHeader()} 
-                            style={{margin: '0 0 0 0', padding: '0 0 0 0'}} headerStyle={{width: '3em', textAlign: 'center'}} />
+                            style={{margin: '0 0 0 0', padding: '0 0 0 0'}} 
+                            headerStyle={{width: '3em', textAlign: 'center'}} />
                         <Column body={this.ouDateApprovalBody} header={this.renderOuApproveHeader()} 
-                            headerStyle={{width: '3em', textAlign: 'center'}} style={{margin: '0 0 0 0', padding: '0 0 0 0'}}/>
+                            headerStyle={{width: '3em', textAlign: 'center'}} 
+                            style={{margin: '0 0 0 0', padding: '0 0 0 0', color:'#1E88E5'}}/>
                         <Column body={this.actionBodyTemplate} header={this.renderOuHeader()}
                             headerStyle={{width: '4.5em', textAlign: 'center'}} 
                             bodyStyle={{padding: '2px 0 0 0'}} />

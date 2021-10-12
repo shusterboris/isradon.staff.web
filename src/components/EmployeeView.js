@@ -83,11 +83,11 @@ export default class EmployeeView extends React.Component{
                 <DataTable value={this.state.employees}
                     scrollable scrollHeight="500px"
                     emptyMessage='Нет сведений для данного сотрудника за выбранный период' >
-                        <Column body={this.actionBodyTemplate} header={this.displayHeader1()}
+                        <Column body={this.actionBodyTemplate} header={this.displayHeader1()} 
                             headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}></Column>
-                        <Column body={this.nameBody} header="Полное имя"></Column>
-                        <Column field="jobTitle" header="Должность"></Column>
-                        <Column field="orgUnit" header="Место работы"></Column>
+                        <Column field='fullName' header="Полное имя" filter filterPlaceholder="Поиск по имени" sortable></Column>
+                        <Column field="jobTitle" header="Должность" filter filterPlaceholder="Поиск по должности" sortable></Column>
+                        <Column field="orgUnit" header="Место работы" filter filterPlaceholder="Поиск по подразделению" sortable></Column>
                         <Column field="phone" header="Телефон"></Column>
                 </DataTable>
             </div>

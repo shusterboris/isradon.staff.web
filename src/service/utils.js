@@ -13,4 +13,11 @@ export default class Utils{
         const extension = filename.substring(filename.lastIndexOf('.') + 1, filename.length) || filename;
         return extension;
     }
-}
+
+    static emailIsValid(mail) {
+        if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail)) {
+            return (true)
+        }
+            return (false)
+        }
+    }
