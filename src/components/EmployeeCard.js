@@ -337,7 +337,7 @@ export default class EmployeeCard extends Component {
             return false;
         }
         errFields = [];
-        if (this.state.orgUnit && !this.state.orgUnits.find((ou)=>(ou.name === this.state.orgUnit))){
+        if (this.state.orgUnit && !this.state.orgUnits.find((ou)=>(ou.name === this.state.orgUnit.name))){
             errFields.push('Неправильное значение подразделения');
         }
         if (!this.state.jobTitles.find((jt)=>(jt === this.state.jobTitle))){

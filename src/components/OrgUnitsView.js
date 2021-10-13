@@ -66,7 +66,7 @@ export default class OrgUnitView extends Component {
         this.moment = require('moment');
         this.ouMenuModel = [
             {label: 'Утвердить', icon: 'pi pi-thumbs-up', command: () => this.approveSchedule(this.state.selectedRow)},
-            {label: 'Загрузить', icon: 'pi pi-send', command: () => this.createSheduleReport(this.state.selectedRow)}
+            {label: 'Отправить', icon: 'pi pi-send', command: () => this.createSheduleReport(this.state.selectedRow)}
         ];
     }
 

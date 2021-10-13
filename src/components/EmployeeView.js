@@ -81,11 +81,11 @@ export default class EmployeeView extends React.Component{
                 <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}} />
                 <div className = 'p-col-12 datatable-style-sched-repo'></div>
                 <DataTable value={this.state.employees}
-                    scrollable scrollHeight="500px"
+                    scrollable scrollHeight="500px" sortField="fullName" 
                     emptyMessage='Нет сведений для данного сотрудника за выбранный период' >
                         <Column body={this.actionBodyTemplate} header={this.displayHeader1()} 
                             headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}></Column>
-                        <Column field='fullName' header="Полное имя" filter filterPlaceholder="Поиск по имени" sortable></Column>
+                        <Column field='fullName' header="Полное имя" filter filterPlaceholder="Поиск по имени" filterMatchMode="contains" sortable></Column>
                         <Column field="jobTitle" header="Должность" filter filterPlaceholder="Поиск по должности" sortable></Column>
                         <Column field="orgUnit" header="Место работы" filter filterPlaceholder="Поиск по подразделению" sortable></Column>
                         <Column field="phone" header="Телефон"></Column>

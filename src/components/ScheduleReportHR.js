@@ -15,6 +15,7 @@ import classNames from 'classnames';
 import './ScheduleReport.css'
 import { ru } from '../service/AppSettings';
 import { addLocale } from 'primereact/api';
+import Confirmation from './Confirmation'
 
 export default class ScheduleReportHR extends React.Component{
     state = {
@@ -23,6 +24,7 @@ export default class ScheduleReportHR extends React.Component{
         selectedRow: null,
         chosenMonth: (new Date()).getMonth(),
         summary: '',
+        showConfirm: false,
     }
     
     constructor(props){
@@ -527,7 +529,7 @@ class ScheduleResultTable extends React.Component{
 }
 
 class ScheduleFilter extends React.Component{
-    state = {summary:''}
+    state = {summary:'', showConfirm:false, jobStatus:0}
     //Панель фильтра, содержащая выбранный месяц года и продавца
     constructor(props){
         super(props);
@@ -541,6 +543,7 @@ class ScheduleFilter extends React.Component{
         this.filterSellers = this.filterSellers.bind(this); 
         this.checkInOut = this.checkInOut.bind(this);
         this.checkout = this.checkout.bind(this);
+        this.hideConfirmDlg = this.hideConfirmDlg.bind(this);
         this.state.summary = props.summary;
         this.moment =  require('moment');
         addLocale('ru', ru);   
@@ -594,8 +597,11 @@ class ScheduleFilter extends React.Component{
                 const storedEmployee = JSON.parse(storedEmployeeStr);
                 this.setState({chosenPerson: storedEmployee.fullName});
                 this.props.onSellerChange(storedEmployee.fullName, storedEmployee.id, [storedEmployee], iniDate);
+            }else{
+
             }    
         }catch(err){
+            this.history.push({pathname:'/error', state: {reason: err}})
             console.log(err)
         };
 
@@ -603,15 +609,20 @@ class ScheduleFilter extends React.Component{
 
     checkout(){
         this.history.push({pathname:'/login', state: {details: 'Вы отметили уход и вышли из системы.'}});
+        AppSets.clearUser();
+        window.sessionStorage.removeItem("user");
+    }
+
+    hideConfirmDlg(){
+        this.setState({showConfirm: false})
     }
 
     checkInOut(){
         this.confirmHeader = "Внимание!"
-        this.confirmMessage = "Удалить из базы данных смену, которая сейчас отображается на экране?"
-        this.confirmAccept = this.onRemoveShift;
+        this.confirmMessage = "Хотите отметить приход или уход?"
+        this.confirmAccept = this.hideConfirmDlg;
         this.confirmReject = this.hideConfirmDlg;
         this.setState({showConfirm: true});
-
     }
 
     render(){
@@ -620,6 +631,10 @@ class ScheduleFilter extends React.Component{
                 <div className = 'p-col-12'>
                     <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}}/>
                 </div>
+                {this.state.showConfirm && 
+                    <Confirmation visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmMessage}
+                            accept={this.confirmAccept} reject={this.confirmReject} messages={this.messages} context={this}/>}
+                   
                 <div className = 'p-col-4'>
                     <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" view="month"
                         locale={"ru"}
@@ -627,7 +642,7 @@ class ScheduleFilter extends React.Component{
                         onSelect={(e) => {this.onChangeCalendar(e)}}/>
                 </div>
                 <div className = 'p-col-4'>
-                    {AppSets.getUser() && !AppSets.getUser().hasAuthority("manualCheking") ?
+                    {AppSets.getUser() && !AppSets.getUser().hasAuthority("manualCheckIn") ?
                         <AutoComplete 
                             dropdown = {true}
                             value = {this.state.chosenPerson}
@@ -635,8 +650,8 @@ class ScheduleFilter extends React.Component{
                             completeMethod = {this.filterSellers} 
                             onChange = {(e) => {this.onChangeSeller(e) }}/> :
                     <div>
-                        <Button label="Отметиться" className="p-button-secondary p-button-rounded" 
-                            onClick={this.checkInOut()}
+                        <Button label="Отметиться" className="p-button-info p-button-rounded" 
+                            onClick={this.checkInOut}
                             tooltip="Отметить приход или уход">
                         </Button>
                     </div>}

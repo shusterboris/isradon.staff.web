@@ -31,16 +31,14 @@ export default class AppSets{
                 window.location = "/";
 			})
             .catch((err)=>{
-                    console.log("cant get list of authority ");
                     (!err.response) ?  
-                    showMessage({severity: 'error', summary: 'Нет связи с сервером!'}) : 
-                    showMessage({severity: 'error', summary: 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку'})})})
+                        showMessage({severity: 'error', summary: 'Нет связи с сервером!'}) : 
+                        showMessage({severity: 'error', summary: 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку'})})})
 		.catch((err)=>{
-            console.log("auth failed ");
             if (!err.response){
                 showMessage({severity: 'error', summary: 'Нет связи с сервером!'});
             }else{
-                if (err.response.status === 401){
+                if (err.response.status === 401 || err.response.status === 403){
                     window.location="/access"
                 }else{
                     showMessage({severity: 'error', summary: 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку', sticky: true})
@@ -64,6 +62,10 @@ export default class AppSets{
             AppSets.user = new User(userInfo);
         }
         return AppSets.user;
+    }
+
+    static async getCurrentEmployee(){
+        
     }
 
     static async getOrgUnits(_this) {
