@@ -51,7 +51,7 @@ export const Login = (props) => {
 							<Button label="Дальше" onClick={()=>AppSets.authenticateUser(userName, password, showMessage, history)} style={{ width: '100%' }} />
 						</div>						
 					</div>
-					<div className="p-text-right p-m-1 p-p-1" style={{fontSize:'xx-small', color:'#b3d1ff'}}>ver.1.0.2</div>
+					<div className="p-text-right p-m-1 p-p-1" style={{fontSize:'xx-small', color:'#0000cc'}}>ver.1.0.5</div>
 				</div>
 			</div>
 		</div>

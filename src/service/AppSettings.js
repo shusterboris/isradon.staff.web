@@ -8,8 +8,9 @@ export default class AppSets{
     static timeBound = AppSets.timeBoundMinutes * 60 * 1000; // допустимое время отклонения от запланированного времени прихода/ухода в милисекундах  
     static restTimeLag = 10; //за какое количество дней пользователь может планировать отпуск
     static dayOffTimeLag = 2; //за какое количество дней пользователь может планировать отпуск за свой счет
-    static host = 'http://localhost:8080';
+    //static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
+    static host = "https://smart.sclub.in.ua";
     static timeout = 2000;
         
     static authenticateUser(userName, password, showMessage, history){
@@ -129,6 +130,13 @@ export default class AppSets{
                 data.orgUnit = data.orgUnit.name;
             }
         }
+        if (data.shiftLengthOnFriday === '')
+            {data.shiftLengthOnFriday = null}
+        if (data.shiftLength === '')
+            {data.shiftLength = null}
+        if (data.daysInWeek === '')
+            {data.daysInWeek = null}
+
         return axios.post(AppSets.host+'/employee/save', data)
             .then((result) => {
                 if (data.birtday){

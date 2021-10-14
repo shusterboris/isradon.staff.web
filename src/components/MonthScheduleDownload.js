@@ -36,7 +36,7 @@ export default class MonthScheduleDownload extends Component{
 
     displayToolbar(){
         const leftBar = (<React.Fragment>
-            {((this.state.chosenOrgUnit || this.state.chosenEmployee) && this.state.chosenDate) &&
+            {((this.state.chosenOrgUnit || this.state.chosenEmployee) && this.state.chosenDate !== null) &&
             <Button label="Начать" icon="pi pi-check" 
                 tooltip = "Сформировать файл для выгрузки данных на сервере"
                 onClick={this.sendQuery} style={{marginRight: '1em'}}/>
@@ -57,7 +57,10 @@ export default class MonthScheduleDownload extends Component{
         const server = AppSets.host;
         const month = date.month()+1;
         let year = month>1 ? date.year() : (date.year() - 1);
-        let query = query = "/schedule/exportplan/" + this.state.chosenEmployee.id + "/" + month + "/" + year;
+        let query = ""
+        if (this.state.chosenEmployee){
+            query = "/schedule/exportplan/" + this.state.chosenEmployee.id + "/" + month + "/" + year;
+        }
         if (this.state.selector === "Факт"){
             if (this.state.chosenOrgUnit){
                 query = "/schedule/exportcsv/"+this.state.chosenOrgUnit.id+"/" + month + "/" + year;
@@ -95,7 +98,7 @@ export default class MonthScheduleDownload extends Component{
             link.href = window.URL.createObjectURL(blob);
             link.download = this.state.fileName;
             link.click()
-            this.setState({chosenOrgUnit: null, chosenDate: null, fileName:null})              
+            this.setState({chosenOrgUnit: null, chosenEmployee: null, fileName:null})              
           })
           .catch(err=>{
             const errMsg = (!err.response) ? "Сервер не отвечает или проблемы с Интернетом" : "Не удалось сформировать отчет";
@@ -144,7 +147,7 @@ export default class MonthScheduleDownload extends Component{
             const theDate = event.value;
             this.setState({chosenDate: theDate, fileName:null});
         }else{
-            this.chosenDate = null;
+            this.chosenDate = new Date();
         }
     }
 

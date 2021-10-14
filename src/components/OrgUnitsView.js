@@ -60,13 +60,15 @@ export default class OrgUnitView extends Component {
         this.renderOuSendHeader = this.renderOuSendHeader.bind(this);
         this.renderOuApproveHeader = this.renderOuApproveHeader.bind(this);
         this.approveSchedule = this.approveSchedule.bind(this);
+        this.approveTiming = this.approveTiming.bind(this);
         this.sendSchedule = this.sendSchedule.bind(this);
         this.createSheduleReport = this.createSheduleReport.bind(this);
         this.history = props.history;
         this.moment = require('moment');
         this.ouMenuModel = [
-            {label: 'Утвердить', icon: 'pi pi-thumbs-up', command: () => this.approveSchedule(this.state.selectedRow)},
-            {label: 'Отправить', icon: 'pi pi-send', command: () => this.createSheduleReport(this.state.selectedRow)}
+            {label: 'Утвердить план', icon: 'pi pi-calendar', command: () => this.approveSchedule(this.state.selectedRow)},
+            {label: 'Отправить', icon: 'pi pi-send', command: () => this.createSheduleReport(this.state.selectedRow)},
+            {label: 'Утвердить факт', icon: 'pi pi-thumbs-up', command: () => this.approveTiming(this.state.selectedRow)}
         ];
     }
 
@@ -98,6 +100,20 @@ export default class OrgUnitView extends Component {
         this.dataService.acceptSchedule(payload, this);    
     }
 
+    approveTiming(selRow){
+        //если числа текущего месяца - первые, берем интервалом текущий месяц, иначе - будущий
+        /*
+        let today = this.moment();
+        if (today.day > 20){
+            today.add(1,'month');
+        }
+        let interval = [today.startOf('month').format('yyyy-MM-DD HH:mm'), today.endOf('month').format('yyyy-MM-DD HH:mm')]
+        let payload = new ScheduleCreateProxy(selRow.id, 0, 
+            null, null, interval, null, null)
+        this.dataService.acceptSchedule(payload, this);    
+        */
+    }
+    
     createSheduleReport(selRow){
         let today = this.moment();
         if (today.day > 20){

@@ -25,7 +25,7 @@ export default class EmployeeCard extends Component {
         filteredOrgUnits:[],
         filteredJobTitles:[],
         firstName:'', lastName:'',nickName:'',
-        phone:'',email:'',birthday:'', shiftLength:8, daysInWeek:5, shiftLengthOnFriday:0, addConditions:'',
+        phone:'',email:'',birthday:'', shiftLength:8, daysInWeek:5, shiftLengthOnFriday:null, addConditions:'',
         photoFile: null, photoData: null, working: true,
     }
     
@@ -318,7 +318,8 @@ export default class EmployeeCard extends Component {
         if (enteredPhone.startsWith('0')){
             enteredPhone =  enteredPhone.replace('0', '+972');
         }
-        return parsePhoneNumberFromString(enteredPhone);
+        const result = parsePhoneNumberFromString(enteredPhone)
+        return (result && result.isValid());
     }
 
     isDataValid(messages){
@@ -337,8 +338,14 @@ export default class EmployeeCard extends Component {
             return false;
         }
         errFields = [];
-        if (this.state.orgUnit && !this.state.orgUnits.find((ou)=>(ou.name === this.state.orgUnit.name))){
-            errFields.push('Неправильное значение подразделения');
+        if (this.state.orgUnit.hasOwnProperty("name")){
+            if (this.state.orgUnit && !this.state.orgUnits.find((ou)=>(ou.name === this.state.orgUnit.name))){
+                errFields.push('Неправильное значение подразделения');
+            }
+        }else{
+            if (this.state.orgUnit && !this.state.orgUnits.find((ou)=>(ou.name === this.state.orgUnit))){
+                errFields.push('Неправильное значение подразделения');
+            }
         }
         if (!this.state.jobTitles.find((jt)=>(jt === this.state.jobTitle))){
             errFields.push('Неправильное значение должности');
@@ -346,10 +353,10 @@ export default class EmployeeCard extends Component {
         if (this.state.email && !Utils.emailIsValid(this.state.email)){
             errFields.push('Неправильный формат электронной почты');
         }
-        if (this.state.shiftLength && (this.state.shiftLength <= 0 || this.state.shiftLength > 12)){
+        if (this.state.shiftLength && (this.state.shiftLength < 0 || this.state.shiftLength > 12)){
             errFields.push("Длительность смены должна быть больше 0 и меньше 12");
         }
-        if (this.state.shiftLengthOnFriday && (this.state.shiftLengthOnFriday <= 0 || this.state.shiftLengthOnFriday > 12)){
+        if (this.state.shiftLengthOnFriday && (this.state.shiftLengthOnFriday < 0 || this.state.shiftLengthOnFriday > 12)){
             errFields.push("Длительность смены  в пятницу должна быть больше 0 и меньше 12");
         }
         if (this.state.daysInWeek && (this.state.daysInWeek <= 0 || this.state.daysInWeek > 7)){
