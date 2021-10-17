@@ -508,7 +508,7 @@ class ScheduleResultTable extends React.Component{
                         <Column field='leavingAcceptedDisp' style={{color:'#00008B'}}/> }
                         <Column body={this.bodyLeavingDif} ></Column>
                         <Column body={this.bodyTotalDif} ></Column>
-                        <Column field='total'></Column>
+                        <Column field='workHoursStr'></Column>
                         {(AppSets.getUser() && AppSets.getUser().amIhr()) ?
                             <Column field='note' style={{width: '10%', margin:'0', padding: '0', fontSize:'smaller'}}/> : 
                             <Column field='note' 

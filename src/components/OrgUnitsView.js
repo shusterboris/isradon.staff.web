@@ -27,7 +27,7 @@ export default class OrgUnitView extends Component {
         chosenShift: null,
         shiftNo: '',
         start1:'', end1:'', start2:'', end2:'', start3:'', end3:'', start4:'', end4:'', start5:'', end5:'', start6:'', end6:'', start7:'', end7:'', notes:'',
-        waitPlease: true, showConfirm: false, showDeletedUnits: false, shiftNo:'', notes: ''
+        waitPlease: true, showConfirm: false, showDeletedUnits: false, shiftNo:'', notes: '', employees: []
     }
 
     constructor(props) {
@@ -63,6 +63,7 @@ export default class OrgUnitView extends Component {
         this.approveTiming = this.approveTiming.bind(this);
         this.sendSchedule = this.sendSchedule.bind(this);
         this.createSheduleReport = this.createSheduleReport.bind(this);
+        this.showOrgUnitEmployees = this.showOrgUnitEmployees.bind(this);
         this.history = props.history;
         this.moment = require('moment');
         this.ouMenuModel = [
@@ -76,6 +77,10 @@ export default class OrgUnitView extends Component {
         AppSets.getOrgUnitList(this)
     }
 
+    showOrgUnitEmployees(id){
+        AppSets.getEmployees(this, id);
+    }
+
     onRowSelect(val){
         //выбрано новое подразделение в таблице, берем список смен
         if (!val.deleted){
@@ -83,6 +88,7 @@ export default class OrgUnitView extends Component {
                 end1: '', end2: '', end3: '', end4: '', end5: '', end6: '', end7: '',shiftChanged: false, orgUnitChanged: false,
                 shiftNo: '', notes: ''});
             this.dataService.getOrgUnitShifts(val.id, this);
+            this.showOrgUnitEmployees(val.id);
         }else{
             this.messages.show({severity: 'warn', summary: 'Нельзя выбирать удаленное подразделение!'})
         }
@@ -475,6 +481,14 @@ export default class OrgUnitView extends Component {
                         </span>
                     </div>}
                     {this.state.waitPlease && <ProgressSpinner/>}
+                    {this.state.selectedRow && <div>
+                        <label htmlFor="ouEmployees" style={{fontWeight:'bold'}}>Список сотрудников</label>
+                        <ListBox id='ouEmployees' style={{margin:'0.5em 0 0 0'}} listStyle={{margin:'1em 0 0 0' }}
+                            value={this.choosenEmployee}
+                            options={this.state.employees} 
+                            optionLabel="fullName"
+                        /></div>
+                    }
                 </div>  
 
                 <div className="p-col-12 p-md-6" >                

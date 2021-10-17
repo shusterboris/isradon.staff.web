@@ -136,7 +136,7 @@ export default class ScheduleService {
             if (latenessTime !== 0){
                 hhmm = this.minutesToTimeStr(latenessTime).split(":");
                 s = (hhmm[0] === "00") ? (hhmm[1] + " минут ") : (hhmm[0] + " часов "+hhmm[1] + " минут ")
-                summary += (". Опоздания: " + latenessCount +" раз, "+ s);    
+                summary += (". Недоработка: " + latenessCount +" раз, "+ s);    
             }
             if (overtimeCount !== 0){
                 hhmm = this.minutesToTimeStr(overtimeTime).split(":");

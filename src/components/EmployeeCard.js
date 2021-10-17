@@ -338,13 +338,15 @@ export default class EmployeeCard extends Component {
             return false;
         }
         errFields = [];
-        if (this.state.orgUnit.hasOwnProperty("name")){
-            if (this.state.orgUnit && !this.state.orgUnits.find((ou)=>(ou.name === this.state.orgUnit.name))){
-                errFields.push('Неправильное значение подразделения');
-            }
-        }else{
-            if (this.state.orgUnit && !this.state.orgUnits.find((ou)=>(ou.name === this.state.orgUnit))){
-                errFields.push('Неправильное значение подразделения');
+        if (this.state.orgUnit) {
+            if (this.state.orgUnit.hasOwnProperty("name")){
+                if (!this.state.orgUnits.find((ou)=>(ou.name === this.state.orgUnit.name))){
+                    errFields.push('Неправильное значение подразделения');
+                }
+            }else{
+                if (!this.state.orgUnits.find((ou)=>(ou.name === this.state.orgUnit))){
+                    errFields.push('Неправильное значение подразделения');
+                }
             }
         }
         if (!this.state.jobTitles.find((jt)=>(jt === this.state.jobTitle))){
@@ -359,7 +361,9 @@ export default class EmployeeCard extends Component {
         if (this.state.shiftLengthOnFriday && (this.state.shiftLengthOnFriday < 0 || this.state.shiftLengthOnFriday > 12)){
             errFields.push("Длительность смены  в пятницу должна быть больше 0 и меньше 12");
         }
-        if (this.state.daysInWeek && (this.state.daysInWeek <= 0 || this.state.daysInWeek > 7)){
+        if (!this.state.daysInWeek){
+            errFields.push("Количество рабочих дней в неделю не может быть пустым")
+        }else if (this.state.daysInWeek <= 0 || this.state.daysInWeek > 7){
             errFields.push("Количество рабочих дней в неделе должно быть числом от 1 до 7");
         }
         if (this.state.birthday){
