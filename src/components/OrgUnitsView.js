@@ -407,7 +407,7 @@ export default class OrgUnitView extends Component {
 
     renderOuHeader(){
         return(
-            <Checkbox checked={this.state.showDeletedUnits} onChange={(chkEvent)=>this.checkShowDeleted(chkEvent)}/>
+            <Checkbox checked={this.state.showDeletedUnits} onChange={(chkEvent)=>this.checkShowDeleted(chkEvent)} tooltip="Показывать удаленные записи"/>
         )
     }
 

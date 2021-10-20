@@ -9,7 +9,7 @@ import { AutoComplete } from 'primereact/autocomplete';
 import { Dropdown } from 'primereact/dropdown';
 import { row_types } from '../service/AppSettings'
 import { Messages } from 'primereact/messages';
-
+import { InputTextarea } from 'primereact/inputtextarea';
 
 export class DayEdit extends Component {
     state = {rowData: null, changed: false, filteredOrgUnits: [], chosenOrgUnit:null, chosenEmployee:null, 
@@ -218,46 +218,61 @@ export class DayEdit extends Component {
             <div className="card-title">{this.title}</div>
             <div className="p-grid">
                 <div className="p-col-5">
-                <div className="p-grid  form-group" style={{padding:'1em 0 0 0'}}>
-                        <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Рабочее время, с: </div>
-                        <InputMask id='startFld' mask='99:99' 
-                            style={{width:'5em'}} 
-                            value={this.state.start} 
-                            onChange={(e) => this.setState({start:e.target.value, changed: true})}/>
-                        <div className="p-text-left" style={{margin: '0 1em 0 1em'}}> по: </div>
-                        <InputMask id='endFld' mask='99:99' 
-                            style={{margin:'0 0 0 1em', width:'5em'}} 
-                            value={this.state.end} 
-                            onChange={(e) => this.setState({end:e.target.value, changed: true})}/>
-                </div>    
-                <div className="p-col-10 p-mx-2" >                            
+                    <div className="p-grid  form-group" style={{padding:'1em 0 0 0'}}>
+                            <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Рабочее время, с: </div>
+                            <InputMask id='startFld' mask='99:99' 
+                                style={{width:'5em'}} 
+                                value={this.state.start} 
+                                onChange={(e) => this.setState({start:e.target.value, changed: true})}/>
+                            <div className="p-text-left" style={{margin: '0 1em 0 1em'}}> по: </div>
+                            <InputMask id='endFld' mask='99:99' 
+                                style={{margin:'0 0 0 1em', width:'5em'}} 
+                                value={this.state.end} 
+                                onChange={(e) => this.setState({end:e.target.value, changed: true})}/>
+                    </div>    
+                    <div className="p-col-10 p-mx-2" >                            
+                            <span className="p-float-label">
+                                <AutoComplete id="orgUnitFld" dropdown
+                                    value={this.state.chosenOrgUnit} 
+                                    suggestions={this.state.filteredOrgUnits} 
+                                    completeMethod={this.filterOrgUnit} field="name"
+                                    onChange={event => this.setState({ chosenOrgUnit: event.value, filteredOrgInits: null, changed: true})}/>
+                                <label htmlFor="orgUnitFld">Место работы</label> 
+                            </span>
+                            <span className="p-float-label" style={{marginTop: '1em'}}>
+                                <AutoComplete id="employeeFld" dropdown
+                                    value={this.state.chosenEmployee}
+                                    suggestions={this.state.filteredEmployees} field="fullName"
+                                    completeMethod={(emplQry) => this.searchEmployee(emplQry)}
+                                    onChange={empl => this.onEmployeeChoose(empl.value)}/>
+                                <label htmlFor="employeeFld">Сотрудник</label>
+                            </span>
+                            <span className="p-float-label" style={{marginTop: '1em'}}>
+                                <Dropdown id="rowTypeFld" dropdown width="5em"
+                                    value={this.state.chosenType} 
+                                    options={row_types} optionLabel="name"
+                                    onChange={chType => this.setState({chosenType: chType.value, changed: true})}/>
+                                <label htmlFor="rowTypeFld">Тип записи</label>
+                            </span>
+                            {this.displayToolbar()}
+                        </div>
+                    </div>
+                    <div className="p-col-4" aria-rowspan='2'> 
                         <span className="p-float-label">
-                            <AutoComplete id="orgUnitFld" dropdown
-                                value={this.state.chosenOrgUnit} 
-                                suggestions={this.state.filteredOrgUnits} 
-                                completeMethod={this.filterOrgUnit} field="name"
-                                onChange={event => this.setState({ chosenOrgUnit: event.value, filteredOrgInits: null, changed: true})}/>
-                            <label htmlFor="orgUnitFld">Место работы</label> 
+                            <InputTextarea rows={5} cols={30} value={this.state.reason} id="inputReasonTextArea"
+                                disabled = {!AppSets.getUser().amIhr()}
+                                onChange={(e) => this.setState({reason: e.target.value, changed: true})}/>
+                            <label htmlFor="inputReasonTextArea"> Примечания HR</label>
                         </span>
-                        <span className="p-float-label" style={{marginTop: '1em'}}>
-                            <AutoComplete id="employeeFld" dropdown
-                                value={this.state.chosenEmployee}
-                                suggestions={this.state.filteredEmployees} field="fullName"
-                                completeMethod={(emplQry) => this.searchEmployee(emplQry)}
-                                onChange={empl => this.onEmployeeChoose(empl.value)}/>
-                            <label htmlFor="employeeFld">Сотрудник</label>
+                        <span className="p-float-label">
+                            <InputTextarea rows={5} cols={30} value={this.state.note} id="inputNoteTextArea"
+                                disabled = {AppSets.getUser().amIhr()}
+                                onChange={(e) => this.setState({note: e.target.value, changed: true})}/>
+                            <label htmlFor="inputNoteTextArea"> Примечания сотрудника</label>
                         </span>
-                        <span className="p-float-label" style={{marginTop: '1em'}}>
-                            <Dropdown id="rowTypeFld" dropdown width="5em"
-                                value={this.state.chosenType} 
-                                options={row_types} optionLabel="name"
-                                onChange={chType => this.setState({chosenType: chType.value, changed: true})}/>
-                            <label htmlFor="rowTypeFld">Тип записи</label>
-                        </span>
-                        {this.displayToolbar()}
                     </div>
                 </div>
-            </div>
-    </div>
+                
+        </div>
     }
 }

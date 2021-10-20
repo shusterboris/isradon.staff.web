@@ -190,7 +190,8 @@ const App = () => {
     }, topbarColor, menuColor);
 
     const routers = [
-        {path: "/" , component: ScheduleReportHR, exact:true },
+        {path: "/" , component: Login, exact: true},
+        {path: "/summary" , component: ScheduleReportHR },
 		{path: "/shed-plan", component: MonthCalendar },
         {path: "/shed-plan-orgunit", component: SchedulePlan},
 		{path: "/shed-fact", component: EmptyPage},
@@ -216,7 +217,7 @@ const App = () => {
         if (!AppSets.getUser())
             {return menu}
         menu = AppSets.getUser().amIhr() ? [
-            {label: 'Сводка', icon: 'pi pi-th-large', to: '/'},
+            {label: 'Сводка', icon: 'pi pi-th-large', to: '/summary'},
             {
                 label: 'График работы', icon: 'pi pi-list',
                 items: [
@@ -234,7 +235,7 @@ const App = () => {
                 ]
             },
         ] : [
-            {label: 'Сводка', icon: 'pi pi-th-large', to: '/'},
+            {label: 'Сводка', icon: 'pi pi-th-large', to: '/summary'},
             {
                 label: 'График работы', icon: 'pi pi-list',
                 items: [

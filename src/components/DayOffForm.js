@@ -426,7 +426,8 @@ export default class DayOffForm extends Component {
                             {this.state.showConfirm && 
                                 <Confirmation visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmBody} icons = {this.icons}
                                             accept={this.confirmAccept} reject={this.confirmReject} messages={this.messages} context={this}/>}
-                                <Button label="Закрыть" onClick={this.props.history.goBack} icon="pi pi-arrow-left" style={{marginRight: '1em'}}/>
+                                <Button label="Закрыть" className="p-button-warning" icon="pi pi-arrow-left" style={{marginRight: '1em'}}
+                                        onClick={this.props.history.goBack}/>
                                 {this.isFilledOut() && 
                                     !AppSets.getUser().amIhr() ? 
                                         <Button label="Сохранить" onClick={this.save} style={{marginRight: '1em'}}/> : 

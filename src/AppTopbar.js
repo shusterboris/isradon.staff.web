@@ -74,17 +74,18 @@ const AppTopbar = (props) => {
 						<li role="menuitem">
 							<button type="button" className="p-link p-ripple" onClick={(e)=>onItemClick(e,1)}>
 								<i className="pi pi-key"></i>
-								<span>Вход в систему</span>
+								<span>{AppSets.getUser() ? "Смена пользователя" : "Вход в систему"}</span>
                                 <Ripple />
 							</button>
 						</li>
-						<li role="menuitem">
-							<button type="button" className="p-link p-ripple" onClick={(e)=>onItemClick(e,2)}>
-								<i className="pi pi-times"></i>
-								<span>Выход</span>
-                                <Ripple />
-							</button>
-						</li>
+						{AppSets.user &&
+							<li role="menuitem">
+								<button type="button" className="p-link p-ripple" onClick={(e)=>onItemClick(e,2)}>
+									<i className="pi pi-times"></i>
+									<span>Выход</span>
+									<Ripple />
+								</button>
+							</li>}
 					</ul>
 				</div>
 			</div>

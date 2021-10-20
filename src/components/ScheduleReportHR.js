@@ -50,6 +50,8 @@ export default class ScheduleReportHR extends React.Component{
     updateData(chosenMonth, chosenPersonId){
         if (chosenPersonId && chosenMonth > -1){
             this.dataService.getMonthScheduleByPerson(chosenMonth + 1, chosenPersonId, this);
+        }else if (AppSets.getUser() && chosenMonth > -1){
+            this.dataService.getMonthScheduleByPerson(chosenMonth + 1, AppSets.getUser().employeeId, this);
         }
     }
 
@@ -243,13 +245,12 @@ class ScheduleResultTable extends React.Component{
         endMoment.minute(maxTime[1]);
         const employeeToChoose = this.props.coEmployees;
         const chosenPerson = employeeToChoose.find(empl=>empl.id === this.state.selectedRow.employeeId);
-        const accepted = (this.state.selectedRow.comingAccepted) ? true : false;       
-        this.history.push(
-            {pathname:'/day-off', state: {mode: mode, employeeList: employeeToChoose, rowType: this.state.selectedRow.rowType,
-                            employee: chosenPerson, dateStart:startMoment.toDate(), dateEnd:endMoment.toDate(), id:this.state.selectedRow.id,
-                            photoFile: this.state.selectedRow.photoFile, accepted: accepted}}
-            );
-
+        const row = this.state.selectedRow
+        const orgUnitProxy = {'id' : row.orgUnitId, 'name': row.orgUnitName}; //чтобы избежать получения отсутствующего здесь полного объекта для выбора в форме
+        this.props.history.push({
+            pathname: '/edit-day:id', state: {id: row.id, rowType: row.rowType,
+                chosenEmployee: chosenPerson, employees: this.props.coEmployees,
+                chosenOrgUnit: orgUnitProxy, orgUnits: []}});     
     }
 
     changeRowType(rowType){
@@ -361,7 +362,7 @@ class ScheduleResultTable extends React.Component{
     }
 
     bodyDOW(rowData){
-        const index = rowData.dow - 1;
+        const index = rowData.dow !== 7 ? rowData.dow : 0;
         const dow = ru.dayNamesMin[index];
         return(
             <div>{dow}</div>
@@ -541,7 +542,10 @@ class ScheduleFilter extends React.Component{
         this.onChangeCalendar = this.onChangeCalendar.bind(this);
         this.onChangeSeller = this.onChangeSeller.bind(this);
         this.filterSellers = this.filterSellers.bind(this); 
+        this.setInOutDialogParameters = this.setInOutDialogParameters.bind(this);
         this.checkInOut = this.checkInOut.bind(this);
+        this.setInOutDialogParameters = this.setInOutDialogParameters.bind(this);
+        this.updateViewAfterCheckingIn = this.updateViewAfterCheckingIn.bind(this);
         this.checkout = this.checkout.bind(this);
         this.hideConfirmDlg = this.hideConfirmDlg.bind(this);
         this.state.summary = props.summary;
@@ -551,7 +555,7 @@ class ScheduleFilter extends React.Component{
 
     filterSellers(event){
         let results;
-        if (this.sellersSuggestions)
+        if (this.sellersSuggestions && this.state.employees)
             this.sellersSuggestions = this.state.employees.map(entry => entry.fullName);
         if (event.query.length === 0){
             results = [...this.sellersSuggestions]
@@ -598,17 +602,21 @@ class ScheduleFilter extends React.Component{
                 this.setState({chosenPerson: storedEmployee.fullName});
                 this.props.onSellerChange(storedEmployee.fullName, storedEmployee.id, [storedEmployee], iniDate);
             }else{
-
+                const employeeName = AppSets.getUser().employeeName;
+                if (employeeName){
+                    this.setState({chosenPerson: employeeName});
+                    this.props.onSellerChange(employeeName, AppSets.getUser().employeeId, [employeeName], iniDate);
+                }
             }    
         }catch(err){
-            this.history.push({pathname:'/error', state: {reason: err}})
             console.log(err)
         };
 
     }
 
     checkout(){
-        this.history.push({pathname:'/login', state: {details: 'Вы отметили уход и вышли из системы.'}});
+        this.props.history.push({pathname:'/login', state: {reason: 'Вы отметили уход с работы и вышли из системы. '}});
+        //в Login надо выводить props.location.state.reason
         AppSets.clearUser();
         window.sessionStorage.removeItem("user");
     }
@@ -617,10 +625,33 @@ class ScheduleFilter extends React.Component{
         this.setState({showConfirm: false})
     }
 
+    updateViewAfterCheckingIn(){
+        this.props.onSellerChange(AppSets.getUser().employeeName, AppSets.getUser().employeeId, [AppSets.getUser().employeeName] );
+        let user = AppSets.getUser();
+        user.coming = Date.now()
+        const userString = JSON.stringify(user);
+        AppSets.user = user;
+        window.sessionStorage.setItem("user", userString);
+        this.messages.show({severity:'info', summary:"Отмечено успешно"});
+    }
+
     checkInOut(){
+        this.setState({showConfirm: false})
+        this.dataService.checkInOut(this, this.confirmMessage.includes("приход") ? this.updateViewAfterCheckingIn : this.checkout)
+    }
+
+    setInOutDialogParameters(){
+        if (AppSets.getUser().coming && AppSets.getUser().leaving){
+            this.messages.show({severity: 'info', 
+                summary: 'Вы уже отмечали сегодня и приход, и уход. Для изменения обратитесь к менеджеру по персоналу', sticky: true})
+            return;
+        }else if (!AppSets.getUser().coming && !AppSets.getUser().leaving){
+            this.confirmMessage = "Хотите отметить приход на работу?"
+        }else{
+            this.confirmMessage = "Завершаете работу на сегодня?";
+        }
         this.confirmHeader = "Внимание!"
-        this.confirmMessage = "Хотите отметить приход или уход?"
-        this.confirmAccept = this.hideConfirmDlg;
+        this.confirmAccept = this.checkInOut;
         this.confirmReject = this.hideConfirmDlg;
         this.setState({showConfirm: true});
     }
@@ -636,7 +667,7 @@ class ScheduleFilter extends React.Component{
                             accept={this.confirmAccept} reject={this.confirmReject} messages={this.messages} context={this}/>}
                    
                 <div className = 'p-col-4'>
-                    <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" view="month"
+                    <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" view="month" yearNavigator yearRange="2021:2040"
                         locale={"ru"}
                         value={this.state.chosenDate}
                         onSelect={(e) => {this.onChangeCalendar(e)}}/>
@@ -651,7 +682,7 @@ class ScheduleFilter extends React.Component{
                             onChange = {(e) => {this.onChangeSeller(e) }}/> :
                     <div>
                         <Button label="Отметиться" className="p-button-info p-button-rounded" 
-                            onClick={this.checkInOut}
+                            onClick={this.setInOutDialogParameters}
                             tooltip="Отметить приход или уход">
                         </Button>
                     </div>}

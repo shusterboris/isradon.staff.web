@@ -326,9 +326,14 @@ export default class EmployeeCard extends Component {
         let errFields = [];
         if (!this.state.firstName && !this.state.lastName){
             errFields.push('Имя или фамилия')
-        }if (!this.state.jobTitle || this.state.jobTitle.trim() === ''){
+        }else if ((this.state.firstName && this.state.firstName.trim() === "") || 
+                    (this.state.lastName && this.state.lastName.trim() === "")){
+            errFields.push('Имя или фамилия')
+        }
+        if (!this.state.jobTitle || this.state.jobTitle.trim() === ''){
             errFields.push('Должность')
-        }if (!this.state.phone || this.state.phone.trim() === ''){
+        }
+        if (!this.state.phone || this.state.phone.trim() === ''){
             errFields.push('Номер телефона')
         }
         if (errFields.length !== 0){

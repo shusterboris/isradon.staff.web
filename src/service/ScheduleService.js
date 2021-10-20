@@ -462,7 +462,6 @@ export default class ScheduleService {
                 if (_this && data){
                     const month = new Date(selected.comingPlan).getMonth();
                     _this.messages.show({ severity: 'success', summary: 'Выполнено успешно'});        
-                    //_this.props.updateData(month, selected.employeeId);
                     _this.props.updateDaysRow(data)
                 }
             })
@@ -698,7 +697,7 @@ export default class ScheduleService {
         let payload = {"comingPlan": _this.state.rowData.comingPlan, "start": _this.state.start, "end": _this.state.end, 
                         "rowType": _this.state.chosenType.id,
                         "chosenEmployeeId": _this.state.chosenEmployee.id, "chosenOrgUnitId": _this.state.chosenOrgUnit.id, 
-                        "id": _this.state.rowData.id}
+                        "id": _this.state.rowData.id, "note": _this.state.note, "reason": _this.state.reason}
         const server = AppSets.host;
         const url = server + '/schedule/row/update'
         axios.post(url, payload, {timeout: AppSets.timeout})
@@ -808,6 +807,18 @@ export default class ScheduleService {
             })
             .catch(err=>{
                 this.processRequestsCatch(err,"Получение данных о продажах",_this.messages)                       
+            });
+    }
+
+    checkInOut(_this, finalActions){
+        const url = AppSets.host + "/employee/checkInOut/" + AppSets.getUser().employeeId;
+        return axios.put(url, {timeout: AppSets.timeout})
+            .then(response => {
+                if (finalActions)
+                    { finalActions() }
+            })
+            .catch(err=>{
+                this.processRequestsCatch(err,"Отметка прихода-ухода",_this.messages, true);                       
             });
     }
 }

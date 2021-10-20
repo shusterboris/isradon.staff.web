@@ -11,6 +11,7 @@ export default class AppSets{
     static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
     //static host = "https://smart.sclub.in.ua";
+    static version = "ver. 1.1.1"
     static timeout = 2000;
         
     static authenticateUser(userName, password, showMessage, history){
@@ -22,19 +23,26 @@ export default class AppSets{
 			const token = "Bearer " + res.data.jwttoken;
 			window.sessionStorage.setItem("token", token);
 			const headers = {headers: {'Authorization': token}}
-			url = server + '/user/authorities/'+userName;
+            // данные о сотруднике и полномочия пользователя
+            url = server + '/user/authorities/'+userName;
 			axios.get(url, headers)
-			.then(userData=>{
-				userData = userData.data;
-				const userString = JSON.stringify(userData);
-                AppSets.user = new User(userData);
-				window.sessionStorage.setItem("user", userString);
-                window.location = "/";
+			.then(userInfo=>{
+                const user = new User(userInfo.data);
+                const userString = JSON.stringify(user);
+                AppSets.user = user;
+                window.sessionStorage.setItem("user", userString);
+                window.location = "/summary";
 			})
             .catch((err)=>{
-                    (!err.response) ?  
-                        showMessage({severity: 'error', summary: 'Нет связи с сервером!'}) : 
-                        showMessage({severity: 'error', summary: 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку'})})})
+                let errMsg = "";
+                if (!err.response){
+                    errMsg = 'Нет связи с сервером!'
+                }else{
+                    errMsg = (err.response.data) ? err.response.data : 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку'
+                }
+                showMessage({severity: 'error', summary: errMsg});
+            })// получения данных о сотруднике
+        })// получения токена 
 		.catch((err)=>{
             if (!err.response){
                 showMessage({severity: 'error', summary: 'Нет связи с сервером!'});
@@ -60,13 +68,10 @@ export default class AppSets{
             if (!userData)
                 {return null}
             const userInfo = JSON.parse(userData);
-            AppSets.user = new User(userInfo);
+            const user = new User(userInfo);
+            AppSets.user = user;
         }
         return AppSets.user;
-    }
-
-    static async getCurrentEmployee(){
-        
     }
 
     static async getOrgUnits(_this) {

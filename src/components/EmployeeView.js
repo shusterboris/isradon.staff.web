@@ -28,9 +28,11 @@ export default class EmployeeView extends React.Component{
         if (this.props.location.pathname !== '/employees-fired'){
             //показать работающих
             AppSets.getEmployees(this);
+            this.hideAddBtn = false;
         }else{
             //показать уволенных
             this.dataService.getFiredEmployees(this);
+            this.hideAddBtn = true;
         }
         AppSets.getOrgUnitList(this)
     }
@@ -67,10 +69,10 @@ export default class EmployeeView extends React.Component{
 
     displayHeader1(){
         return(<div >
-            <Button className="p-button-rounded p-button-secondary" icon="pi pi-plus"                
-                onClick={()=>this.startCreateEmployee()}>
-            </Button>
-        </div>)
+            {!this.hideAddBtn && 
+                <Button className="p-button-rounded p-button-secondary" icon="pi pi-plus"                
+                onClick={()=>this.startCreateEmployee()}> </Button>
+            }</div>)
     }
 
     render(){

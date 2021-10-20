@@ -7,10 +7,12 @@ export default class User{
         this.orgUnit = userData.orgUnit;
         this.orgUnitId = userData.orgUnitId;
         this.authorities = userData.authorities;
+        this.coming = userData.coming;
+        this.leaving = userData.leaving;
     }
 
     hasAuthority(authName){
-        return this.authorities.includes(authName);
+        return this.authorities ? this.authorities.includes(authName) : false;
     }
 
     amIhr(){
