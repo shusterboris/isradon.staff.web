@@ -11,13 +11,13 @@ export default class AppSets{
     static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
     //static host = "https://smart.sclub.in.ua";
-    static version = "ver. 1.1.1"
+    static version = "ver. 1.1.1.1"
     static timeout = 2000;
         
-    static authenticateUser(userName, password, showMessage, history){
+    static authenticateUser(userName, password, newPassword, showMessage, history){
 		const server = AppSets.host;
         let url = server + '/auth';
-		const data = {"username": userName, "password": password};
+		const data = {"username": userName, "password": password, "newPassword": newPassword};
 		axios.post(url, data, {headers: {'Content-Type': 'application/json'}})
 		.then(res=>{
 			const token = "Bearer " + res.data.jwttoken;
@@ -56,6 +56,24 @@ export default class AppSets{
         });
     }
 
+/*     static changePasswordAndAuthenticate(userName, password, newPassword, showMessage, history){
+		const server = AppSets.host;
+        let url = server + '/auth';
+		const data = {"username": userName, "password": password};
+		axios.post(url, data, {headers: {'Content-Type': 'application/json'}})
+		.then(res=>{
+            url = server="/"
+            AppSets.authenticateUser(userName, password, showMessage, history)
+        })
+        .catch(err=>{
+            if (!err.response){
+                showMessage({severity: 'error', summary: 'Сервер не отвечает!'});
+            }else if (err.response.status === 403){
+                showMessage({severity: 'error', summary: 'Существующий пароль введен неправильно'});
+            }
+        })
+    }
+ */
     static clearUser(){
         AppSets.user = null;
     }

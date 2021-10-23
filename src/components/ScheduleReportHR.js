@@ -616,7 +616,6 @@ class ScheduleFilter extends React.Component{
 
     checkout(){
         this.props.history.push({pathname:'/login', state: {reason: 'Вы отметили уход с работы и вышли из системы. '}});
-        //в Login надо выводить props.location.state.reason
         AppSets.clearUser();
         window.sessionStorage.removeItem("user");
     }
