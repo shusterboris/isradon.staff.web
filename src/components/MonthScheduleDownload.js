@@ -8,6 +8,8 @@ import { RadioButton} from 'primereact/radiobutton';
 import AppSets from '../service/AppSettings'
 import { ru } from '../service/AppSettings';
 import { addLocale } from 'primereact/api';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 import axios from 'axios';
 
 
@@ -24,6 +26,8 @@ export default class MonthScheduleDownload extends Component{
         this.onChangeCalendar = this.onChangeCalendar.bind(this);
         this.sendQuery = this.sendQuery.bind(this);
         this.downloadFile = this.downloadFile.bind(this);
+        this.bodyDateSent = this.bodyDateSent.bind(this);
+        this.bodyDateApprove = this.bodyDateApprove.bind(this);
         this.history = props.history;
         this.moment = require('moment');
         addLocale('ru', ru);  
@@ -99,6 +103,7 @@ export default class MonthScheduleDownload extends Component{
             link.download = this.state.fileName;
             link.click()
             this.setState({chosenOrgUnit: null, chosenEmployee: null, fileName:null})              
+            AppSets.getEmployees(this);
           })
           .catch(err=>{
             const errMsg = (!err.response) ? "Сервер не отвечает или проблемы с Интернетом" : "Не удалось сформировать отчет";
@@ -151,28 +156,40 @@ export default class MonthScheduleDownload extends Component{
         }
     }
 
+    bodyDateApprove(rowData){
+        if (!rowData.dateApprove)
+            {return "-"}
+        return this.moment(rowData.dateApprove).format('DD/MM HH:mm');
+    }
+    
+    bodyDateSent(rowData){
+        if (!rowData.dateSent)
+            {return "-"}
+        return this.moment(rowData.dateSent).format('DD/MM HH:mm');
+
+    }
+
     render(){
         if (!AppSets.getUser())
             { this.history.push("/login")}
-        return (<div className="card" style={{width:'50vw'}}>
+        return (<div >
             <Toast ref={(el) => this.messages = el } position="top-left"/>
-            <div className="card-title p-text-bold">Выгрузка данных о времени</div>
-            <div className="p-field-radiobutton">
-                <RadioButton inputId="selPlan" name="selector" value="План" onChange={(e) => this.setState({selector: e.value})} checked={this.state.selector === 'План'} />
-                    <label htmlFor="selPlan">План</label>
-            </div>
-            <div className="p-field-radiobutton">
-                <RadioButton inputId="selFact" name="selector" value="Факт" onChange={(e) => this.setState({selector: e.value})} checked={this.state.selector === 'Факт'} />
-                <label htmlFor="selFact">Факт</label>
-            </div>
-            <div >
-                <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" view="month" 
-                        locale={"ru"}
-                        value={this.chosenDate ? this.chosenDate : (new Date())}
-                        onSelect={(e) => {this.onChangeCalendar(e)}}/>
-            </div>
-            <div className="p-grid">
-                <div className="p-col-5">
+            <div className="p-grid p-card">
+                <div className="p-col-3 ">
+                    <div className="p-field-radiobutton">
+                        <RadioButton inputId="selPlan" name="selector" value="План" onChange={(e) => this.setState({selector: e.value})} checked={this.state.selector === 'План'} />
+                            <label htmlFor="selPlan">План</label>
+                    </div>
+                    <div className="p-field-radiobutton">
+                        <RadioButton inputId="selFact" name="selector" value="Факт" onChange={(e) => this.setState({selector: e.value})} checked={this.state.selector === 'Факт'} />
+                        <label htmlFor="selFact">Факт</label>
+                    </div>
+                    <div >
+                        <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" view="month" 
+                                locale={"ru"}
+                                value={this.chosenDate ? this.chosenDate : (new Date())}
+                                onSelect={(e) => {this.onChangeCalendar(e)}}/>
+                    </div>     
                     <span className="p-float-label" style={{margin:'1em 0 0 0 '}}>
                         <AutoComplete id = "employeeFld" dropdown 
                             value={this.state.chosenEmployee} 
@@ -181,20 +198,30 @@ export default class MonthScheduleDownload extends Component{
                             onChange={(emInfo) => this.onEmployeeChoose(emInfo.value)} />
                         <label htmlFor="employeeFld">Сотрудник</label>
                     </span>
+                    {this.state.selector === "Факт" && <div>ИЛИ</div>}
+                    {this.state.selector === "Факт" && 
+                        <span className="p-float-label" >
+                        <AutoComplete id = "orgUnitFld" dropdown 
+                                value={this.state.chosenOrgUnit} 
+                                suggestions={this.state.filteredOrgUnits} 
+                                completeMethod={this.searchOrgUnit} field="name" 
+                                onChange={(ouInfo) => this.onOrgUnitChoose(ouInfo.value)} />
+                            <label htmlFor="orgUnitFld">Подразделение</label>
+                        </span>}
+                    {this.displayToolbar()}
+                    </div>
+
+                    <div className="p-col-8"> 
+                        <DataTable value={this.state.employees} showGridlines scrollable scrollHeight="500px" >
+                            <Column field='fullName' header="Сотрудник" sortable filter filterPlaceholder="ФИО для поиска"
+                                    filterHeaderStyle={{padding: '1 0 1 0'}}/>
+                            <Column field='orgUnit' header="Подразделение"  sortable filter filterPlaceholder="Поиск..."
+                                    filterHeaderStyle={{padding: '1 0 1 0'}}/>
+                            <Column body={this.bodyDateSent} header="План отпр." sortable style={{width:'20%'}} />
+                            <Column field={this.bodyDateApprove} sortable header="Факт отпр." style={{width:'20%'}}/>
+                        </DataTable>
+                    </div>
                 </div>
-                {this.state.selector === "Факт" && <div className="p-col-1" style={{marginTop:'auto'}}>ИЛИ</div>}
-                {this.state.selector === "Факт" && <div className="p-col-5">
-                    <span className="p-float-label" style={{margin:'1em 0 0 0 '}}>
-                    <AutoComplete id = "orgUnitFld" dropdown 
-                            value={this.state.chosenOrgUnit} 
-                            suggestions={this.state.filteredOrgUnits} 
-                            completeMethod={this.searchOrgUnit} field="name" 
-                            onChange={(ouInfo) => this.onOrgUnitChoose(ouInfo.value)} />
-                        <label htmlFor="orgUnitFld">Подразделение</label>
-                    </span>
-                </div>}
-            </div>
-            {this.displayToolbar()}
         </div>);
     };
 }

@@ -11,8 +11,9 @@ export default class AppSets{
     static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
     //static host = "https://smart.sclub.in.ua";
-    static version = "ver. 1.1.1.1"
+    static version = "ver. 1.1.3"
     static timeout = 2000;
+    static authList = {'editAll': 'HR', 'manualCheckIn': 'Ручная отметка'};
         
     static authenticateUser(userName, password, newPassword, showMessage, history){
 		const server = AppSets.host;
@@ -56,24 +57,6 @@ export default class AppSets{
         });
     }
 
-/*     static changePasswordAndAuthenticate(userName, password, newPassword, showMessage, history){
-		const server = AppSets.host;
-        let url = server + '/auth';
-		const data = {"username": userName, "password": password};
-		axios.post(url, data, {headers: {'Content-Type': 'application/json'}})
-		.then(res=>{
-            url = server="/"
-            AppSets.authenticateUser(userName, password, showMessage, history)
-        })
-        .catch(err=>{
-            if (!err.response){
-                showMessage({severity: 'error', summary: 'Сервер не отвечает!'});
-            }else if (err.response.status === 403){
-                showMessage({severity: 'error', summary: 'Существующий пароль введен неправильно'});
-            }
-        })
-    }
- */
     static clearUser(){
         AppSets.user = null;
     }
@@ -178,6 +161,42 @@ export default class AppSets{
             .catch(err=>{
                 AppSets.processRequestsCatch(err, "Информация о сотруднике", _this.messages, true)
             })
+    }
+
+    static loadUserData(_this, userName){
+        if (!userName)
+            {return}
+        let token = window.sessionStorage.getItem("token");
+        const headers = {headers: {'Authorization': token}}
+        // данные о сотруднике и полномочия пользователя
+        const url = AppSets.host + '/user/authorities/'+userName;
+        axios.get(url, headers)
+        .then(userInfo=>{
+            _this.setState({userInfo: userInfo.data});
+        })
+        .catch((err)=>{
+            let errMsg = "";
+            if (!err.response){
+                errMsg = 'Нет связи с сервером!'
+            }else{
+                errMsg = (err.response.data) ? err.response.data : 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку'
+            }
+            _this.messages.show({severity: 'error', summary: errMsg});
+        })    
+    }
+
+    static saveUserData(userToSave, _this, finalActions){
+        let token = window.sessionStorage.getItem("token");
+        const headers = {headers: {'Authorization': token}}
+        let url = AppSets.host+'/user/save'
+        axios.post(url, userToSave, headers)
+        .then(()=>{
+            if (finalActions)
+                {finalActions()}
+            _this.messages.show({severity:'success', summary:'Данные пользователя сохранены'})})
+        .catch(err=>{
+            AppSets.processRequestsCatch(err, 'Данные пользователя. ', this.messages, false)
+        });
     }
 
     static getJobTitles(_this){

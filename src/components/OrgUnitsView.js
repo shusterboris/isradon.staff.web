@@ -15,6 +15,7 @@ import { ContextMenu } from 'primereact/contextmenu'
 import Confirmation from './Confirmation'
 import ScheduleCreateProxy from '../entities/ScheduleCreateProxy';
 import axios from 'axios'
+import { Toast } from 'primereact/toast';
 
 export default class OrgUnitView extends Component {
     state = {
@@ -27,7 +28,7 @@ export default class OrgUnitView extends Component {
         chosenShift: null,
         shiftNo: '',
         start1:'', end1:'', start2:'', end2:'', start3:'', end3:'', start4:'', end4:'', start5:'', end5:'', start6:'', end6:'', start7:'', end7:'', notes:'',
-        waitPlease: true, showConfirm: false, showDeletedUnits: false, shiftNo:'', notes: '', employees: []
+        waitPlease: true, showConfirm: false, showDeletedUnits: false, shiftNo:'', notes: '', employees: [], israId: null,
     }
 
     constructor(props) {
@@ -64,6 +65,7 @@ export default class OrgUnitView extends Component {
         this.sendSchedule = this.sendSchedule.bind(this);
         this.createSheduleReport = this.createSheduleReport.bind(this);
         this.showOrgUnitEmployees = this.showOrgUnitEmployees.bind(this);
+        this.onInputIsraId = this.onInputIsraId.bind(this);
         this.history = props.history;
         this.moment = require('moment');
         this.ouMenuModel = [
@@ -77,6 +79,10 @@ export default class OrgUnitView extends Component {
         AppSets.getOrgUnitList(this)
     }
 
+    onInputIsraId(){
+        this.messages.show({severity:'warn', summary: 'Это поле для связи с информационной системой Исрадон. Меняйте его, только если знаете точно, что делаете!', sticky: true})
+    }
+
     showOrgUnitEmployees(id){
         AppSets.getEmployees(this, id);
     }
@@ -86,7 +92,7 @@ export default class OrgUnitView extends Component {
         if (!val.deleted){
             this.setState({selectedRow: val, orgUnitName: val.name,start1: '', start2: '', start3: '', start4: '', start5: '', start6: '', start7: '',
                 end1: '', end2: '', end3: '', end4: '', end5: '', end6: '', end7: '',shiftChanged: false, orgUnitChanged: false,
-                shiftNo: '', notes: ''});
+                shiftNo: '', notes: '', israId: val.isra_id});
             this.dataService.getOrgUnitShifts(val.id, this);
             this.showOrgUnitEmployees(val.id);
         }else{
@@ -303,7 +309,7 @@ export default class OrgUnitView extends Component {
             const val = found[0];
             this.setState({start1: val.start1, start2: val.start2, start3: val.start3, start4: val.start4, start5: val.start5, start6: val.start6, start7: val.start7,
                     end1: val.end1, end2: val.end2, end3: val.end3, end4: val.end4, end5: val.end5, end6: val.end6, end7: val.end7,
-                    shiftNo: val.no, chosenShift: val,shiftChanged: false, notes:val.notes, });
+                    shiftNo: val.no, chosenShift: val,shiftChanged: false, notes:val.notes, israId: val.isra_id});
         }
     }
 
@@ -313,7 +319,7 @@ export default class OrgUnitView extends Component {
 
     onOrgUnitSavePressed(){
         const id = (this.state.selectedRow != null) ? this.state.selectedRow.id : null;
-        this.dataService.saveOrgUnit(this,id, this.state.orgUnitName);
+        this.dataService.saveOrgUnit(this,id);
     }
 
     onCreateShift(){
@@ -429,7 +435,7 @@ export default class OrgUnitView extends Component {
 
         return <div className="content-section implementation">
             <div className="p-card">
-                <Messages ref={(el) => this.messages = el}/>
+                <Toast ref={(el) => this.messages = el}/>
             <div className='p-fluid p-grid'>
                 <div className="p-col-12 p-md-4">
                     <ContextMenu model={this.ouMenuModel} ref={el => this.cm = el} onHide={() => this.setState({ selectedRow: null })}/>
@@ -467,12 +473,11 @@ export default class OrgUnitView extends Component {
                         <InputText id="orgUnitNameFld" value={this.state.orgUnitName} placeholder="Введите название подразделения"
                                             onChange={(e) => this.setState({orgUnitName:e.target.value, orgUnitChanged: true})}/>
                     </div>
-                    <label htmlFor="shiftList" style={{fontWeight:'bold'}}>Список смен (шаблонов)</label>
-                    <ListBox id="shiftList" style={{margin:'0.5em 0 0 0'}} listStyle={{margin:'1em 0 0 0' }}
-                        value={this.state.chosenShift}
-                        options={this.state.shifts} itemTemplate={this.shiftTemplate} optionValue='no' 
-                        onChange={(e)=>this.onChooseOrgUnitShift(e.target.value)}
-                        tooltip="Выберите смену (шаблон)"/>
+                    <div className = "p-field">
+                        <InputText id = "orgUnitIsraId" placeholder="Id Исрадон (только ИТ-персонал!)" 
+                            value = {this.state.israId} keyfilter="int" 
+                            onChange={(e) => this.setState({israId:e.target.value, orgUnitChanged: true})}/>
+                    </div>
                     {this.state.orgUnitChanged && 
                     <div style={{margin: '1.5em 1em 1em 1em'}}>
                         <span >
@@ -480,6 +485,12 @@ export default class OrgUnitView extends Component {
                                     onClick={this.onOrgUnitSavePressed}/>
                         </span>
                     </div>}
+                    <label htmlFor="shiftList" style={{fontWeight:'bold'}}>Список смен (шаблонов)</label>
+                    <ListBox id="shiftList" style={{margin:'0.5em 0 0 0'}} listStyle={{margin:'1em 0 0 0' }}
+                        value={this.state.chosenShift}
+                        options={this.state.shifts} itemTemplate={this.shiftTemplate} optionValue='no' 
+                        onChange={(e)=>this.onChooseOrgUnitShift(e.target.value)}
+                        tooltip="Выберите смену (шаблон)"/>
                     {this.state.waitPlease && <ProgressSpinner/>}
                     {this.state.selectedRow && <div>
                         <label htmlFor="ouEmployees" style={{fontWeight:'bold'}}>Список сотрудников</label>

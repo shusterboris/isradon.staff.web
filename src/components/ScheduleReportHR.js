@@ -127,6 +127,7 @@ class ScheduleResultTable extends React.Component{
         this.getRowClassName = this.getRowBackgroundClassName.bind(this);
         this.bodyComingDif = this.bodyComingDif.bind(this);
         this.bodyLeavingDif = this.bodyLeavingDif.bind(this);
+        this.bodyHoursStr = this.bodyHoursStr.bind(this);
         this.bodyTotalDif = this.bodyTotalDif.bind(this);
         this.setDifferenceColor = this.setDifferenceColor.bind(this);
         this.dataService = this.props.dataService;
@@ -293,6 +294,7 @@ class ScheduleResultTable extends React.Component{
 
     setDifferenceColor(dif){
         const cellClassName = classNames({
+            'undef-dif': dif.startsWith('не утв'),
             'positive-dif': ! dif.startsWith('-'),
             'negative-dif': dif.startsWith('-')
         });
@@ -359,6 +361,19 @@ class ScheduleResultTable extends React.Component{
                 {rowData.totalDif}
             </div>
         );
+    }
+
+    bodyHoursStr(rowData){
+        if (!rowData.comingAccepted || !rowData.leavingAccepted){
+            return (
+                <div className='undef-dif'>
+                    не утв.
+                </div>
+            );
+        }else{
+            return (rowData.workHoursStr);
+        }
+            
     }
 
     bodyDOW(rowData){
@@ -451,7 +466,7 @@ class ScheduleResultTable extends React.Component{
     render(){
             let header = <ColumnGroup>
             <Row>
-                <Column header="Дата" rowSpan={2} />
+                <Column header="Дата" rowSpan={2}/>
                 <Column header="ДН" rowSpan={2} />
                 <Column header="Магазин" rowSpan={2} style={{width: '10%'}}/>
                 <Column header="Приход на работу" colSpan={4} />
@@ -480,7 +495,7 @@ class ScheduleResultTable extends React.Component{
                     <ContextMenu model={this.getContextMenuModel()} ref={el => this.cm = el} onHide={() => this.setState({ selectedRow: null })}/>
                     <DataTable value={this.props.days} rowClassName={this.getRowBackgroundClassName} 
                         headerColumnGroup={header}
-                        scrollable scrollHeight="800px"
+                        scrollable scrollHeight="450px"
                         contextMenuSelection={this.state.selectedRow}
                         onContextMenuSelectionChange={e => this.setState({ selectedRow: e.value })}
                         onContextMenu={e => this.cm.show(e.originalEvent)}
@@ -509,7 +524,7 @@ class ScheduleResultTable extends React.Component{
                         <Column field='leavingAcceptedDisp' style={{color:'#00008B'}}/> }
                         <Column body={this.bodyLeavingDif} ></Column>
                         <Column body={this.bodyTotalDif} ></Column>
-                        <Column field='workHoursStr'></Column>
+                        <Column body={this.bodyHoursStr}></Column>
                         {(AppSets.getUser() && AppSets.getUser().amIhr()) ?
                             <Column field='note' style={{width: '10%', margin:'0', padding: '0', fontSize:'smaller'}}/> : 
                             <Column field='note' 
@@ -615,9 +630,13 @@ class ScheduleFilter extends React.Component{
     }
 
     checkout(){
-        this.props.history.push({pathname:'/login', state: {reason: 'Вы отметили уход с работы и вышли из системы. '}});
-        AppSets.clearUser();
-        window.sessionStorage.removeItem("user");
+        AppSets.user.leaving=this.moment();
+        const userString = JSON.stringify(AppSets.user);
+        window.sessionStorage.setItem("user", userString);
+        this.props.onSellerChange(AppSets.getUser().employeeName, AppSets.getUser().employeeId, [AppSets.getUser().employeeName] );
+        //this.props.history.push({pathname:'/login', state: {reason: 'Вы отметили уход с работы и вышли из системы. '}});
+        //AppSets.clearUser();
+        //window.sessionStorage.removeItem("user");
     }
 
     hideConfirmDlg(){
@@ -635,19 +654,38 @@ class ScheduleFilter extends React.Component{
     }
 
     checkInOut(){
-        this.setState({showConfirm: false})
-        this.dataService.checkInOut(this, this.confirmMessage.includes("приход") ? this.updateViewAfterCheckingIn : this.checkout)
+        this.setState({showConfirm: false});
+        this.dataService.checkInOut(this, this.confirmMessage.includes("приход") ? this.updateViewAfterCheckingIn : this.checkout);
     }
 
-    setInOutDialogParameters(){
+    setInOutDialogParameters(mode){
+        //0- приход, 1 - уход
         if (AppSets.getUser().coming && AppSets.getUser().leaving){
-            this.messages.show({severity: 'info', 
+            this.messages.show({severity: 'warn', 
                 summary: 'Вы уже отмечали сегодня и приход, и уход. Для изменения обратитесь к менеджеру по персоналу', sticky: true})
             return;
-        }else if (!AppSets.getUser().coming && !AppSets.getUser().leaving){
-            this.confirmMessage = "Хотите отметить приход на работу?"
-        }else{
-            this.confirmMessage = "Завершаете работу на сегодня?";
+        }
+        if (mode === 0){
+            if (!AppSets.getUser().coming && !AppSets.getUser().leaving){
+                this.confirmMessage = "Хотите отметить приход на работу?"
+            }else{
+                this.messages.show({severity: 'warn', 
+                    summary: 'Вы уже отмечали сегодня приход на работу. Для изменения обратитесь к менеджеру по персоналу', sticky: false})
+                return;
+            }
+        }else {//уход
+            if (!AppSets.getUser().coming){
+                this.messages.show({severity: 'warn', 
+                    summary: 'Вы еще не отмечали приход!', sticky: false})
+                return;
+            }
+            if (!AppSets.getUser().leaving){
+                this.confirmMessage = "Завершаете работу на сегодня?";
+            }else{
+                this.messages.show({severity: 'warn', 
+                    summary: 'Вы уже отметили уход. Для изменения обратитесь к менеджеру по персоналу', sticky: false})
+                return;
+            }
         }
         this.confirmHeader = "Внимание!"
         this.confirmAccept = this.checkInOut;
@@ -672,17 +710,22 @@ class ScheduleFilter extends React.Component{
                         onSelect={(e) => {this.onChangeCalendar(e)}}/>
                 </div>
                 <div className = 'p-col-4'>
-                    {AppSets.getUser() && !AppSets.getUser().hasAuthority("manualCheckIn") ?
+                    {!(AppSets.getUser() && (AppSets.getUser().jobTitle !== "Продавец" && AppSets.getUser().jobTitle !== "Менеджер")) ?
                         <AutoComplete 
                             dropdown = {true}
                             value = {this.state.chosenPerson}
                             suggestions={this.state.filteredSellers}
                             completeMethod = {this.filterSellers} 
                             onChange = {(e) => {this.onChangeSeller(e) }}/> :
-                    <div>
-                        <Button label="Отметиться" className="p-button-info p-button-rounded" 
-                            onClick={this.setInOutDialogParameters}
-                            tooltip="Отметить приход или уход">
+                    <div >
+                        <Button label="Приход" className="p-button-info p-button-rounded" icon='pi pi-check-square'
+                            onClick={()=>this.setInOutDialogParameters(0)}
+                            tooltip="Отметить начало работы">
+                        </Button>
+                        <Button label="Уход" className="p-button-info p-button-rounded" icon='pi pi-external-link' iconPos='right'
+                            style={{margin: '0 20px 0 20px'}}
+                            onClick={()=>this.setInOutDialogParameters(1)}
+                            tooltip="Отметить уход с работы">
                         </Button>
                     </div>}
                 </div>

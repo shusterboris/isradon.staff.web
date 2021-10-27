@@ -10,10 +10,12 @@ import { Dropdown } from 'primereact/dropdown';
 import { row_types } from '../service/AppSettings'
 import { Messages } from 'primereact/messages';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { ListBox } from 'primereact/listbox';
+import App from '../App';
 
 export class DayEdit extends Component {
     state = {rowData: null, changed: false, filteredOrgUnits: [], chosenOrgUnit:null, chosenEmployee:null, 
-        filteredEmployees:[], chosenType: row_types[0]}
+        filteredEmployees:[], chosenType: row_types[0], salesInfo: [],}
     
     constructor(props) {
         super(props);
@@ -26,6 +28,7 @@ export class DayEdit extends Component {
         this.delete = this.delete.bind(this);
         this.onDeletePressed = this.onDeletePressed.bind(this);
         this.isDataValid = this.isDataValid.bind(this);
+        this.isShowSalesInfo = this.isShowSalesInfo.bind(this);
         this.moment = require('moment');
         this.history = props.history;
     }
@@ -44,7 +47,8 @@ export class DayEdit extends Component {
         let endTime = rowData.leavingPlan.split("T")[1];
         startTime = startTime.substr(0,5);
         endTime = endTime.substr(0,5);
-        this.title = "Расписание на " + this.moment(rowData.comingPlan).format("DD/MM/YYYY");
+        const startDate = this.moment(rowData.comingPlan);
+        this.title = "Расписание на " + startDate.format("DD/MM/YYYY");
         let chosenOrgunit = null;
         let orgUnitList = [];
         let employeeList = [];
@@ -76,6 +80,7 @@ export class DayEdit extends Component {
                 }
             }
             this.setState({chosenEmployee: chosenEmployee, chosenOrgUnit: chosenOrgunit});
+            this.dataService.getSalesInfo(this.state.chosenEmployee.id,startDate, this);
         }
         
         const rowTypeNum = (rowData.rowType) ? rowData.rowType : (param.rowType ? param.rowType : 0);
@@ -186,6 +191,14 @@ export class DayEdit extends Component {
         });
     }
 
+    isShowSalesInfo(){
+        if (!AppSets.getUser().amIhr()) 
+            { return false }
+        if (!this.state.salesInfo || this.state.salesInfo.length === 0)
+            { return false }
+        return true;
+    }
+
     displayToolbar(){
         const user = AppSets.getUser();
         const leftBar = (<React.Fragment>
@@ -217,7 +230,7 @@ export class DayEdit extends Component {
             <Messages ref={(el) => this.messages = el}/>
             <div className="card-title">{this.title}</div>
             <div className="p-grid">
-                <div className="p-col-5">
+                <div className="p-col-4">
                     <div className="p-grid  form-group" style={{padding:'1em 0 0 0'}}>
                             <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Рабочее время, с: </div>
                             <InputMask id='startFld' mask='99:99' 
@@ -231,48 +244,52 @@ export class DayEdit extends Component {
                                 onChange={(e) => this.setState({end:e.target.value, changed: true})}/>
                     </div>    
                     <div className="p-col-10 p-mx-2" >                            
-                            <span className="p-float-label">
-                                <AutoComplete id="orgUnitFld" dropdown
-                                    value={this.state.chosenOrgUnit} 
-                                    suggestions={this.state.filteredOrgUnits} 
-                                    completeMethod={this.filterOrgUnit} field="name"
-                                    onChange={event => this.setState({ chosenOrgUnit: event.value, filteredOrgInits: null, changed: true})}/>
-                                <label htmlFor="orgUnitFld">Место работы</label> 
-                            </span>
-                            <span className="p-float-label" style={{marginTop: '1em'}}>
-                                <AutoComplete id="employeeFld" dropdown
-                                    value={this.state.chosenEmployee}
-                                    suggestions={this.state.filteredEmployees} field="fullName"
-                                    completeMethod={(emplQry) => this.searchEmployee(emplQry)}
-                                    onChange={empl => this.onEmployeeChoose(empl.value)}/>
-                                <label htmlFor="employeeFld">Сотрудник</label>
-                            </span>
-                            <span className="p-float-label" style={{marginTop: '1em'}}>
-                                <Dropdown id="rowTypeFld" dropdown width="5em"
-                                    value={this.state.chosenType} 
-                                    options={row_types} optionLabel="name"
-                                    onChange={chType => this.setState({chosenType: chType.value, changed: true})}/>
-                                <label htmlFor="rowTypeFld">Тип записи</label>
-                            </span>
+                        <span className="p-float-label">
+                            <AutoComplete id="orgUnitFld" dropdown
+                                value={this.state.chosenOrgUnit} 
+                                suggestions={this.state.filteredOrgUnits} 
+                                completeMethod={this.filterOrgUnit} field="name"
+                                onChange={event => this.setState({ chosenOrgUnit: event.value, filteredOrgInits: null, changed: true})}/>
+                            <label htmlFor="orgUnitFld">Место работы</label> 
+                        </span>
+                        <span className="p-float-label" style={{marginTop: '1em'}}>
+                            <AutoComplete id="employeeFld" dropdown
+                                value={this.state.chosenEmployee}
+                                suggestions={this.state.filteredEmployees} field="fullName"
+                                completeMethod={(emplQry) => this.searchEmployee(emplQry)}
+                                onChange={empl => this.onEmployeeChoose(empl.value)}/>
+                            <label htmlFor="employeeFld">Сотрудник</label>
+                        </span>
+                        <span className="p-float-label" style={{marginTop: '1em'}}>
+                            <Dropdown id="rowTypeFld" dropdown width="5em"
+                                value={this.state.chosenType} 
+                                options={row_types} optionLabel="name"
+                                onChange={chType => this.setState({chosenType: chType.value, changed: true})}/>
+                            <label htmlFor="rowTypeFld">Тип записи</label>
+                        </span>
                             {this.displayToolbar()}
                         </div>
                     </div>
-                    <div className="p-col-4" aria-rowspan='2'> 
-                        <span className="p-float-label">
-                            <InputTextarea rows={5} cols={30} value={this.state.reason} id="inputReasonTextArea"
-                                disabled = {!AppSets.getUser().amIhr()}
-                                onChange={(e) => this.setState({reason: e.target.value, changed: true})}/>
-                            <label htmlFor="inputReasonTextArea"> Примечания HR</label>
-                        </span>
-                        <span className="p-float-label">
-                            <InputTextarea rows={5} cols={30} value={this.state.note} id="inputNoteTextArea"
-                                disabled = {AppSets.getUser().amIhr()}
-                                onChange={(e) => this.setState({note: e.target.value, changed: true})}/>
-                            <label htmlFor="inputNoteTextArea"> Примечания сотрудника</label>
-                        </span>
-                    </div>
+                {this.isShowSalesInfo && 
+                <div className="p-col-2" aria-rowspan='2'> 
+                    <label style={{margin:'0 0 2em 0.5em', fontWeight:'bold'}}>Список продаж</label>
+                    <ListBox options={this.state.salesInfo} listStyle={{maxHeight: '250px'}}/>
+                </div>}
+                <div className="p-col-4" aria-rowspan='2'> 
+                    <span className="p-float-label">
+                        <InputTextarea rows={5} cols={30} value={this.state.reason} id="inputReasonTextArea"
+                            disabled = {!AppSets.getUser().amIhr()}
+                            onChange={(e) => this.setState({reason: e.target.value, changed: true})}/>
+                        <label htmlFor="inputReasonTextArea"> Примечания HR</label>
+                    </span>
+                    <span className="p-float-label">
+                        <InputTextarea rows={5} cols={30} value={this.state.note} id="inputNoteTextArea"
+                            disabled = {AppSets.getUser().amIhr()}
+                            onChange={(e) => this.setState({note: e.target.value, changed: true})}/>
+                        <label htmlFor="inputNoteTextArea"> Примечания сотрудника</label>
+                    </span>
                 </div>
-                
+            </div>           
         </div>
     }
 }

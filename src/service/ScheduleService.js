@@ -83,7 +83,8 @@ export default class ScheduleService {
     updateSummary(rows,_this){
         if (!rows)
             {return}
-        let totalDays = 0; //отработано дней
+        let totalDays = 0; //запланировано дней
+        let totalDaysFact = 0; //отработано дней
         let difPlanMinutes = 0; //рабочего времени план, минуты
         let difFactMinutes = 0; //рабочего времени факт, минуты
         let latenessCount = 0; // количество опозданий
@@ -93,17 +94,24 @@ export default class ScheduleService {
         for(let i=0; i<rows.length;i++){
             let data = rows[i];
             if (data.rowType === 0 && data.comingFact){
+                let dayOvertimeRegistered = false; //в этот день уже зарегестрирована переработка (раз), чтобы не учитывать как 2 раза утро и вечер
+                let dayLatenesRegistered = false;        
                 totalDays += 1
                 difPlanMinutes += data.difPlanMinutes;
-                difFactMinutes += data.workHours;            
+                if (data.comingAccepted && data.leavingAccepted){
+                    totalDaysFact += 1;
+                    difFactMinutes += data.workHours ;
+                };            
                 if (data.totalDif){
                     //считаем количество опозданий. 
                     if (data.comingDif !== ""){
                         //есть отклонение по приходу
                         let cur = this.strTimeToMinutes(data.comingDif);
                         if (cur > 0){//и оно больше 0 - это переработка
+                            dayOvertimeRegistered = true;
                             overtimeCount++;
                         }else{// отрицательное отклонение - опоздание
+                            dayLatenesRegistered = true;
                             latenessCount++;
                         }
                     }
@@ -111,9 +119,11 @@ export default class ScheduleService {
                     if (data.leavingDif !== ""){
                         let cur = this.strTimeToMinutes(data.leavingDif);
                         if (cur > 0){
-                            overtimeCount++;
+                            if (!dayOvertimeRegistered) 
+                                { overtimeCount++ };
                         }else{
-                            latenessCount++;
+                            if (! dayLatenesRegistered )
+                                { latenessCount++ };
                         }
                     }
                     //а суммарное время опоздания переработки считаем по результатам дня
@@ -132,16 +142,17 @@ export default class ScheduleService {
         let hhmm = "";
         let s = "";
         if (totalDays !== 0){
-            summary = "Отработано, дней:"+totalDays+", часов:"+this.minutesToTimeStr(difFactMinutes)+", по плану:"+this.minutesToTimeStr(difPlanMinutes)
+            summary = "Запланировано, дней:" + totalDays + ", часов: "+this.minutesToTimeStr(difPlanMinutes) + ". ";
+            summary = summary + "Утверждено, дней: "+totalDaysFact+", часов: "+this.minutesToTimeStr(difFactMinutes) + ". ";
             if (latenessTime !== 0){
                 hhmm = this.minutesToTimeStr(latenessTime).split(":");
                 s = (hhmm[0] === "00") ? (hhmm[1] + " минут ") : (hhmm[0] + " часов "+hhmm[1] + " минут ")
-                summary += (". Недоработка: " + latenessCount +" раз, "+ s);    
+                summary += ("Недоработка: " + latenessCount +" раз -> "+ s + ".");    
             }
             if (overtimeCount !== 0){
                 hhmm = this.minutesToTimeStr(overtimeTime).split(":");
                 s = (hhmm[0] === "00") ? (hhmm[1] + " минут ") : (hhmm[0] + " часов "+hhmm[1] + " минут ")
-                summary += (". Переработка: " + overtimeCount +" раз, "+ s);    
+                summary += ("Переработка: " + overtimeCount +" раз -> "+ s);    
             }
         }
         _this.setState({summary: summary});
@@ -489,11 +500,12 @@ export default class ScheduleService {
 
     }
 
-    saveOrgUnit(_this, orgUnitId, orgUnitName){
+    saveOrgUnit(_this, orgUnitId){
+        const orgUnitName = _this.state.orgUnitName;
         const server = AppSets.host;
         let query = '/dictionary/orgunit/save'
         const url = server + query;
-        axios.put(url, {'id': orgUnitId, name: orgUnitName}, {timeout: AppSets.timeout})
+        axios.put(url, {'id': orgUnitId, name: orgUnitName, 'isra_id': _this.state.israId}, {timeout: AppSets.timeout})
         .then(res => res.data)
         .then(res => {
             _this.messages.show({severity:'success', summary:'Сохранено успешно!'});

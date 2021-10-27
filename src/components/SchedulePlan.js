@@ -267,8 +267,14 @@ export default class SchedulePlan extends Component {
 
     delete(){
         const shiftId = this.state.chosenShift ? this.state.chosenShift.id : null;
+        let selectedDates = [];
+        if (this.state.selectedDates && !this.state.selectedDates.length!==0){
+            for(let d of this.state.selectedDates){
+                selectedDates.push(this.moment(d).format("YYYY-MM-DD HH:mm"));
+            }
+        }
         const payload = new ScheduleCreateProxy(this.state.chosenOrgUnit.id, shiftId, 
-            this.state.chosenEmployee.id, [], this.interval, this.state.timeFrom, this.state.timeTo)
+            this.state.chosenEmployee.id, selectedDates, this.interval, this.state.timeFrom, this.state.timeTo)
         this.dataService.deleteSchedule(payload, this)
     }
 
@@ -282,7 +288,9 @@ export default class SchedulePlan extends Component {
             return;
         }
         this.confirmHeader='Подтвердите удаление?';
-        this.confirmBody='Удалить полностью расписание на месяц для выбранного сотрудника?'; 
+        this.confirmBody=(this.state.selectedDates && !this.state.selectedDates.length===0) ? 
+            'Удалить полностью расписание на месяц для выбранного сотрудника?' : 
+            'Удалить расписание сотрудника для выбранных дат?'; 
         this.confirmAccept=this.delete;
         this.confirmReject=this.hideConfirmationDlg;
         this.setState({showConfirm: true});

@@ -45,6 +45,10 @@
     color: #c51a1a !important;
 }
 
+.p-datatable .p-datatable-tbody .undef-dif {
+    color: #5265d3 !important;
+}
+
 .p-datatable .p-datatable-tbody .boldText {
     font-weight: 700 !important;
 }

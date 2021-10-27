@@ -19,6 +19,7 @@ import 'primeflex/primeflex.css';
 import './App.scss';
 import { DayEdit } from './components/DayEdit';
 import MonthScheduleDownload from './components/MonthScheduleDownload';
+import UsersView from './components/UsersView'
 import TestPage from './components/TestPage'
 import { DictionaryJT } from './components/DictionaryJT';
 import AppSets from './service/AppSettings';
@@ -200,6 +201,7 @@ const App = () => {
         {path: "/employees-fired", component: EmployeeView},
 		{path: "/employee-edit", component:EmployeeCard},
 		{path: "/employee-edit:id", component:EmployeeCard},
+        {path: "/users", component:UsersView},
 		{path: "/orgunit-list", component:OrgUnitView},
 		{path: "/day-off", component:DayOffForm},
 		{path: "/day-off:type", component:DayOffForm},
@@ -228,10 +230,11 @@ const App = () => {
             },
             {label: 'Настройки', icon: 'pi pi-cog', 
                 items: [
+                    {label: 'Подразделения', icon: 'pi pi-home', to: '/orgunit-list'},
                     {label: 'Сотрудники', icon: 'pi pi-user-edit', to: '/employees-all'},
                     {label: 'Бывшие сотрудники', icon: 'pi pi-user-minus', to: '/employees-fired'},
-                    {label: 'Должности сотрудников', icon: 'pi pi-users', to: '/titles-dictionary'},
-                    {label: 'Подразделения', icon: 'pi pi-home', to: '/orgunit-list'},
+                    {label: 'Должности сотрудников', icon: 'pi pi-list', to: '/titles-dictionary'},
+                    {label: 'Пользователи', icon: 'pi pi-users', to: '/users'},
                 ]
             },
         ] : [
