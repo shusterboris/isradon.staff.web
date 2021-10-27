@@ -15,7 +15,7 @@ import App from '../App';
 
 export class DayEdit extends Component {
     state = {rowData: null, changed: false, filteredOrgUnits: [], chosenOrgUnit:null, chosenEmployee:null, 
-        filteredEmployees:[], chosenType: row_types[0], salesInfo: [],}
+        filteredEmployees:[], chosenType: row_types[0], salesInfo: [], note: null, reason: null}
     
     constructor(props) {
         super(props);

@@ -11,22 +11,22 @@ export default class AppSets{
     static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
     //static host = "https://smart.sclub.in.ua";
-    static version = "ver. 1.1.3"
-    static timeout = 2000;
+    static version = "ver. 1.1.4"
+    static timeout = 5000;
     static authList = {'editAll': 'HR', 'manualCheckIn': 'Ручная отметка'};
         
     static authenticateUser(userName, password, newPassword, showMessage, history){
 		const server = AppSets.host;
         let url = server + '/auth';
 		const data = {"username": userName, "password": password, "newPassword": newPassword};
-		axios.post(url, data, {headers: {'Content-Type': 'application/json'}})
+		axios.post(url, data, {headers: {'Content-Type': 'application/json'}, timeout: AppSets.timeout})
 		.then(res=>{
 			const token = "Bearer " + res.data.jwttoken;
 			window.sessionStorage.setItem("token", token);
 			const headers = {headers: {'Authorization': token}}
             // данные о сотруднике и полномочия пользователя
             url = server + '/user/authorities/'+userName;
-			axios.get(url, headers)
+			axios.get(url, headers, {timeout: AppSets.timeout})
 			.then(userInfo=>{
                 const user = new User(userInfo.data);
                 const userString = JSON.stringify(user);
@@ -77,7 +77,7 @@ export default class AppSets{
 
     static async getOrgUnits(_this) {
         try {
-            const res = await axios.get(AppSets.host + '/dictionary/orgunit/stringlist');
+            const res = await axios.get(AppSets.host + '/dictionary/orgunit/stringlist',{timeout: AppSets.timeout});
             const data = res.data;
             _this.setState({ orgUnits: data });
             return data;
@@ -90,7 +90,7 @@ export default class AppSets{
         try {
             if (!id || !Number.isInteger(id))
                 {return};
-            const res = await axios.get(AppSets.host + '/dictionary/orgunit/findById/' + id);
+            const res = await axios.get(AppSets.host + '/dictionary/orgunit/findById/' + id ,{timeout: AppSets.timeout});
             _this.setState({ chosenOrgUnit: res.data });
             if (actions){
                 actions(res.data);
@@ -102,7 +102,7 @@ export default class AppSets{
 
     static getOrgUnitList(_this, includeDeleted = false) {
         let query = (!includeDeleted) ? '/dictionary/orgunit/list' : '/dictionary/orgunit/listAll'
-        return axios.get(AppSets.host + query)
+        return axios.get(AppSets.host + query,{timeout: AppSets.timeout})
             .then(
                 res => res.data)
             .then(data => {
@@ -112,11 +112,11 @@ export default class AppSets{
             });
     }
 
-    static async getEmployees(_this, id){
+    static async getEmployees(_this, id=undefined){
         let query = AppSets.host+'/employee/active/list';
         if (id)
             { query = query + "/" + id}
-        return await axios.get(query)
+        return await axios.get(query, {timeout: AppSets.timeout})
             .then(
                 res => res.data)
             .then(data => {
@@ -146,7 +146,7 @@ export default class AppSets{
         if (data.daysInWeek === '')
             {data.daysInWeek = null}
 
-        return axios.post(AppSets.host+'/employee/save', data)
+        return axios.post(AppSets.host+'/employee/save', data,{timeout: AppSets.timeout})
             .then((result) => {
                 if (data.birtday){
                     const classic = data.birtday;
@@ -167,7 +167,7 @@ export default class AppSets{
         if (!userName)
             {return}
         let token = window.sessionStorage.getItem("token");
-        const headers = {headers: {'Authorization': token}}
+        const headers = {headers: {'Authorization': token}, timeout: AppSets.timeout}
         // данные о сотруднике и полномочия пользователя
         const url = AppSets.host + '/user/authorities/'+userName;
         axios.get(url, headers)
@@ -187,7 +187,7 @@ export default class AppSets{
 
     static saveUserData(userToSave, _this, finalActions){
         let token = window.sessionStorage.getItem("token");
-        const headers = {headers: {'Authorization': token}}
+        const headers = {headers: {'Authorization': token}, timeout: AppSets.timeout}
         let url = AppSets.host+'/user/save'
         axios.post(url, userToSave, headers)
         .then(()=>{
@@ -200,7 +200,7 @@ export default class AppSets{
     }
 
     static getJobTitles(_this){
-        return axios.get(AppSets.host+'/dictionary/items/titlestringlist')
+        return axios.get(AppSets.host+'/dictionary/items/titlestringlist' ,{timeout: AppSets.timeout})
             .then(
                 res => res.data)
             .then(data => {
@@ -211,7 +211,7 @@ export default class AppSets{
     }
     
     static getJobTitlesDict(_this){
-        return axios.get(AppSets.host+'/dictionary/items/titles')
+        return axios.get(AppSets.host+'/dictionary/items/titles', {timeout: AppSets.timeout})
             .then(
                 res => res.data)
             .then(data => {

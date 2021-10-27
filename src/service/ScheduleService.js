@@ -31,7 +31,7 @@ export default class ScheduleService {
         }
         const server = AppSets.host;
         const url = server + '/schedule/employee/'+person+"/"+month
-        axios.get(url)
+        axios.get(url,{timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
                 if (_this){
@@ -138,24 +138,26 @@ export default class ScheduleService {
                 }
             }
         }
-        let summary = "";
+        let summary1 = "", summary2 = "", summary3 = "", summary4 = "", summary5 = "";
         let hhmm = "";
         let s = "";
         if (totalDays !== 0){
-            summary = "Запланировано, дней:" + totalDays + ", часов: "+this.minutesToTimeStr(difPlanMinutes) + ". ";
-            summary = summary + "Утверждено, дней: "+totalDaysFact+", часов: "+this.minutesToTimeStr(difFactMinutes) + ". ";
+            summary1 = "Рабочих дней: " + totalDays
+            summary2 = "Отработано дней: " + totalDaysFact
+            summary3 = "План, часов: "+this.minutesToTimeStr(difPlanMinutes);
+            summary4 = "Факт, часов: "+this.minutesToTimeStr(difFactMinutes) + " (утверждено)";
             if (latenessTime !== 0){
                 hhmm = this.minutesToTimeStr(latenessTime).split(":");
                 s = (hhmm[0] === "00") ? (hhmm[1] + " минут ") : (hhmm[0] + " часов "+hhmm[1] + " минут ")
-                summary += ("Недоработка: " + latenessCount +" раз -> "+ s + ".");    
+                summary5 = ("Недоработка: " + latenessCount +" раз -> "+ s + ".");    
             }
             if (overtimeCount !== 0){
                 hhmm = this.minutesToTimeStr(overtimeTime).split(":");
                 s = (hhmm[0] === "00") ? (hhmm[1] + " минут ") : (hhmm[0] + " часов "+hhmm[1] + " минут ")
-                summary += ("Переработка: " + overtimeCount +" раз -> "+ s);    
+                summary5 += ("Переработка: " + overtimeCount +" раз -> "+ s);    
             }
         }
-        _this.setState({summary: summary});
+        _this.setState({summary1: summary1, summary2: summary2, summary3: summary3, summary4: summary4, summary5: summary5});
     }
 
     getWorkCalendar(start, end, onlyAbsense, orgUnit, person, _this){
@@ -175,7 +177,7 @@ export default class ScheduleService {
         if (person){
                 url = (orgUnit) ? (url + personId) : (url + "/0"  + personId);
         }
-        return axios.get(url)
+        return axios.get(url,{timeout: AppSets.timeout})
             .then(
                 res => res.data)
             .then(data => {
@@ -232,7 +234,7 @@ export default class ScheduleService {
         }
         const server = AppSets.host;
         const url = server + '/calendar/employee/'+person+"/"+start+"/"+end
-        return axios.get(url)
+        return axios.get(url,{timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
                 if (_this){
@@ -257,7 +259,7 @@ export default class ScheduleService {
         }
         const server = AppSets.host;
         const url = server + '/calendar/orgUnit/'+orgunit+"/"+start+"/"+end
-        return axios.get(url)
+        return axios.get(url,{timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
                 if (_this){
@@ -283,7 +285,7 @@ export default class ScheduleService {
         }
         const server = AppSets.host;
         const url = server + '/calendar/'+start+"/"+end
-        return axios.get(url)
+        return axios.get(url,{timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
                 if (_this){
@@ -309,7 +311,7 @@ export default class ScheduleService {
         }
         const server = AppSets.host;
         const url = server + '/calendar/employee/'+person+"/"+month
-        return axios.get(url)
+        return axios.get(url,{timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
                 if (_this){
@@ -427,7 +429,7 @@ export default class ScheduleService {
         const month = new Date(startDate).getMonth();
         const query = "/schedule/acceptTimeMonth/" + ids + "/" + AppSets.timeBoundMinutes;
         const url = server + query;
-        axios.put(url)
+        axios.put(url,{timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
                 if (_this && data){
@@ -446,7 +448,7 @@ export default class ScheduleService {
         const server = AppSets.host;
         const query = "/schedule/acceptTime/" + selected.id + "/" + mode + "/" + selected.orgUnitName;
         const url = server + query;
-        axios.get(url)
+        axios.get(url,{timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
                 if (_this && data){
@@ -467,7 +469,7 @@ export default class ScheduleService {
         const id = selected.id;
         const query = "/schedule/acceptTimeUpdate/" + field + "/" + id + "/" + timeValue;
         const url = server + query;
-        axios.put(url)
+        axios.put(url,{timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
                 if (_this && data){
@@ -492,7 +494,7 @@ export default class ScheduleService {
         let note = notes ? notes : '-';
         const query = "/schedule/notesUpdate/" + id + "/" + fieldName + "/" + note;
         const url = server + query;
-        axios.put(url, )
+        axios.put(url,{timeout: AppSets.timeout} )
             .then(_this.messages.show({severity: 'success', summary: 'Выполнено успешно'}))
             .catch(err=>{
                 this.processRequestsCatch('','Ввод примечаний',_this.messages,true)
@@ -547,7 +549,7 @@ export default class ScheduleService {
             'orgUnitId': ou.id,
             'no': _this.state.shiftNo,
             'notes': _this.state.notes,
-        }, {timeout: 5000})
+        },{timeout: AppSets.timeout})
             .then(res => res.data)
             .then(res => {
                 _this.messages.show({severity:'success', summary:'Сохранено успешно!'})
@@ -571,7 +573,7 @@ export default class ScheduleService {
     }
 
     async getFiredEmployees(_this){
-        return await axios.get(AppSets.host+'/employee/inactive/list')
+        return await axios.get(AppSets.host+'/employee/inactive/list',{timeout: AppSets.timeout})
             .then(
                 res => res.data)
             .then(data => {
@@ -598,7 +600,7 @@ export default class ScheduleService {
     getOrgUnitShifts(orgunitId, _this) {
         const server = AppSets.host;
         const url = server + '/schedule/shifts/'+orgunitId
-        axios.get(url)
+        axios.get(url,{timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
                 if (_this){
@@ -768,7 +770,7 @@ export default class ScheduleService {
         if (!_this.state.photoFile)
             {return}
         const query = AppSets.host+'/files/getImageByName/'+_this.state.photoFile;
-        axios.get(query, { responseType: 'arraybuffer' },)
+        axios.get(query, { responseType: 'arraybuffer', timeout: AppSets.timeout },)
         .then(response => {
             const base64 = btoa(
                 new Uint8Array(response.data).reduce(

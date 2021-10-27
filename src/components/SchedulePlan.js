@@ -58,8 +58,12 @@ export default class SchedulePlan extends Component {
     }
 
     componentDidMount(){
+        if (AppSets.getUser().amIhr()){
+            AppSets.getEmployees(this)
+        }else{
+            AppSets.getEmployees(this, AppSets.getUser().orgUnitId);
+        }
         AppSets.getOrgUnitList(this);
-        AppSets.getEmployees(this);
         let valuesRestored = false;
         const storedEmployeeStr = window.sessionStorage.getItem("chosenEmployee")
         let storedEmployee = null;
@@ -118,14 +122,19 @@ export default class SchedulePlan extends Component {
 
     searchOrgUnit(event){
         let filteredValues
-        if (!event.query.trim().length) {
-            filteredValues = [...this.state.orgUnits];
-        }else{
-            filteredValues = this.state.orgUnits.filter(
-                (ou) => {
-                    return ou.name.toLowerCase().includes(event.query.toLowerCase())
-                }
-            )
+        if (AppSets.getUser().amIhr() || !AppSets.getUser().orgUnitId){
+            //для менеджера доступен выбор всех подразделений. А также для сотрудника без подразделения
+            if (!event.query.trim().length) {
+                filteredValues = [...this.state.orgUnits];
+            }else{
+                filteredValues = this.state.orgUnits.filter(
+                    (ou) => {
+                        return ou.name.toLowerCase().includes(event.query.toLowerCase())
+                    }
+                )
+            }
+        }else{//для всех прочих сотрудников
+            filteredValues = this.state.orgUnits.filter(ou=>{return(ou.id===AppSets.getUser().orgUnitId)})
         }
         this.setState({filteredOrgUnits: filteredValues});
     }
@@ -175,9 +184,7 @@ export default class SchedulePlan extends Component {
         //проверяет, не приходится ли выбранный интервал на текущий или прошедший месяц
         const startInt = this.moment(this.startStr);
         const dayDifs = -1 * (startInt.diff(this.endStr, 'days'));
-        //TODO Удалить !!!!! пока для отладки
         return false;
-        return  startInt.month() <= (new Date).getMonth();
     }
 
     isDataValid(){

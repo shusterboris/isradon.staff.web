@@ -10,7 +10,7 @@ import {ColumnGroup} from 'primereact/columngroup';
 import {Row} from 'primereact/row';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import {Messages} from 'primereact/messages';
+import {Toast} from 'primereact/toast';
 import classNames from 'classnames';
 import './ScheduleReport.css'
 import { ru } from '../service/AppSettings';
@@ -25,6 +25,7 @@ export default class ScheduleReportHR extends React.Component{
         chosenMonth: (new Date()).getMonth(),
         summary: '',
         showConfirm: false,
+        summary1:'', summary2:'',summary3:'',summary4:'', summary5: '',
     }
     
     constructor(props){
@@ -92,9 +93,13 @@ export default class ScheduleReportHR extends React.Component{
             { this.history.push("/login") }
         return(
             <div>
-                <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}}/>
+                <Toast ref={(el) => this.messages = el} position="top-left" />
                 <ScheduleFilter 
-                    summary = {this.state.summary}
+                    summary1 = {this.state.summary1}
+                    summary2 = {this.state.summary2}
+                    summary3 = {this.state.summary3}
+                    summary4 = {this.state.summary4}
+                    summary5 = {this.state.summary5}
                     messages = {this.messages}
                     dataService = {this.dataService} 
                     onCalendarChange = {this.onCalendarChange}
@@ -489,13 +494,11 @@ class ScheduleResultTable extends React.Component{
         </ColumnGroup>
 
         return (
-            <div className = 'p-grid'>
                 <div className = 'p-col-12 datatable-style-sched-repo'>
-                    <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}}/>
+                    <Toast ref={(el) => this.messages = el} position="top-left"/>
                     <ContextMenu model={this.getContextMenuModel()} ref={el => this.cm = el} onHide={() => this.setState({ selectedRow: null })}/>
                     <DataTable value={this.props.days} rowClassName={this.getRowBackgroundClassName} 
                         headerColumnGroup={header}
-                        scrollable scrollHeight="450px"
                         contextMenuSelection={this.state.selectedRow}
                         onContextMenuSelectionChange={e => this.setState({ selectedRow: e.value })}
                         onContextMenu={e => this.cm.show(e.originalEvent)}
@@ -539,13 +542,12 @@ class ScheduleResultTable extends React.Component{
                             <Column body={this.actionBodyReason} style={{width: '10%', fontSize:'smaller'}}/>}
                     </DataTable>
                 </div>
-            </div>
         );
     }
 }
 
 class ScheduleFilter extends React.Component{
-    state = {summary:'', showConfirm:false, jobStatus:0}
+    state = {showConfirm:false, jobStatus:0, summary1:'', summary2:'', summary3:'', summary4:'', summary5:''}
     //Панель фильтра, содержащая выбранный месяц года и продавца
     constructor(props){
         super(props);
@@ -563,7 +565,11 @@ class ScheduleFilter extends React.Component{
         this.updateViewAfterCheckingIn = this.updateViewAfterCheckingIn.bind(this);
         this.checkout = this.checkout.bind(this);
         this.hideConfirmDlg = this.hideConfirmDlg.bind(this);
-        this.state.summary = props.summary;
+        this.state.summary1 = props.summary1;
+        this.state.summary2 = props.summary2;
+        this.state.summary3 = props.summary3;
+        this.state.summary4 = props.summary4;
+        this.state.summary5 = props.summary5;
         this.moment =  require('moment');
         addLocale('ru', ru);   
     }
@@ -606,7 +612,11 @@ class ScheduleFilter extends React.Component{
     }
 
     componentDidMount() {
-        AppSets.getEmployees(this);
+        if (AppSets.getUser().amIhr()){
+            AppSets.getEmployees(this)
+        }else{
+            AppSets.getEmployees(this, AppSets.getUser().orgUnitId);
+        }
         try{
             const storedEmployeeStr = window.sessionStorage.getItem("chosenEmployee");
             let storedIniDate = window.localStorage.getItem("initalCalDate");
@@ -634,9 +644,6 @@ class ScheduleFilter extends React.Component{
         const userString = JSON.stringify(AppSets.user);
         window.sessionStorage.setItem("user", userString);
         this.props.onSellerChange(AppSets.getUser().employeeName, AppSets.getUser().employeeId, [AppSets.getUser().employeeName] );
-        //this.props.history.push({pathname:'/login', state: {reason: 'Вы отметили уход с работы и вышли из системы. '}});
-        //AppSets.clearUser();
-        //window.sessionStorage.removeItem("user");
     }
 
     hideConfirmDlg(){
@@ -695,23 +702,23 @@ class ScheduleFilter extends React.Component{
 
     render(){
         return(
-            <div className = 'p-grid'>
+            <div className = 'p-grid' style={{marginTop:'-20px'}}>
                 <div className = 'p-col-12'>
-                    <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}}/>
+                    <Toast ref={(el) => this.messages = el} position="top-left  "/>
                 </div>
                 {this.state.showConfirm && 
                     <Confirmation visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmMessage}
                             accept={this.confirmAccept} reject={this.confirmReject} messages={this.messages} context={this}/>}
                    
-                <div className = 'p-col-4'>
+                <div className = 'p-col-3' style={{margin: '0 0 0.5em 1em'}}>
                     <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" view="month" yearNavigator yearRange="2021:2040"
                         locale={"ru"}
                         value={this.state.chosenDate}
                         onSelect={(e) => {this.onChangeCalendar(e)}}/>
                 </div>
-                <div className = 'p-col-4'>
+                <div className = 'p-col-3'>
                     {!(AppSets.getUser() && (AppSets.getUser().jobTitle !== "Продавец" && AppSets.getUser().jobTitle !== "Менеджер")) ?
-                        <AutoComplete 
+                        <AutoComplete id="chooseEmployeeFld"
                             dropdown = {true}
                             value = {this.state.chosenPerson}
                             suggestions={this.state.filteredSellers}
@@ -729,8 +736,12 @@ class ScheduleFilter extends React.Component{
                         </Button>
                     </div>}
                 </div>
-                <div className = 'p-col-4'>
-                    <span style={{color:'white'}}>{this.props.summary}</span>
+                <div className = 'p-col-5'>
+                    {this.props.summary1 && <div style={{color:'white'}}>{this.props.summary1} </div>}
+                    {this.props.summary2 && <div style={{color:'white'}}>{this.props.summary2} </div>}
+                    {this.props.summary3 && <div style={{color:'white'}}>{this.props.summary3} </div>}
+                    {this.props.summary4 && <div style={{color:'white'}}>{this.props.summary4} </div>}
+                    {this.props.summary5 && <div style={{color:'white'}}>{this.props.summary5} </div>}
                 </div>
             </div>
         );

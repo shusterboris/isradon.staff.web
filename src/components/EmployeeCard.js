@@ -198,7 +198,8 @@ export default class EmployeeCard extends Component {
                         <div className="p-field-checkbox">   
                             <Checkbox inputId="isWorkingFld" value={this.state.working} 
                                 onChange={chk => this.onWorkStatusChange(chk)} 
-                                checked={this.state.working === true}></Checkbox>
+                                checked={this.state.working === true}
+                                tooltip="При увольнении снимите эту отметку - но только в конце месяца"/>
                             <label htmlFor="isWorkingFld" className="p-checkbox-label">Работает</label>
                         </div>
                         {!this.state.photoData ? 

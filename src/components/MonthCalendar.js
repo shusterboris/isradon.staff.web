@@ -34,7 +34,11 @@ export default class MonthCalendar extends Component{
     }
 
     componentDidMount(){
-        AppSets.getEmployees(this); //employees
+        if (AppSets.getUser().amIhr()){
+            AppSets.getEmployees(this)
+        }else{
+            AppSets.getEmployees(this, AppSets.getUser().orgUnitId);
+        }
         AppSets.getOrgUnitList(this); //orgUnits
         return;
         const storedOrgUnit = this.storage.getItem("chosenOrgUnit")
