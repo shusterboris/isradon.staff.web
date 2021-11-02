@@ -155,7 +155,7 @@ class ScheduleResultTable extends React.Component{
         this.onEditorValueChange = this.onEditorValueChange.bind(this);
         this.onNoteSubmit = this.onNoteSubmit.bind(this);
         this.actionBodyReason = this.actionBodyReason.bind(this);
-        this.openDayOffForm = this.openDayOffForm.bind(this);
+        this.openDayOffForm = this.openDayEditForm.bind(this);
         this.contextMenuMode = null;
         this.downloadSickLeaveDocument = this.downloadSickLeaveDocument.bind(this);
         this.moment = require('moment');
@@ -191,7 +191,8 @@ class ScheduleResultTable extends React.Component{
         return([
             {label:"Больничный:", icon: 'pi pi-calendar-plus',
             items: [
-                {label:"Отметить день", icon: 'pi pi-calendar-plus', command: () => this.openDayOffForm()},
+                {label:"Отметить день как больничный", icon: 'pi pi-calendar-plus', command: () => this.changeRowType(4)},
+                {label:"Внести скан", icon: 'pi pi-calendar-plus', command: () => this.openDayEditForm()},
             ]}])
     }
 
@@ -225,13 +226,23 @@ class ScheduleResultTable extends React.Component{
                 {label:"Получить документ", icon: 'pi pi-download', command: () => this.downloadSickLeaveDocument()},
             ]},
             {separator: true},
-            {label:"Открыть", icon: "pi pi-eye", command: () => this.openDayOffForm()},
+            {label:"Открыть", icon: "pi pi-eye", command: () => this.openDayEditForm()},
             {separator: true},
             {label:"Закрыть это меню", icon: 'pi pi-sign-out'},
         ]);
     }
 
-    openDayOffForm(){
+    rowSort(a, b){
+        if (a.comingPlan == b.comingPlan){
+            return 0;
+        }else if (a.comingPlan < b.comingPlan){
+            return -1
+        }else{
+            return 1;
+        }
+    }
+
+    openDayEditForm(){
         let start = this.state.selectedRow.comingPlan;
         let end = this.state.selectedRow.leavingPlan;
         let startMoment = this.moment(start);
@@ -253,10 +264,27 @@ class ScheduleResultTable extends React.Component{
         const chosenPerson = employeeToChoose.find(empl=>empl.id === this.state.selectedRow.employeeId);
         const row = this.state.selectedRow
         const orgUnitProxy = {'id' : row.orgUnitId, 'name': row.orgUnitName}; //чтобы избежать получения отсутствующего здесь полного объекта для выбора в форме
-        this.props.history.push({
-            pathname: '/edit-day:id', state: {id: row.id, rowType: row.rowType,
-                chosenEmployee: chosenPerson, employees: this.props.coEmployees,
-                chosenOrgUnit: orgUnitProxy, orgUnits: []}});     
+        if (this.state.selectedRow.rowType === 0){
+            this.props.history.push({
+                pathname: '/edit-day:id', state: {id: row.id, rowType: row.rowType,
+                    chosenEmployee: chosenPerson, employees: this.props.coEmployees,
+                    chosenOrgUnit: orgUnitProxy, orgUnits: []}});     
+        }else{
+            //ищем в сводке дни с таким же байндером, что и выбранный, т.е., тот же отпуск, больничный и т.д., чтобы найти начальную и конечную даты
+            const anotherDays = this.props.days.filter(day=>{return day.binder === row.binder});
+            let start = row.comingPlan
+            let end = row.leavingPlan;
+            if (anotherDays.length >= 2){
+                anotherDays.sort((a,b) => this.rowSort(a, b));
+                start = anotherDays[0].comingPlan;
+                end = anotherDays[anotherDays.length - 1].comingPlan;
+            }
+            this.props.history.push({
+                pathname: '/day-off:id', state: {id: row.id, rowType: row.rowType, mode: 'edit', 
+                    dateStart : start, dateEnd: end, 
+                    chosenEmployee: chosenPerson, employees: [chosenPerson],
+                    chosenOrgUnit: orgUnitProxy, orgUnits: []}});     
+        }
     }
 
     changeRowType(rowType){
@@ -620,7 +648,7 @@ class ScheduleFilter extends React.Component{
         try{
             const storedEmployeeStr = window.sessionStorage.getItem("chosenEmployee");
             let storedIniDate = window.localStorage.getItem("initalCalDate");
-            let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
+            let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (this.moment().toDate() );
             this.setState({chosenDate: iniDate});
             if (storedEmployeeStr!=null){
                 const storedEmployee = JSON.parse(storedEmployeeStr);
@@ -717,7 +745,7 @@ class ScheduleFilter extends React.Component{
                         onSelect={(e) => {this.onChangeCalendar(e)}}/>
                 </div>
                 <div className = 'p-col-3'>
-                    {!(AppSets.getUser() && (AppSets.getUser().jobTitle !== "Продавец" && AppSets.getUser().jobTitle !== "Менеджер")) ?
+                    {(AppSets.getUser() && (!AppSets.getUser().isPortable())) ?
                         <AutoComplete id="chooseEmployeeFld"
                             dropdown = {true}
                             value = {this.state.chosenPerson}

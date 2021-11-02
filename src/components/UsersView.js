@@ -48,9 +48,12 @@ export default class UsersView extends Component {
     save(){
         if (!this.state.password1 || !this.state.password2 || !this.state.userName){
             this.messages.show({severity: 'error', summary: 'Все поля с пометкой * должны быть заполнены'})
+            return;
         }else if (this.state.password1 !== this.state.password2){
             this.messages.show({severity: 'error', summary: 'Пароль в обоих полях должен быть одинаковым'})
+            return;
         }
+        
         let userInfo = this.state.userInfo;
         userInfo.userName = this.state.userName;
         userInfo.employeeId = this.state.selectedRow.id;

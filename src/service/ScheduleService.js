@@ -136,6 +136,8 @@ export default class ScheduleService {
                         }
                     }
                 }
+            }else if (!(data.rowType ===1 || data.rowType ===2)){
+                totalDays += 1;
             }
         }
         let summary1 = "", summary2 = "", summary3 = "", summary4 = "", summary5 = "";
@@ -158,6 +160,24 @@ export default class ScheduleService {
             }
         }
         _this.setState({summary1: summary1, summary2: summary2, summary3: summary3, summary4: summary4, summary5: summary5});
+    }
+
+    getCurrentWorkDay(person, _this){
+        const personId = (person && person.hasOwnProperty('employeeId') ? ('/' + person.employeeId) : '');
+        const server = AppSets.host;
+        let url = server + '/schedule/employee'+personId
+        return axios.get(url,{timeout: AppSets.timeout})
+            .then(
+                res => res.data)
+            .then(row => {
+                if (Object.keys(row).length !== 0){
+                    _this.setState({row: row, note: row.note})
+                }
+            })
+            .catch(err => { 
+                    this.processRequestsCatch(err, "Получение расписания на день", _this.messages) 
+                }
+            );
     }
 
     getWorkCalendar(start, end, onlyAbsense, orgUnit, person, _this){
@@ -666,6 +686,7 @@ export default class ScheduleService {
             .then(data => {
                 if (_this){
                     //_this.props.history.goBack()
+                    _this.messages.show({severity:'success', summary:'Выполнено успешно'})
                 }
                 return data;
             })
@@ -826,7 +847,7 @@ export default class ScheduleService {
 
     checkInOut(_this, finalActions){
         const url = AppSets.host + "/employee/checkInOut/" + AppSets.getUser().employeeId;
-        return axios.put(url, {timeout: AppSets.timeout})
+        return axios.put(url, {}, {timeout: AppSets.timeout})
             .then(response => {
                 if (finalActions)
                     { finalActions() }
@@ -834,5 +855,26 @@ export default class ScheduleService {
             .catch(err=>{
                 this.processRequestsCatch(err,"Отметка прихода-ухода",_this.messages, true);                       
             });
+    }
+
+    getSummaryReport(month, finalActions, _this){
+        const url = AppSets.host + "/schedule/commonreport/" + month;
+        return axios.get(url, {timeout: AppSets.timeout})
+            .then(response => {
+                const data = this.parseSummaryReport(response);
+                _this.setState({data: data});
+                if (finalActions)
+                    { finalActions() }
+            })
+            .catch(err=>{
+                this.processRequestsCatch(err,"Сводка по всем магазинам",_this.messages, true);                       
+            });
+    }
+
+    parseSummaryReport(response){
+        if (response.length === 0)
+            {return []};
+        let data = JSON.parse(response.data);
+        return data;
     }
 }

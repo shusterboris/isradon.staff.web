@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Calendar } from 'primereact/calendar'
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
-import { Messages } from 'primereact/messages';
 import App from '../App';
 import AppSets from '../service/AppSettings';
 import ScheduleService from '../service/ScheduleService';
@@ -14,10 +13,11 @@ import { SplitButton} from 'primereact/splitbutton';
 import Confirmation from './Confirmation';
 import Utils from '../service/utils';
 import axios from 'axios';
-import { ListBox} from 'primereact/listbox';
+import { Toast } from 'primereact/toast';
+
 
 export default class DayOffForm extends Component {
-    state = {eventType: null, reason: '', id: null, errorMsg:'', employees: [], 
+    state = {eventType: null, reason: '', id: null, errorMsg:'', employees: [], employee: null, 
                 photoFile:null, photoData: null, salesInfo: [], showConfirm: false};
 
     constructor(props) {
@@ -44,28 +44,31 @@ export default class DayOffForm extends Component {
         this.inThePast = this.inThePast.bind(this);
         this.hideConfirmationDlg = this.hideConfirmationDlg.bind(this);
         this.displaySalesRow = this.displaySalesRow.bind(this)
+        this.moment = require('moment');
         
         const param = this.props.location.state;
         if (! param.hasOwnProperty('mode')){
-            this.state.errorMsg = 'Некорректный режим открытия страницы'
+            this.setState({errorMsg: 'Некорректный режим открытия страницы'});
             return;
         }
 
         if (! (param.hasOwnProperty('start')) && param.hasOwnProperty('end')){
-            this.state.errorMsg = 'Некорректный режим открытия страницы'
+            this.setState({errorMsg: 'Некорректный режим открытия страницы'});
             return;
         }   
-        const eventType  = (param.hasOwnProperty('rowType')) ? row_types[param.rowType] : row_types[0]; 
-        const emloyeeName = (param.hasOwnProperty('employee')) ? param.employee : '';
+        const vEventType  = (param.hasOwnProperty('rowType')) ? row_types[param.rowType] : row_types[0]; 
         const id = (param.hasOwnProperty('id')) ? param.id : '';
         const photoFile = (param.hasOwnProperty('photoFile')) ? param.photoFile : '';
 
         this.accepted = param.accepted;
         this.mode = param.mode;
-        this.setEditMode(this.mode, eventType);
+        this.setEditMode(this.mode, vEventType);
 
-        this.state = {start: param.dateStart, end: param.dateEnd, employee: emloyeeName, errorMsg:'', id: id,
-            employees: param.employeeList, eventType: eventType, photoFile: photoFile, addButtons: []};
+        const start = param.dateStart ? this.moment(param.dateStart).toDate() : null;
+        const end = param.dateEnd ? this.moment(param.dateEnd).toDate() : null;
+        this.state = {start: start, end: end, 
+            employee: param.chosenEmployee, errorMsg:'', id: id,
+            employees: param.employees, eventType: vEventType, photoFile: photoFile, addButtons: []};
     }
 
     componentDidMount(){
@@ -303,6 +306,10 @@ export default class DayOffForm extends Component {
 
     editEndDate(value){
         if (this.editMode){
+            if (this.state.start && this.state.start > value){
+                this.messages.show({severity:'error', summary:'Так уменьшать дату нельзя. Отмените невыход через контекстное меню'})
+                return;
+            }
             this.setState({end:  value});
         }
     }
@@ -370,7 +377,7 @@ export default class DayOffForm extends Component {
             { this.history.push("/login")}
         return(
         <div className="card" >
-            <Messages ref={(msgE) => this.messages = msgE} style={{marginBottom: '1em'}}/>
+            <Toast ref={(msgE) => this.messages = msgE} style={{marginBottom: '1em'}}/>
             
             <div className="p-grid nested-grid">
                 <div className="p-col-4">
@@ -437,16 +444,13 @@ export default class DayOffForm extends Component {
                         </div>
                     </div>
                 </div>
-                {(this.state.eventType && this.state.eventType.id === 0 && this.state.salesInfo) && 
-                    <div className="p-col-4">
-                        <ListBox options={this.state.salesInfo} listStyle={{maxHeight: '250px'}}/>
-                    </div>}
-                {this.state.eventType.id == AppSets.getRowType("SEAK_LEAVE").id && 
+                {this.state.eventType && AppSets.rowTypesIsEqual(this.state.eventType, AppSets.getRowType("SEAK_LEAVE")) && 
                 <div className="p-col-4">
                     <Tooltip target=".scan" mouseTrack mouseTrackLeft={10}/>
                     {this.state.photoFile ? 
-                        <img className="scan" src = {this.state.photoData} width = {250} height={300} alt="Скан-копия документа"
-                            onError={(e) => e.target.src='/assets/images/3-schedule.png'} data-pr-tooltip="Соответствующей кнопкой сюда можно загрузить документ (png, jpeg, pdf) до 1 Мб размером"/> :
+                        <img className="scan" src = {this.state.photoData} width = {250} height={250} alt="Скан-копия документа (pdf не отображается, только выгрузка)"
+                            onError={(e) => e.target.src='/assets/images/3-schedule.png'} 
+                            data-pr-tooltip="Соответствующей кнопкой сюда можно загрузить документ (png, jpeg, pdf) до 1 Мб размером"/> :
                         <img className="scan" src = '/assets/images/3-schedule.png' width = {250} height={250} alt="Место для скан-копии документа"
                             data-pr-tooltip="Соответствующей кнопкой сюда можно загрузить документ"/>
                     }

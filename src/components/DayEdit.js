@@ -271,10 +271,10 @@ export class DayEdit extends Component {
                         </div>
                     </div>
                 {this.isShowSalesInfo && 
-                <div className="p-col-2" aria-rowspan='2'> 
-                    <label style={{margin:'0 0 2em 0.5em', fontWeight:'bold'}}>Список продаж</label>
-                    <ListBox options={this.state.salesInfo} listStyle={{maxHeight: '250px'}}/>
-                </div>}
+                    <div className="p-col-2" aria-rowspan='2'> 
+                        <label style={{margin:'0 0 2em 0.5em', fontWeight:'bold'}}>Список продаж</label>
+                        <ListBox options={this.state.salesInfo} listStyle={{maxHeight: '250px'}}/>
+                    </div>}
                 <div className="p-col-4" aria-rowspan='2'> 
                     <span className="p-float-label">
                         <InputTextarea rows={5} cols={30} value={this.state.reason} id="inputReasonTextArea"

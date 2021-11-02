@@ -23,6 +23,8 @@ import UsersView from './components/UsersView'
 import TestPage from './components/TestPage'
 import { DictionaryJT } from './components/DictionaryJT';
 import AppSets from './service/AppSettings';
+import InOutPage from './components/InOutPage';
+import SummaryReport from './components/SummaryReport';
 
 const App = () => {
 
@@ -210,13 +212,17 @@ const App = () => {
         {path: "/data-download", component:MonthScheduleDownload},
         {path: "/login", component:Login},
         {path: "/titles-dictionary", component:DictionaryJT},
+        {path: "/inout", component: InOutPage},
         {path: "/test", component:TestPage},
+        {path: "/summary-report", component:SummaryReport},
 		{path: "/public/" },
     ];
 
     const getAppMenu = () => {
         let menu = [];
         if (!AppSets.getUser())
+            {return menu}
+        if (AppSets.getUser().isPortable())    
             {return menu}
         menu = AppSets.getUser().amIhr() ? [
             {label: 'Сводка', icon: 'pi pi-th-large', to: '/summary'},

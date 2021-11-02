@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-export class EmptyPage extends Component {
+export default class EmptyPage extends Component {
     state = {};
     constructor(props) {
         super(props);

@@ -19,4 +19,13 @@ export default class User{
         return this.hasAuthority('editAll');
     }
 
+    isPortable(){
+        if (this.hasAuthority("manualCheckIn")) {return true}; 
+        if (this.hasAuthority("editAll")) {return false};
+        if (this.authorities && this.authorities.leaving===0){
+            return !this.jobTitle.toLowerCase().includes("продавец")
+        }
+        return false;
+    }
+
 }
