@@ -861,8 +861,7 @@ export default class ScheduleService {
         const url = AppSets.host + "/schedule/commonreport/" + month;
         return axios.get(url, {timeout: AppSets.timeout})
             .then(response => {
-                const data = this.parseSummaryReport(response);
-                _this.setState({data: data});
+                _this.setState({data: response.data});
                 if (finalActions)
                     { finalActions() }
             })
@@ -871,10 +870,4 @@ export default class ScheduleService {
             });
     }
 
-    parseSummaryReport(response){
-        if (response.length === 0)
-            {return []};
-        let data = JSON.parse(response.data);
-        return data;
-    }
 }

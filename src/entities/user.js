@@ -22,7 +22,7 @@ export default class User{
     isPortable(){
         if (this.hasAuthority("manualCheckIn")) {return true}; 
         if (this.hasAuthority("editAll")) {return false};
-        if (this.authorities && this.authorities.leaving===0){
+        if (this.authorities==null || this.authorities.length===0){
             return !this.jobTitle.toLowerCase().includes("продавец")
         }
         return false;

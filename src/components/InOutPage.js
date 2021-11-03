@@ -130,14 +130,16 @@ export default class InOutPage extends Component {
             }
             <div className="p-col-12 ">
                 <span className="p-float-label">
-                    <InputTextarea id='inputReasonFld' value={this.state.row.reason} rows={5} cols={100}/>
+                    <InputTextarea id='inputReasonFld' value={this.state.row.reason} style={{minHeight:'30px', overflow:'auto'}}
+                    rows={5} cols={60} autoResize={true} />
                     <label htmlFor='inputReasonFld'>Примечание руководителя </label>
                 </span>
                 <span className="p-float-label" style={{margin: "1em 0 0 0"}}>
-                    <InputTextarea id='inputNoteFld' value={this.state.note.reason} rows={5} cols={100}
+                    <InputTextarea id='inputNoteFld' value={this.state.note.reason} style={{minHeight:'30px', overflow:'auto'}}
+                        rows={5} cols={60} autoResize={true}
                         disabled={!this.state.row.comingFact}
                         onChange={(e) => this.setState({note: e.target.value, notesChanged: true})} rows={5}/>
-                    <label htmlFor='inputNoteFld' style={{width: '90%'}}>Информация для менеджера (написать перед уходом, если необходимо)</label>
+                    <label htmlFor='inputNoteFld' style={{width: '90%'}}>Заметки сотрудника (перед уходом, если необходимо)</label>
                 </span>
             </div>
         </div>

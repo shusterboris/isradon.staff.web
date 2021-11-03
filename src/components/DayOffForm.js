@@ -120,7 +120,7 @@ export default class DayOffForm extends Component {
             this.messages.show({severity:'error', summary: 'Нельзя утвердить больничный, пока не загружен подтверждающий документ'});
             return;
         }
-        this.confirmAccept=this.accept;
+        this.confirmAccept=this.hideConfirmationDlg;
         this.confirmReject=this.hideConfirmationDlg;    
         this.confirmHeader='Подтвердите';
         this.confirmBody='Хотите утвердить ' + this.state.eventType.name + "?"; 

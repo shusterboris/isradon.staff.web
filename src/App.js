@@ -225,6 +225,7 @@ const App = () => {
         if (AppSets.getUser().isPortable())    
             {return menu}
         menu = AppSets.getUser().amIhr() ? [
+            {label: 'Отчет', icon: 'pi pi-chart-bar', to: '/summary-report'},
             {label: 'Сводка', icon: 'pi pi-th-large', to: '/summary'},
             {
                 label: 'График работы', icon: 'pi pi-list',

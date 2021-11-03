@@ -32,9 +32,9 @@ export default class Confirmation extends Component{
 
     render(){
         const footer = (
-            <div>
-                <Button label="Да" icon="pi pi-check" onClick={this.accept} />
-                <Button label="Нет" icon="pi pi-times"  onClick={this.reject}/>
+            <div >
+                <Button label="Да" icon="pi pi-check" onClick={this.accept} style={{margin: '0.5em'}}/>
+                <Button label="Нет" icon="pi pi-times"  onClick={this.reject} style={{margin: '0.5em'}}/>
             </div>
         );
         return(
