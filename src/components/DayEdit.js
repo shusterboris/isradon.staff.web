@@ -11,7 +11,7 @@ import { row_types } from '../service/AppSettings'
 import { Messages } from 'primereact/messages';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { ListBox } from 'primereact/listbox';
-import App from '../App';
+
 
 export class DayEdit extends Component {
     state = {rowData: null, changed: false, filteredOrgUnits: [], chosenOrgUnit:null, chosenEmployee:null, 

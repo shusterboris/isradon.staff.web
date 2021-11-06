@@ -190,6 +190,8 @@ export default class EmployeeCard extends Component {
     render() {
         if (!AppSets.getUser())
             { this.history.push("/login")}
+        else if (!AppSets.getUser().amIhr()){
+            this.history.push("/access") }
         return<div> 
             <Card title="Карточка сотрудника" >
             <Messages ref={(m) => this.messages = m}/>
@@ -220,14 +222,14 @@ export default class EmployeeCard extends Component {
                         <div className="p-grid form-group " >
                             <div className="p-col-2 p-mx-2" >                            
                                 <span className="p-float-label">
-                                    <InputText id="lastNameFld" value={this.state.lastName} 
+                                    <InputText id="lastNameFld" value={this.state.lastName} maxLength={15} keyfilter='alpha'
                                         onChange={(e) => this.setState({lastName:e.target.value, wasChanged: true})}/>
                                     <label htmlFor="lastNameFld">Фамилия*</label>
                                 </span>
                             </div>
                             <div className="p-col-8 p-mx-2" >                            
                                 <span className="p-float-label">
-                                    <InputText id="firstNameFld" value={this.state.firstName}  
+                                    <InputText id="firstNameFld" value={this.state.firstName}  maxLength={15}
                                         onChange={(e) => this.setState({firstName:e.target.value, wasChanged: true})}/>
                                     <label htmlFor="firstNameFld">Имя*</label>
                                 </span>
@@ -278,14 +280,14 @@ export default class EmployeeCard extends Component {
                                 <span className="p-float-label">
                                     <InputText id="daysInWeekFld" value={this.state.daysInWeek} width='3em' keyfilter="int"
                                             onChange={(diw) => this.setState({daysInWeek:diw.target.value, wasChanged: true})}/>
-                                    <label htmlFor='daysInWeekFld'> Дней/нед. </label>
+                                    <label htmlFor='daysInWeekFld'> Дней/нед.* </label>
                                 </span>
                             </div>
                             <div className="p-col-2 p-mx-2">                            
                                 <span className="p-float-label">
                                     <InputText id='shiftDurFld' value={this.state.shiftLength} width='3em' keyfilter="num"
                                            onChange={(sl) => this.setState({shiftLength:sl.target.value, wasChanged: true})}/>
-                                    <label htmlFor="shiftDurFld"> Смена, ч </label>
+                                    <label htmlFor="shiftDurFld"> Смена, ч* </label>
                                 </span>
                             </div>
                             <div className="p-col-7 p-mx-2">
@@ -325,6 +327,8 @@ export default class EmployeeCard extends Component {
 
     isDataValid(messages){
         let errFields = [];
+        let lstFlds = ""
+        let msg = ""
         if (!this.state.firstName && !this.state.lastName){
             errFields.push('Имя или фамилия')
         }else if ((this.state.firstName && this.state.firstName.trim() === "") || 
@@ -338,8 +342,8 @@ export default class EmployeeCard extends Component {
             errFields.push('Номер телефона')
         }
         if (errFields.length !== 0){
-            let lstFlds = errFields.join(", ")
-            let msg = "Не введены: "+lstFlds+". Все поля, обозначенные символом * должны быть обязательно заполнены!";
+            lstFlds = errFields.join(", ")
+            msg = "Не введены: "+lstFlds+". Все поля, обозначенные символом * должны быть обязательно заполнены!";
             messages.show({severity: 'error', summary: msg, sticky: true});
             return false;
         }
@@ -361,7 +365,9 @@ export default class EmployeeCard extends Component {
         if (this.state.email && !Utils.emailIsValid(this.state.email)){
             errFields.push('Неправильный формат электронной почты');
         }
-        if (this.state.shiftLength && (this.state.shiftLength < 0 || this.state.shiftLength > 12)){
+        if (!this.state.shiftLength){
+            errFields.push("Длительность смены должна быть указана");
+        }else if (this.state.shiftLength < 0 || this.state.shiftLength > 12){
             errFields.push("Длительность смены должна быть больше 0 и меньше 12");
         }
         if (this.state.shiftLengthOnFriday && (this.state.shiftLengthOnFriday < 0 || this.state.shiftLengthOnFriday > 12)){
@@ -394,8 +400,8 @@ export default class EmployeeCard extends Component {
             }
         }
         if (errFields.length !== 0){
-            let lstFlds = errFields.join(", ")
-            let msg = "При вводе данных обнаружены следующие ошибки. "+lstFlds;
+            lstFlds = errFields.join(", ")
+            msg = "При вводе данных обнаружены следующие ошибки. "+lstFlds;
             messages.show({severity: 'error', summary: msg, sticky: true});
             return false;
         }
