@@ -8,7 +8,7 @@ import AppSets from '../service/AppSettings';
 import axios from 'axios';
 import { AutoComplete } from 'primereact/autocomplete';
 import ScheduleService from '../service/ScheduleService';
-import { Messages } from 'primereact/messages';
+import { Toast } from 'primereact/toast';
 import { FileUpload } from 'primereact/fileupload';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { parsePhoneNumberFromString } from 'libphonenumber-js'
@@ -152,7 +152,7 @@ export default class EmployeeCard extends Component {
             .then(res => {
                     if (!res.data.startsWith("Ошибка")){
                         _this.setState({photoFile: res.data});
-                        AppSets.saveEmployee(_this.state, _this);
+                        AppSets.saveEmployee(_this.state, _this, this.getEmployeeById);
                     }else{
                         _this.messages.show({severity:'warn', summary:res.data});
                     }
@@ -194,7 +194,7 @@ export default class EmployeeCard extends Component {
             this.history.push("/access") }
         return<div> 
             <Card title="Карточка сотрудника" >
-            <Messages ref={(m) => this.messages = m}/>
+            <Toast ref={(m) => this.messages = m}/>
                 <div className="p-grid">
                     <div className = 'p-col-fixed' style={{ width: '260px'}}>
                         <div className="p-field-checkbox">   
@@ -411,7 +411,7 @@ export default class EmployeeCard extends Component {
     onSavePressed(){
         if (this.state.wasChanged){
             if (this.isDataValid(this.messages)){
-                AppSets.saveEmployee(this.state, this);
+                AppSets.saveEmployee(this.state, this, this.getEmployeeById);
             }
         }
     }

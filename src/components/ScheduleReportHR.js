@@ -48,11 +48,11 @@ export default class ScheduleReportHR extends React.Component{
         this.setState({chosenDate: iniDate, chosenMonth: iniDate.getMonth()});
     }
 
-    updateData(chosenMonth, chosenPersonId){
+    updateData(chosenMonth, chosenPersonId, year){
         if (chosenPersonId && chosenMonth > -1){
-            this.dataService.getMonthScheduleByPerson(chosenMonth + 1, chosenPersonId, this);
+            this.dataService.getMonthScheduleByPerson(chosenMonth + 1, chosenPersonId, this, year);
         }else if (AppSets.getUser() && chosenMonth > -1){
-            this.dataService.getMonthScheduleByPerson(chosenMonth + 1, AppSets.getUser().employeeId, this);
+            this.dataService.getMonthScheduleByPerson(chosenMonth + 1, AppSets.getUser().employeeId, this, year);
         }
     }
 
@@ -69,12 +69,12 @@ export default class ScheduleReportHR extends React.Component{
         this.updateDaysState(value);
     }
 
-    onCalendarChange(month){
+    onCalendarChange(month, year){
         this.setState(
             {chosenMonth: month}
         )
         if (this.state.chosenPersonId !== null){
-            this.updateData(month, this.state.chosenPersonId)
+            this.updateData(month, this.state.chosenPersonId, year)
         }
     }
 
@@ -620,7 +620,8 @@ class ScheduleFilter extends React.Component{
         if (event){
             const theDate = this.moment(event.value);
             let month = theDate.month();
-            this.props.onCalendarChange(month)
+            let year = theDate.year();
+            this.props.onCalendarChange(month, year)
             window.localStorage.setItem("initalCalDate", theDate.toDate());
         }else{
             this.chosenDate = '';

@@ -25,12 +25,14 @@ export default class ScheduleService {
             });
     }
 
-    getMonthScheduleByPerson(month, person, _this) {
+    getMonthScheduleByPerson(month, person, _this, year) {
         if (!person || (month < 0)){
             return [];
         }
+        if (!year)
+            year = this.moment().year();
         const server = AppSets.host;
-        const url = server + '/schedule/employee/'+person+"/"+month
+        const url = server + '/schedule/employee/'+person+"/"+month+"/"+year
         axios.get(url,{timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
