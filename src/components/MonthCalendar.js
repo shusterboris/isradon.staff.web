@@ -40,24 +40,6 @@ export default class MonthCalendar extends Component{
             AppSets.getEmployees(this, AppSets.getUser().orgUnitId);
         }
         AppSets.getOrgUnitList(this); //orgUnits
-        return;
-        const storedOrgUnit = this.storage.getItem("chosenOrgUnit")
-        const storedEmployee = this.storage.getItem("chosenEmployee")
-        let valuesRestored = false;
-        let ou = null;
-        if (storedOrgUnit != null){
-            ou = JSON.parse(storedOrgUnit)
-            this.setState({chosenOrgUnit: ou});
-            valuesRestored = true;
-        }
-        if (storedEmployee != null){
-            const empl = JSON.parse(storedEmployee);
-            this.setState({chosenEmployee: empl})
-            this.chosenEmployee = empl;
-            valuesRestored = true
-        }
-        if (valuesRestored) 
-            {this.updateData()}
     }
 
     chosenMonthChanged(eventInfo){
@@ -80,9 +62,13 @@ export default class MonthCalendar extends Component{
         endMoment.minute(maxTime[1]);
         endMoment.subtract(1,'days');
         const unitsToChoose = this.getEmployeeList(this.state.chosenOrgUnit);
+        let chosenPerson = this.state.chosenPerson;
+        if (!chosenPerson){
+            chosenPerson = unitsToChoose.find(empl => {return empl.id === AppSets.getUser().employeeId});
+        }
         this.props.history.push(
-            {pathname:'/day-off', state: {mode: 'create', employeeList: unitsToChoose, 
-                            employee: this.state.chosenPerson, dateStart:start, dateEnd:endMoment.toDate()}}
+            {pathname:'/day-off', state: {mode: 'create', employees: unitsToChoose, 
+            chosenEmployee: chosenPerson, dateStart:start, dateEnd:endMoment.toDate()}}
             );
     }
 

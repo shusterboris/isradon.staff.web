@@ -2,7 +2,7 @@ import axios from 'axios';
 import User from '../entities/user';
 
 export default class AppSets{
-    static minStartTime = "09:00";
+    static minStartTime = "04:00";
     static maxEndTime = "20:00";
     static timeBoundMinutes = 5;
     static timeBound = AppSets.timeBoundMinutes * 60 * 1000; // допустимое время отклонения от запланированного времени прихода/ухода в милисекундах  
@@ -11,7 +11,7 @@ export default class AppSets{
     static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
     //static host = "https://smart.sclub.in.ua";
-    static version = "ver. 1.4"
+    static version = "ver. 1.6"
     static timeout = 5000;
     static authList = {'editAll': 'HR', 'manualCheckIn': 'Ручная отметка'};
         
@@ -131,7 +131,16 @@ export default class AppSets{
             });
     }
 
-    static saveEmployee(data, _this, finalize){
+    static createEmployeeProxy(edata){
+        const data = {"addConditions": edata.addConditions, "birtday": edata.birtday, "daysInWeek": edata.daysInWeek, 
+            "email": edata.email, "firstName": edata.firstName, "lastName": edata.lastName, "id": edata.id, 
+            "jobTitle": edata.jobTitle, "nickName": edata.nickName, "photoFile": edata.photoFile, "shiftLength": edata.shiftLength,
+            "shiftLengthOnFriday": edata.shiftLengthOnFriday, "working": edata.working, "phone": edata.phone, "orgUnit": edata.orgUnit }
+        return data;
+    }
+
+    static saveEmployee(edata, _this, finalize){
+        const data = AppSets.createEmployeeProxy(edata);
         if (data.orgUnit){
             if (Number.isInteger(data.orgUnit)){
                 data.orgUnitId = data.orgUnit;
@@ -141,13 +150,15 @@ export default class AppSets{
                 data.orgUnit = data.orgUnit.name;
             }
         }
-        if (data.shiftLengthOnFriday === '')
-            {data.shiftLengthOnFriday = null}
+        if (Number.isNaN(data.shiftLengthOnFriday)){
+            data.shiftLengthOnFriday = null
+        }else if (typeof data.shiftLengthOnFriday === 'string' || data.shiftLengthOnFriday instanceof String){
+            data.shiftLengthOnFriday = parseFloat(data.shiftLengthOnFriday);
+        }
         if (data.shiftLength === '')
             {data.shiftLength = null}
         if (data.daysInWeek === '')
             {data.daysInWeek = null}
-
         return axios.post(AppSets.host+'/employee/save', data,{timeout: AppSets.timeout})
             .then((result) => {
                 if (data.birtday){

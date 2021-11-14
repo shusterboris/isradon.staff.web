@@ -6,6 +6,7 @@ import { Column } from 'primereact/column';
 import { Calendar } from 'primereact/calendar';
 import { ru } from '../service/AppSettings'
 import { addLocale } from 'primereact/api';
+import AppSets from '../service/AppSettings';
 
 export default class SummaryReport extends Component {
     state = {chosenMonth: null, chosenDate: new Date(), data: []};
@@ -17,6 +18,7 @@ export default class SummaryReport extends Component {
         this.headerTemplate = this.headerTemplate.bind(this);
         this.onChangeCalendar = this.onChangeCalendar.bind(this);
         this.moment = require('moment');
+        this.history = props.history;
         addLocale('ru', ru); 
     }
 
@@ -46,6 +48,11 @@ export default class SummaryReport extends Component {
     }
 
     headerTemplate(){
+        if (!AppSets.getUser())
+            { this.history.push("/login")} 
+        else if (!AppSets.getUser().amIhr())
+            { this.history.push("/access") }
+
         let monthName =  ""
         if (this.state.chosenMonth){
             const monthNames = ru.monthNames;

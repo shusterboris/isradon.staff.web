@@ -3,8 +3,8 @@ import {DataTable} from 'primereact/datatable';
 import {Column} from "primereact/column";
 import {Button} from 'primereact/button';
 import ScheduleService from '../service/ScheduleService';
-import {Messages} from 'primereact/messages';
 import AppSets from '../service/AppSettings';
+import { Toast } from 'primereact/toast';
 
 export default class EmployeeView extends React.Component{
     state = {
@@ -77,12 +77,15 @@ export default class EmployeeView extends React.Component{
 
     render(){
         if (!AppSets.getUser())
-            { this.history.push("/login")}        
+            { this.history.push("/login")} 
+        else if (!AppSets.getUser().amIhr())
+            { this.history.push("/access") }
         return (
             <div className = 'p-grid'>
-                <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}} />
+                <Toast ref={(el) => this.messages = el} style={{marginBottom: '1em'}} />
                 <div className = 'p-col-12 datatable-style-sched-repo'></div>
-                <DataTable value={this.state.employees}
+                <DataTable value={this.state.employees} 
+                    header={this.hideAddBtn ?  "Уволенные сотрудники" : "Работники предприятия"} headerStyle={{fontWeight: '500'}}
                     scrollable scrollHeight="500px" sortField="fullName" 
                     emptyMessage='Нет сведений для данного сотрудника за выбранный период' >
                         <Column body={this.actionBodyTemplate} header={this.displayHeader1()} 

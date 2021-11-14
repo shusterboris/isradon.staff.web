@@ -64,7 +64,7 @@ export const Login = (props) => {
 							</span>
 						</div>
 							<div className="p-col-6">
-								{changeMode && <InputText id="newPassword1"  style={{ width: '100%' }} v-model="password" 
+								{changeMode && <InputText id="newPassword1"  style={{ width: '100%' }} type="password" 
 										placeholder="Новый пароль" 
 										value={newPassword} onChange={(e)=>setNewPassword(e.target.value)}/>}
 							</div>	
@@ -74,10 +74,10 @@ export const Login = (props) => {
 										value={newPassword2} onChange={(e)=>setNewPassword2(e.target.value)}/>}
 							</div>	
 						<div className="p-col-6">
-							{!changeMode && 
-								<Button label="Изменить пароль" className="p-button-help"
-								tooltip="Нажмите для изменения своего пароля" 
-								onClick={()=>setChangeMode(true)}/> }
+							<Button label={!changeMode ? "Изменить пароль" : "Не менять"}
+								className="p-button-help"
+								tooltip={!changeMode ? "Нажмите для изменения своего пароля" : "Нажмите, чтобы выйти из режима смены пароля, войти со старым"}
+								onClick={()=>setChangeMode(!changeMode)}/> 
 						</div>
 						<div className="p-col-6" style={{ textAlign: 'right' }}>
 							<Button label="Дальше" tooltip="Вход в систему"

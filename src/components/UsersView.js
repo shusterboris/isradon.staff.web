@@ -64,6 +64,10 @@ export default class UsersView extends Component {
     }
 
     render() {
+        if (!AppSets.getUser())
+            { this.history.push("/login")} 
+        else if (!AppSets.getUser().amIhr())
+            { this.history.push("/access") }
         return <div className="content-section implementation">
             <Toast ref = {(e) => this.messages = e} position = {"top-left"} life='5000'/>
             <div className='p-fluid p-grid'>

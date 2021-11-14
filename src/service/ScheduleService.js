@@ -25,12 +25,14 @@ export default class ScheduleService {
             });
     }
 
-    getMonthScheduleByPerson(month, person, _this) {
+    getMonthScheduleByPerson(month, person, _this, year) {
         if (!person || (month < 0)){
             return [];
         }
+        if (!year)
+            year = this.moment().year();
         const server = AppSets.host;
-        const url = server + '/schedule/employee/'+person+"/"+month
+        const url = server + '/schedule/employee/'+person+"/"+month+"/"+year
         axios.get(url,{timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
@@ -146,8 +148,8 @@ export default class ScheduleService {
         if (totalDays !== 0){
             summary1 = "Рабочих дней: " + totalDays
             summary2 = "Отработано дней: " + totalDaysFact
-            summary3 = "План, часов: "+this.minutesToTimeStr(difPlanMinutes);
-            summary4 = "Факт, часов: "+this.minutesToTimeStr(difFactMinutes) + " (утверждено)";
+            summary3 = "Планировалось, часов: "+this.minutesToTimeStr(difPlanMinutes);
+            summary4 = "Утверждено факт, часов: "+this.minutesToTimeStr(difFactMinutes) + " (утверждено)";
             if (latenessTime !== 0){
                 hhmm = this.minutesToTimeStr(latenessTime).split(":");
                 s = (hhmm[0] === "00") ? (hhmm[1] + " минут ") : (hhmm[0] + " часов "+hhmm[1] + " минут ")
@@ -531,7 +533,8 @@ export default class ScheduleService {
         .then(res => res.data)
         .then(res => {
             _this.messages.show({severity:'success', summary:'Сохранено успешно!'});
-            //window.location.reload();
+            if (_this.state.hasOwnProperty("israId"))
+                _this.setState({israId: null});
             AppSets.getOrgUnitList(_this);
             }
         )
