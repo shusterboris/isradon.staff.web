@@ -64,7 +64,7 @@ export const Login = (props) => {
 							</span>
 						</div>
 							<div className="p-col-6">
-								{changeMode && <InputText id="newPassword1"  style={{ width: '100%' }} v-model="password" 
+								{changeMode && <InputText id="newPassword1"  style={{ width: '100%' }} type="password" 
 										placeholder="Новый пароль" 
 										value={newPassword} onChange={(e)=>setNewPassword(e.target.value)}/>}
 							</div>	

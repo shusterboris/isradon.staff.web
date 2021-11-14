@@ -148,8 +148,8 @@ export default class ScheduleService {
         if (totalDays !== 0){
             summary1 = "Рабочих дней: " + totalDays
             summary2 = "Отработано дней: " + totalDaysFact
-            summary3 = "План, часов: "+this.minutesToTimeStr(difPlanMinutes);
-            summary4 = "Факт, часов: "+this.minutesToTimeStr(difFactMinutes) + " (утверждено)";
+            summary3 = "Планировалось, часов: "+this.minutesToTimeStr(difPlanMinutes);
+            summary4 = "Утверждено факт, часов: "+this.minutesToTimeStr(difFactMinutes) + " (утверждено)";
             if (latenessTime !== 0){
                 hhmm = this.minutesToTimeStr(latenessTime).split(":");
                 s = (hhmm[0] === "00") ? (hhmm[1] + " минут ") : (hhmm[0] + " часов "+hhmm[1] + " минут ")
@@ -533,7 +533,8 @@ export default class ScheduleService {
         .then(res => res.data)
         .then(res => {
             _this.messages.show({severity:'success', summary:'Сохранено успешно!'});
-            //window.location.reload();
+            if (_this.state.hasOwnProperty("israId"))
+                _this.setState({israId: null});
             AppSets.getOrgUnitList(_this);
             }
         )
