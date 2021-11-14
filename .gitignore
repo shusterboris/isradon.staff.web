@@ -36,3 +36,5 @@ yarn-error.log*
 /public/assets/theme/**/theme-*.css
 /public/assets/theme/**/theme-*.map
 /public/assets/sass/theme/designer
+package.json
+package.json
