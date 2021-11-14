@@ -6,16 +6,21 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { Checkbox } from 'primereact/checkbox';
+import { Panel } from 'primereact/panel'
 
 export default class UsersView extends Component {
-    state = {selectedRow: null, employees: [], userName: '', password1: '', password2: '', userInfo: {}, selectedRoles:new Set()};
+    state = {selectedRow: null, employees: [], userName: '', password1: '', password2: '', 
+        israUserId: '', israOrgUnitId: '', israLinkChanged: false,
+        userInfo: {}, selectedRoles:new Set()};
     constructor(props) {
         super(props);
         this.onRowSelect = this.onRowSelect.bind(this);
         this.save = this.save.bind(this);
         this.onCheck = this.onCheck.bind(this)
         this.updateEmployee = this.updateEmployee.bind(this);
+        this.displayIsraLinkPanel = this.displayIsraLinkPanel.bind(this);
         this.messages = {};
+        this.history = props.history;
     }
 
     componentDidMount(){
@@ -46,21 +51,59 @@ export default class UsersView extends Component {
     }
 
     save(){
-        if (!this.state.password1 || !this.state.password2 || !this.state.userName){
-            this.messages.show({severity: 'error', summary: 'Все поля с пометкой * должны быть заполнены'})
-            return;
-        }else if (this.state.password1 !== this.state.password2){
-            this.messages.show({severity: 'error', summary: 'Пароль в обоих полях должен быть одинаковым'})
-            return;
+        if (!this.state.selectedRow.userName){
+            //это проверка для новой записи
+            if (!this.state.password1 || !this.state.password2 || !this.state.userName){
+                this.messages.show({severity: 'error', summary: 'Все поля с пометкой * должны быть заполнены'})
+                return;
+            }if (this.state.password1 !== this.state.password2){
+                this.messages.show({severity: 'error', summary: 'Пароль в обоих полях должен быть одинаковым'})
+                return;
+            }
+        }else{
+            //для существующей - имя всегда есть, проверяем только равенство паролей - оба есть и одинаковые или оба пустые
+            if (this.state.password1 !== this.state.password2){
+                this.messages.show({severity: 'error', summary: 'Пароль в обоих полях должен быть одинаковым'})
+                return;
+            }
         }
-        
         let userInfo = this.state.userInfo;
         userInfo.userName = this.state.userName;
         userInfo.employeeId = this.state.selectedRow.id;
         if (this.state.password1){
             userInfo.password = this.state.password1
         }
+        
         AppSets.saveUserData(userInfo, this, this.updateEmployee);
+    }
+
+    displayIsraLinkPanel(){
+        if (this.state.selectedRow){
+            return (
+                <Panel header="Связь с пользователями магазинов">
+                    <div className='p-grid'>
+                        <div className='p-col-5'>
+                            <span className="p-float-label">
+                                <InputText id="israUserIdFld" value={this.state.israUserId} keyfilter="int" 
+                                    onChange={(e)=>this.setState({israUserId: e.target.value, israLinkChanged: true})}/>
+                                <label htmlFor="israUserIdFld"> Код пользователя</label>
+                            </span>
+                        </div>
+                        <div className='p-col-5'>
+                            <span className="p-float-label">
+                                <InputText id="israOrgUnitIdFld" value={this.state.israOrgUnitId} keyfilter="int"
+                                    onChange={(e)=>this.setState({israOrgUnitId: e.target.value, israLinkChanged: true})}/>
+                                <label htmlFor="israOrgUnitIdFld"> Код магазина</label>
+                            </span>
+                        </div>
+                        <div className='p-col'>
+                            <Button className='p-button-success p-button-rounded' icon='pi pi-plus' tooltip="Добавить введенные данные в таблицу связей"
+                                />
+                        </div>
+                    </div>
+                </Panel>
+            )}
+        return "";
     }
 
     render() {
@@ -120,8 +163,13 @@ export default class UsersView extends Component {
                                     </div>
                             </span>
                         </div>
+                        {this.displayIsraLinkPanel()}
                         <span >
-                            <Button className="p-button-info" icon="pi pi-check" label="Сохранить" 
+                            <Button className="p-button-warning" icon="pi pi-arrow-left" iconPos="left" 
+                                label=  'Выйти'
+                                style={{margin: '1em 1em 1em 1em', width:"40%"}}
+                                onClick={this.props.history.goBack}/>
+                            <Button className="p-button-info" icon="pi pi-check" label="Сохранить" iconPos="right"
                                 style={{margin: '1em 1em 1em 1em', width:"40%"}}
                                 onClick={()=>this.save()}>
                             </Button>

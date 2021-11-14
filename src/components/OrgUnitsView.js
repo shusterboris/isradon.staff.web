@@ -8,7 +8,6 @@ import {Button} from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar'
 import { ListBox} from 'primereact/listbox'
 import ScheduleService from '../service/ScheduleService';
-import { Messages } from 'primereact/messages';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import {Checkbox} from 'primereact/checkbox'
 import { ContextMenu } from 'primereact/contextmenu'

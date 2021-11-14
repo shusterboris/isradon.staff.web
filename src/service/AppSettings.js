@@ -3,7 +3,7 @@ import User from '../entities/user';
 
 export default class AppSets{
     static minStartTime = "04:00";
-    static maxEndTime = "20:00";
+    static maxEndTime = "21:00";
     static timeBoundMinutes = 5;
     static timeBound = AppSets.timeBoundMinutes * 60 * 1000; // допустимое время отклонения от запланированного времени прихода/ухода в милисекундах  
     static restTimeLag = 10; //за какое количество дней пользователь может планировать отпуск
@@ -205,7 +205,7 @@ export default class AppSets{
         axios.post(url, userToSave, headers)
         .then(()=>{
             if (finalActions)
-                {finalActions()}
+                {finalActions()};
             _this.messages.show({severity:'success', summary:'Данные пользователя сохранены'})})
         .catch(err=>{
             AppSets.processRequestsCatch(err, 'Данные пользователя. ', this.messages, false)
