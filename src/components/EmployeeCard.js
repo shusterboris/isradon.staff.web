@@ -222,7 +222,7 @@ export default class EmployeeCard extends Component {
                         <div className="p-grid form-group " >
                             <div className="p-col-2 p-mx-2" >                            
                                 <span className="p-float-label">
-                                    <InputText id="lastNameFld" value={this.state.lastName} maxLength={15} keyfilter='alpha'
+                                    <InputText id="lastNameFld" value={this.state.lastName} maxLength={15} 
                                         onChange={(e) => this.setState({lastName:e.target.value, wasChanged: true})}/>
                                     <label htmlFor="lastNameFld">Фамилия*</label>
                                 </span>

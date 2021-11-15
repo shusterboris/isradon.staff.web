@@ -138,7 +138,7 @@ export default class InOutPage extends Component {
                     <InputTextarea id='inputNoteFld' value={this.state.note.reason} style={{minHeight:'30px', overflow:'auto'}}
                         rows={5} cols={60} autoResize={true}
                         disabled={!this.state.row.comingFact}
-                        onChange={(e) => this.setState({note: e.target.value, notesChanged: true})} rows={5}/>
+                        onChange={(e) => this.setState({note: e.target.value, notesChanged: true})}/>
                     <label htmlFor='inputNoteFld' style={{width: '90%'}}>Заметки сотрудника (перед уходом, если необходимо)</label>
                 </span>
             </div>

@@ -1,7 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
 import AppMenu from './AppMenu';
-import { InputText } from 'primereact/inputtext';
 import { Ripple } from 'primereact/ripple';
 import AppSets from './service/AppSettings'
 import { useHistory} from 'react-router-dom';

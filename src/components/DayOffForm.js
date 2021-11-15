@@ -29,7 +29,7 @@ export default class DayOffForm extends Component {
         this.editEndDate = this.editEndDate.bind(this);
         this.isDataValid = this.isDataValid.bind(this);
         this.save = this.save.bind(this);
-        this.setSingleUserEditMode     = this.setSingleUserEditMode    .bind(this);
+        this.setSingleUserEditMode = this.setSingleUserEditMode.bind(this);
         this.onChangeType = this.onChangeType.bind(this);
         this.ownerId = 1;
         this.eventTypeEditable = true;

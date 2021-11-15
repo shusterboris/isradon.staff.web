@@ -11,7 +11,7 @@ export default class AppSets{
     static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
     //static host = "https://smart.sclub.in.ua";
-    static version = "ver. 1.6"
+    static version = "ver. 1.7"
     static timeout = 5000;
     static authList = {'editAll': 'HR', 'manualCheckIn': 'Ручная отметка'};
         
@@ -176,13 +176,13 @@ export default class AppSets{
             })
     }
 
-    static loadUserData(_this, userName){
+    static loadUserData(_this, userName, employeeId){
         if (!userName)
             {return}
         let token = window.sessionStorage.getItem("token");
         const headers = {headers: {'Authorization': token}, timeout: AppSets.timeout}
         // данные о сотруднике и полномочия пользователя
-        const url = AppSets.host + '/user/authorities/'+userName;
+        let url = AppSets.host + '/user/authorities/'+userName;
         axios.get(url, headers)
         .then(userInfo=>{
             _this.setState({userInfo: userInfo.data});
@@ -195,7 +195,69 @@ export default class AppSets{
                 errMsg = (err.response.data) ? err.response.data : 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку'
             }
             _this.messages.show({severity: 'error', summary: errMsg});
-        })    
+        })
+        this.loadIsraLinks(_this, employeeId);
+    }
+
+    static loadIsraLinks(_this, employeeId){
+        let token = window.sessionStorage.getItem("token");
+        const headers = {headers: {'Authorization': token}, timeout: AppSets.timeout}
+        const url =  AppSets.host + '/employee/bindIsra/' + employeeId;
+        axios.get(url, headers)
+        .then(info=>{
+            _this.setState({israData: info.data});
+        })
+        .catch((err)=>{
+            let errMsg = "";
+            if (!err.response){
+                errMsg = 'Нет связи с сервером!'
+            }else{
+                errMsg = (err.response.data) ? err.response.data : 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку'
+            }
+            _this.messages.show({severity: 'error', summary: errMsg});
+        })
+    }
+
+    static addNewExtraLink(_this, finalize){
+        let token = window.sessionStorage.getItem("token");
+        const headers = {headers: {'Authorization': token}, timeout: AppSets.timeout}
+        let url =  AppSets.host + '/employee/bindisra/' + _this.state.selectedRow.id + "/" + _this.state.israWorker + "/" + _this.state.israOrgUnit;
+        axios.post(url, headers)
+        .then(()=>{
+            if (finalize)
+                { finalize() }
+            _this.messages.show({severity:'success', summary:'Успешно выполнено'})
+        })
+        .catch((err)=>{
+            let errMsg = "";
+            if (!err.response){
+                errMsg = 'Нет связи с сервером!'
+            }else{
+                errMsg = (err.response.data) ? err.response.data.error : 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку'
+            }
+            _this.messages.show({severity: 'error', summary: errMsg});
+        })
+    }
+
+    static removeIsraLink(israWorker, israOrgUnit, _this, finalize){
+        let token = window.sessionStorage.getItem("token");
+        const headers = {headers: {'Authorization': token}, timeout: AppSets.timeout}
+        let url =  AppSets.host + '/employee/bindisradelete/' + _this.state.selectedRow.id + "/" + israWorker + "/" + israOrgUnit;
+        axios.delete(url, headers)
+        .then(()=>{
+            if (finalize)
+                { finalize() }
+            _this.messages.show({severity:'success', summary:'Успешно удалено'})
+        })
+        .catch((err)=>{
+            let errMsg = "";
+            if (!err.response){
+                errMsg = 'Нет связи с сервером!'
+            }else{
+                errMsg = (err.response.data) ? err.response.data.error : 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку'
+            }
+            _this.messages.show({severity: 'error', summary: errMsg});
+        })
     }
 
     static saveUserData(userToSave, _this, finalActions){
@@ -208,7 +270,7 @@ export default class AppSets{
                 {finalActions()};
             _this.messages.show({severity:'success', summary:'Данные пользователя сохранены'})})
         .catch(err=>{
-            AppSets.processRequestsCatch(err, 'Данные пользователя. ', this.messages, false)
+            AppSets.processRequestsCatch(err, 'Данные пользователя. ', _this.messages, false)
         });
     }
 

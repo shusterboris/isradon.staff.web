@@ -10,8 +10,9 @@ import { Panel } from 'primereact/panel'
 
 export default class UsersView extends Component {
     state = {selectedRow: null, employees: [], userName: '', password1: '', password2: '', 
-        israUserId: '', israOrgUnitId: '', israLinkChanged: false,
+        israWorker: '', israOrgUnit: '', israLinkChanged: false, israData: [],
         userInfo: {}, selectedRoles:new Set()};
+    
     constructor(props) {
         super(props);
         this.onRowSelect = this.onRowSelect.bind(this);
@@ -19,6 +20,10 @@ export default class UsersView extends Component {
         this.onCheck = this.onCheck.bind(this)
         this.updateEmployee = this.updateEmployee.bind(this);
         this.displayIsraLinkPanel = this.displayIsraLinkPanel.bind(this);
+        this.onRemoveLink = this.onRemoveLink.bind(this);
+        this.bodyDeleteLink = this.bodyDeleteLink.bind(this);
+        this.addNewIsraLink = this.addNewIsraLink.bind(this);
+        this.updateIsraLinks = this.updateIsraLinks.bind(this);
         this.messages = {};
         this.history = props.history;
     }
@@ -30,8 +35,11 @@ export default class UsersView extends Component {
     onRowSelect(row){
         this.setState({selectedRow: row, userName: row.userName ? row.userName : "", password1:'', password2: '', userInfo: {}, selectedRoles:new Set()});
         if (row.userName){ 
-            AppSets.loadUserData(this, row.userName);
-        };
+            AppSets.loadUserData(this, row.userName,row.id);
+        }else{
+            this.setState({userName: row.userName ? row.userName : "", password1:'', password2: '', 
+                israWorker: '', israOrgUnit: '', israLinkChanged: false, israData: []});
+        }
     }
 
     onCheck(event, value){
@@ -77,30 +85,60 @@ export default class UsersView extends Component {
         AppSets.saveUserData(userInfo, this, this.updateEmployee);
     }
 
+    updateIsraLinks(){
+        AppSets.loadUserData(this, this.state.selectedRow.userName, this.state.selectedRow.id);
+        this.setState({israWorker: '', israOrgUnit: '', israLinkChanged: false});
+    }
+
+    addNewIsraLink(){
+        AppSets.addNewExtraLink(this, this.updateIsraLinks);
+    }
+
+    onRemoveLink(rowData){
+        AppSets.removeIsraLink(rowData.israWorker, rowData.israOrgUnit, this, this.updateIsraLinks)
+    }
+
+    bodyDeleteLink(rowData){
+        return (
+            <Button type="button" icon="pi pi-times" className="p-button-secondary"
+                tooltip="Удалить эту строку?"
+                onClick={()=>this.onRemoveLink(rowData)}>
+            </Button>
+        );
+    }
+
     displayIsraLinkPanel(){
         if (this.state.selectedRow){
+            if (!this.state.selectedRow.userName)
+                { return "" };
             return (
                 <Panel header="Связь с пользователями магазинов">
                     <div className='p-grid'>
                         <div className='p-col-5'>
                             <span className="p-float-label">
-                                <InputText id="israUserIdFld" value={this.state.israUserId} keyfilter="int" 
-                                    onChange={(e)=>this.setState({israUserId: e.target.value, israLinkChanged: true})}/>
-                                <label htmlFor="israUserIdFld"> Код пользователя</label>
+                                <InputText id="israUserIdFld" value={this.state.israWorker} keyfilter="int" 
+                                    onChange={(e)=>this.setState({israWorker: e.target.value, israLinkChanged: true})}/>
+                                <label htmlFor="israUserIdFld"> Введите код сотрудника</label>
                             </span>
                         </div>
                         <div className='p-col-5'>
                             <span className="p-float-label">
-                                <InputText id="israOrgUnitIdFld" value={this.state.israOrgUnitId} keyfilter="int"
-                                    onChange={(e)=>this.setState({israOrgUnitId: e.target.value, israLinkChanged: true})}/>
-                                <label htmlFor="israOrgUnitIdFld"> Код магазина</label>
+                                <InputText id="israOrgUnitIdFld" value={this.state.israOrgUnit} keyfilter="int"
+                                    onChange={(e)=>this.setState({israOrgUnit: e.target.value, israLinkChanged: true})}/>
+                                <label htmlFor="israOrgUnitIdFld"> Введите код магазина</label>
                             </span>
                         </div>
-                        <div className='p-col'>
-                            <Button className='p-button-success p-button-rounded' icon='pi pi-plus' tooltip="Добавить введенные данные в таблицу связей"
-                                />
-                        </div>
+                        {(this.state.israWorker && this.state.israOrgUnit && this.state.israLinkChanged) && 
+                            <div className='p-col'>
+                                <Button className='p-button-success p-button-rounded' icon='pi pi-plus' tooltip="Добавить введенные данные в таблицу связей"
+                                    onClick={()=>this.addNewIsraLink(this, this.updateIsraLinks)}/>
+                            </div>}
                     </div>
+                    <DataTable value={this.state.israData} howGridlines>
+                        <Column field="israWorker" header="Код сотрудника"/>
+                        <Column field="israOrgUnit" header="Код магазина" />
+                        <Column body={this.bodyDeleteLink} style={{width:'10%'}}/>
+                    </DataTable>
                 </Panel>
             )}
         return "";
@@ -163,7 +201,6 @@ export default class UsersView extends Component {
                                     </div>
                             </span>
                         </div>
-                        {this.displayIsraLinkPanel()}
                         <span >
                             <Button className="p-button-warning" icon="pi pi-arrow-left" iconPos="left" 
                                 label=  'Выйти'
@@ -174,6 +211,7 @@ export default class UsersView extends Component {
                                 onClick={()=>this.save()}>
                             </Button>
                         </span>
+                        {this.displayIsraLinkPanel()}
                     </div>}
                 </div>
             </div>
