@@ -100,13 +100,13 @@ export default class InOutPage extends Component {
     render() {
         return <div className="p-card p-grid p-justify-center" >
             {this.state.showConfirm && 
-            <Confirmation visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmMessage}
+            <Confirmation id="confirmDlg" visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmMessage}
                         accept={this.confirmAccept} reject={this.confirmReject} messages={this.messages} context={this}/>}
-            <Toast ref={(el) => this.messages = el} position="top-left  "/>
+            <Toast id="toastMsg" ref={(el) => this.messages = el} position="top-left  "/>
 
             <div className="p-col-12">
                 {(this.state.row && !this.state.row.comingFact) ?
-                <Button label="Приход" className="p-button-info p-button-rounded" icon='pi pi-check-square'
+                <Button id="comingButton" label="Приход" className="p-button-info p-button-rounded" icon='pi pi-check-square'
                     style={{margin: '0 20px 0 20px'}}
                     onClick={()=>this.setInOutDialogParameters(0)}
                     tooltip="Отметить начало работы">
@@ -118,7 +118,7 @@ export default class InOutPage extends Component {
             {(this.state.row && this.state.row.comingFact) && 
                 <div className="p-col-12 ">
                     { (!this.state.row.leavingFact) ? 
-                    <Button label="Уход" className="p-button-info p-button-rounded" icon='pi pi-external-link' iconPos='right'
+                    <Button id="leavingButton" label="Уход" className="p-button-info p-button-rounded" icon='pi pi-external-link' iconPos='right'
                         style={{margin: '0 20px 0 20px'}}
                         onClick={()=>this.setInOutDialogParameters(1)}
                         tooltip="Отметить уход с работы">

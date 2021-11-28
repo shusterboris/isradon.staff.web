@@ -11,7 +11,7 @@ export const Access = () => {
 	}
 
 	return (
-		<div className="exception-body accessdenied" >
+		<div className="exception-body accessdenied" id="notAccessPage">
 			<div className="exception-panel">
 				<div className="exception-image">
 					<img src="assets/layout/images/exception/icon-access.png" alt="Isradon" />

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Messages } from 'primereact/messages';
+import { Toast } from 'primereact/toast';
 import { DataTable } from 'primereact/datatable';
 import AppSets from '../service/AppSettings';
 import { Column } from 'primereact/column';
@@ -80,7 +80,7 @@ export class DictionaryJT extends Component {
         //столбец с кнопками удаления в таблице
         if (!rowData.deleted){
             return (
-                <Button type="button" icon="pi pi-times" className="p-button-secondary" 
+                <Button type="button" icon="pi pi-times" className="p-button-secondary" id="rowRemoveButton"
                     tooltip="Удалить эту должность из базы данных"
                     onClick={()=>this.onRemoveRecordPressed(rowData)}>
                 </Button>
@@ -92,7 +92,7 @@ export class DictionaryJT extends Component {
 
     displayTableHeader(){
         return(<div>
-            <Button className="p-button-rounded p-button-secondary" icon="pi pi-plus"
+            <Button className="p-button-rounded p-button-secondary" icon="pi pi-plus" id="addButton"
                 onClick={()=>this.setState({appendMode: true, newValue:''})}>
             </Button>
         </div>)
@@ -105,10 +105,10 @@ export class DictionaryJT extends Component {
                 <InputText id="newValueFld" value={this.state.newValue} style={{width:'70%'}}
                     onChange={(e)=>this.setState({newValue: e.target.value})}/>
                 <label htmlFor="newValueFld">Новое значение должности</label>
-                <Button className="p-button-rounded p-button-success" icon="pi pi-check" style={{margin:'0 1em 0 1em'}}
+                <Button className="p-button-rounded p-button-success" icon="pi pi-check" style={{margin:'0 1em 0 1em'}} id="saveButton"
                         onClick={this.onAppendNewRecord}>
                 </Button>
-                <Button className="p-button-rounded p-button-warning" icon="pi pi-times"
+                <Button className="p-button-rounded p-button-warning" icon="pi pi-times" id="clearButton"
                         onClick={()=>this.setState({newValue:'', appendMode: false})}>
                 </Button>
             </div>);
@@ -129,7 +129,7 @@ export class DictionaryJT extends Component {
         const editTools = this.displayEditTools();
                 
         return (<div className="card">
-            <Messages ref={(el) => this.messages = el} style={{marginBottom: '1em'}} />
+            <Toast ref={(el) => this.messages = el} style={{marginBottom: '1em'}} />
             <div className="p-grid">
                 <div className="p-col-6 p-md-4">
                     <div>{editTools}</div>

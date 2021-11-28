@@ -15,7 +15,7 @@ export const NotFound = () => {
 	}
 
 	return <div className="exception-body notfound">
-		<div className="exception-panel">
+		<div className="exception-panel" id="notFoundPage">
 			<div className="exception-image">
 				<img src="assets/layout/images/exception/icon-404.png" alt="sapphire" />
 			</div>

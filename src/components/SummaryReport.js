@@ -84,8 +84,8 @@ export default class SummaryReport extends Component {
     render() {
         const header = this.headerTemplate()
         return <div className="p-card p-grid">
-            <Toast ref={(el) => this.messages = el} position="top-left  "/>
-            <DataTable value={this.state.data} header={header}  
+            <Toast id="toastMsg" ref={(el) => this.messages = el} position="top-left  "/>
+            <DataTable value={this.state.data} header={header}  id="summaryReportDataTable"
                 rowGroupMode="rowspan" groupRowsBy="orgUnitName"
                 sortMode="single" sortField="orgUnitName" sortOrder={1} responsiveLayout="scroll">
                 <Column field="orgUnitName" header="Подразделение"/>

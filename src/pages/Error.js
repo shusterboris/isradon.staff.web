@@ -14,7 +14,7 @@ export const Error = (props) => {
 		history.goBack();
 	}
 
-	return <div className="exception-body  error">
+	return <div className="exception-body  error" id="errorPage">
 		<div className="exception-panel">
 			<div className="exception-image">
 				<img src="assets/layout/images/exception/icon-error.png" alt="sapphire" />

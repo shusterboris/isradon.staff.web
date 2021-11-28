@@ -194,7 +194,7 @@ export default class EmployeeCard extends Component {
             this.history.push("/access") }
         return<div> 
             <Card title="Карточка сотрудника" >
-            <Toast ref={(m) => this.messages = m}/>
+            <Toast id="toastMsg" ref={(m) => this.messages = m}/>
                 <div className="p-grid">
                     <div className = 'p-col-fixed' style={{ width: '260px'}}>
                         <div className="p-field-checkbox">   
@@ -205,8 +205,8 @@ export default class EmployeeCard extends Component {
                             <label htmlFor="isWorkingFld" className="p-checkbox-label">Работает</label>
                         </div>
                         {!this.state.photoData ? 
-                            <img src={'/assets/images/personal.png'}  alt='Фотография сотрудника'></img> : 
-                            <img src = {this.state.photoData} width = {250} height={250} alt="Фотография сотрудника"
+                            <img src={'/assets/images/personal.png'}  alt='Фотография сотрудника' id="photoTemplate"></img> : 
+                            <img src = {this.state.photoData} width = {250} height={250} alt="Фотография сотрудника" id="photoImage"
                                 onError={(e) => e.target.src='/assets/images/personal.png'}/>
                         }
                         {this.isUploadButtonVisible() && 
@@ -299,7 +299,7 @@ export default class EmployeeCard extends Component {
                             </div>
                             
                             <div className="p-col-12 p-mx-2" >  
-                                <InputText value={this.state.addConditions} placeholder="Дополнительная информация" 
+                                <InputText value={this.state.addConditions} placeholder="Дополнительная информация" id="addInfoFld"
                                            style={{width:"40%"}}
                                            onChange={(addc) => this.setState({addConditions:addc.target.value, wasChanged: true})}/>
                             </div>
@@ -309,9 +309,11 @@ export default class EmployeeCard extends Component {
                 </div>
                 <span>
                     {this.state.wasChanged && 
-                        <Button label="Сохранить" icon="pi pi-check" style={{marginRight: '1em'}} onClick={this.onSavePressed}/>
+                        <Button label="Сохранить" icon="pi pi-check" style={{marginRight: '1em'}} id="saveButton"
+                                onClick={this.onSavePressed}/>
                     }
-                    <Button label="Закрыть" icon="pi pi-times" className="p-button-secondary" onClick={this.goBack}/>
+                    <Button label="Закрыть" icon="pi pi-times" className="p-button-secondary" id="cancelButton"
+                        onClick={this.goBack}/>
                 </span>
             </Card>
         </div>

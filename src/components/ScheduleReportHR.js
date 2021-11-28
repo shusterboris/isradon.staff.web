@@ -93,7 +93,7 @@ export default class ScheduleReportHR extends React.Component{
             { this.history.push("/login") }
         return(
             <div>
-                <Toast ref={(el) => this.messages = el} position="top-left" />
+                <Toast id="toastMsg" ref={(el) => this.messages = el} position="top-left" />
                 <ScheduleFilter 
                     summary1 = {this.state.summary1}
                     summary2 = {this.state.summary2}
@@ -397,14 +397,19 @@ class ScheduleResultTable extends React.Component{
     }
 
     bodyHoursStr(rowData){
-        if (!rowData.comingAccepted || !rowData.leavingAccepted){
-            return (
-                <div className='undef-dif'>
-                    не утв.
-                </div>
-            );
-        }else{
+        if (rowData.comingAccepted && rowData.leavingAccepted){
             return (rowData.workHoursStr);
+        }else{
+            if (rowData.comingFact && rowData.leavingFact){
+                let mm = this.moment(rowData.leavingFact).diff(rowData.comingFact, 'minutes');
+                let hh = Math.floor(mm / 60);
+                mm = mm % 60
+                return(
+                    <div className='undef-dif'>
+                        {" "+hh+":"+mm}
+                    </div>
+                )
+            }
         }
             
     }
@@ -524,8 +529,9 @@ class ScheduleResultTable extends React.Component{
         return (
                 <div className = 'p-col-12 datatable-style-sched-repo'>
                     <Toast ref={(el) => this.messages = el} position="top-left"/>
-                    <ContextMenu model={this.getContextMenuModel()} ref={el => this.cm = el} onHide={() => this.setState({ selectedRow: null })}/>
-                    <DataTable value={this.props.days} rowClassName={this.getRowBackgroundClassName} 
+                    <ContextMenu id="summaryContextMenu" model={this.getContextMenuModel()} ref={el => this.cm = el} 
+                        onHide={() => this.setState({ selectedRow: null })}/>
+                    <DataTable id="summaryDataTable" value={this.props.days} rowClassName={this.getRowBackgroundClassName} 
                         headerColumnGroup={header}
                         contextMenuSelection={this.state.selectedRow}
                         onContextMenuSelectionChange={e => this.setState({ selectedRow: e.value })}
@@ -733,14 +739,16 @@ class ScheduleFilter extends React.Component{
         return(
             <div className = 'p-grid' style={{marginTop:'-20px'}}>
                 <div className = 'p-col-12'>
-                    <Toast ref={(el) => this.messages = el} position="top-left  "/>
+                    <Toast id="toastMsg" ref={(el) => this.messages = el} position="top-left  "/>
                 </div>
                 {this.state.showConfirm && 
-                    <Confirmation visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmMessage}
+                    <Confirmation id="confirmDlg"
+                            visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmMessage}
                             accept={this.confirmAccept} reject={this.confirmReject} messages={this.messages} context={this}/>}
                    
                 <div className = 'p-col-3' style={{margin: '0 0 0.5em 1em'}}>
-                    <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" view="month" yearNavigator yearRange="2021:2040"
+                    <Calendar id="chooseDateFld"
+                        readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" view="month" yearNavigator yearRange="2021:2040"
                         locale={"ru"}
                         value={this.state.chosenDate}
                         onSelect={(e) => {this.onChangeCalendar(e)}}/>
@@ -754,23 +762,24 @@ class ScheduleFilter extends React.Component{
                             completeMethod = {this.filterSellers} 
                             onChange = {(e) => {this.onChangeSeller(e) }}/> :
                     <div >
-                        <Button label="Приход" className="p-button-info p-button-rounded" icon='pi pi-check-square'
+                        <Button id="buttonComing" label="Приход" className="p-button-info p-button-rounded" icon='pi pi-check-square'
                             onClick={()=>this.setInOutDialogParameters(0)}
                             tooltip="Отметить начало работы">
                         </Button>
-                        <Button label="Уход" className="p-button-info p-button-rounded" icon='pi pi-external-link' iconPos='right'
+                        <Button id = "buttonLeaving"
+                            label="Уход" className="p-button-info p-button-rounded" icon='pi pi-external-link' iconPos='right'
                             style={{margin: '0 20px 0 20px'}}
                             onClick={()=>this.setInOutDialogParameters(1)}
                             tooltip="Отметить уход с работы">
                         </Button>
                     </div>}
                 </div>
-                <div className = 'p-col-5'>
-                    {this.props.summary1 && <div style={{color:'white'}}>{this.props.summary1} </div>}
-                    {this.props.summary2 && <div style={{color:'white'}}>{this.props.summary2} </div>}
-                    {this.props.summary3 && <div style={{color:'white'}}>{this.props.summary3} </div>}
-                    {this.props.summary4 && <div style={{color:'white'}}>{this.props.summary4} </div>}
-                    {this.props.summary5 && <div style={{color:'white'}}>{this.props.summary5} </div>}
+                <div className = 'p-col-5' id="summaryInfoPanel">
+                    {this.props.summary1 && <div style={{color:'#457fca'}}>{this.props.summary1} </div>}
+                    {this.props.summary2 && <div style={{color:'#457fca'}}>{this.props.summary2} </div>}
+                    {this.props.summary3 && <div style={{color:'#457fca'}}>{this.props.summary3} </div>}
+                    {this.props.summary4 && <div style={{color:'#457fca'}}>{this.props.summary4} </div>}
+                    {this.props.summary5 && <div style={{color:'#457fca'}}>{this.props.summary5} </div>}
                 </div>
             </div>
         );

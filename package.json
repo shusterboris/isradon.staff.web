@@ -1,6 +1,6 @@
 {
     "name": "isradon-staff",
-    "version": "1.7",
+    "version": "1.8",
     "homepage": ".",
     "private": true,
     "dependencies": {
@@ -10,6 +10,7 @@
         "@fullcalendar/interaction": "^5.7.2",
         "@fullcalendar/react": "^5.7.0",
         "@fullcalendar/timegrid": "^5.7.2",
+        "@react-native-async-storage/async-storage": "^1.15.11",
         "axios": "^0.21.1",
         "chart.js": "2.7.3",
         "classnames": "^2.2.6",

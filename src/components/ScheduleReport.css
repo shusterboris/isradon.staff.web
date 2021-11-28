@@ -1,12 +1,11 @@
-
 .datatable-style-sched-repo .flaw {
     font-weight: 700;
-    color: #FFA726;
+    color: #ffa726;
 }
 
 .datatable-style-sched-repo .overtime {
     font-weight: 700;
-    color: #FF5252;
+    color: #ff5252;
 }
 
 .datatable-style-sched-repo .row-example {
@@ -32,7 +31,7 @@
 .p-datatable .p-datatable-tbody .row-hooky {
     color: #a00909e7 !important;
 }
- 
+
 .p-datatable .p-datatable-tbody .row-shift {
     background-color: #f4f5ef !important;
 }
@@ -46,16 +45,16 @@
 }
 
 .p-datatable .p-datatable-tbody .undef-dif {
-    color: #5265d3 !important;
+    color: #68301a !important;
 }
 
 .p-datatable .p-datatable-tbody .boldText {
     font-weight: 700 !important;
 }
 
-body .p-datatable .p-datatable-tbody > tr > td .times{
+body .p-datatable .p-datatable-tbody > tr > td .times {
     width: 5em;
-    font-style: italic;   
+    font-style: italic;
     border: 1px solid;
 }
 

@@ -13,9 +13,9 @@ import { InputMask } from 'primereact/inputmask';
 import { ru } from '../service/AppSettings';
 import { addLocale } from 'primereact/api';
 import { Button } from 'primereact/button';
-import {Messages} from 'primereact/messages'
+import {Toast} from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
-import { Menu } from 'primereact/menu'
+import { Menu } from 'primereact/menu';
 import Confirmation from './Confirmation';
 import ScheduleCreateProxy from '../entities/ScheduleCreateProxy';
 
@@ -323,7 +323,7 @@ export default class SchedulePlan extends Component {
     }
 
     displayShiftInfo(){
-        return <div className='p-grid'>
+        return <div className='p-grid' id="shiftWeekDaysData">
             <div className='p-col p-md-4'>Вс</div>
             <div className='p-col p-md-4'>{this.state.chosenShift.start1}</div>
             <div className='p-col p-md-4'>{this.state.chosenShift.end1}</div>
@@ -439,16 +439,17 @@ export default class SchedulePlan extends Component {
 
         return <div className="p-grid">
             <div className="p-col-12">
-                <Messages ref={(el) => this.messages = el} position="left"/>
+                <Toast id="toastMsg" ref={(el) => this.messages = el} position="left"/>
             </div>
             <div className="p-col-9">
                 <div className="card">
                     {this.state.showConfirm && 
-                    <Confirmation visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmBody}
+                    <Confirmation id="shiftCldrConfirmDlg"
+                            visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmBody}
                             accept={this.confirmAccept} reject={this.confirmReject} messages={this.messages} context={this}/>}
-                    <div className='p-card-title p-text-bold p-text-left' style={{fontSize:'large', color: '#1E88E5'}}>
+                    <div id="shiftCldrTitle" className='p-card-title p-text-bold p-text-left' style={{fontSize:'large', color: '#1E88E5'}}>
                         {this.state.scheduleAccepted ? 'Планирование графика работы' : 'Планирование графика работы (не утвержден)'}</div>
-                    <FullCalendar 
+                    <FullCalendar id="shiftCalendar"
                         initialDate={iniDate}
                         events={this.state.days} locale={ruLocale}
                         slotMinTime={AppSets.minStartTime} slotMaxTime={AppSets.maxEndTime} 
@@ -466,8 +467,8 @@ export default class SchedulePlan extends Component {
                     {amIhr && <div>
                         <span className="card-title p-text-bold">
                             {(this.state.chosenOrgUnit) && <div>
-                                <Menu model={planMenuModel} popup ref={el => this.menu = el} id="popup_menu" />
-                                <Button icon="pi pi-bars" onClick={(event) => this.menu.toggle(event)} aria-controls="popup_menu" aria-haspopup ></Button>
+                                <Menu id="shiftPlanMenu" model={planMenuModel} popup ref={el => this.menu = el} id="popup_menu" />
+                                <Button id="shiftPlanMenuButton" icon="pi pi-bars" onClick={(event) => this.menu.toggle(event)} aria-controls="popup_menu" aria-haspopup ></Button>
                             </div>}
                             <span style={{marginLeft:'1em'}}> {cardTitle} </span>
                         </span>
@@ -503,7 +504,8 @@ export default class SchedulePlan extends Component {
                                 options={this.state.shifts} optionLabel="no"
                                 onChange={shft => this.onShiftChange(shft)}/>
                             <label htmlFor="shiftFld">Смена</label>
-                            <Button className='p-button-rounded p-button-info' icon="pi pi-times" style={{margin:'0 0 0 1em'}}
+                            <Button id="clearShiftData" className='p-button-rounded p-button-info' 
+                                    icon="pi pi-times" style={{margin:'0 0 0 1em'}}
                                     tooltip="Очистка выбранной смены или интервала времени прихода и ухода"
                                     onClick={this.clearEnteredShift}/>
                         </span>

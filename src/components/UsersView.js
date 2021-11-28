@@ -108,40 +108,38 @@ export default class UsersView extends Component {
     }
 
     displayIsraLinkPanel(){
-        if (this.state.selectedRow){
-            if (!this.state.selectedRow.userName)
-                { return "" };
-            return (
-                <Panel header="Связь с пользователями магазинов">
-                    <div className='p-grid'>
-                        <div className='p-col-5'>
-                            <span className="p-float-label">
-                                <InputText id="israUserIdFld" value={this.state.israWorker} keyfilter="int" 
-                                    onChange={(e)=>this.setState({israWorker: e.target.value, israLinkChanged: true})}/>
-                                <label htmlFor="israUserIdFld"> Введите код сотрудника</label>
-                            </span>
-                        </div>
-                        <div className='p-col-5'>
-                            <span className="p-float-label">
-                                <InputText id="israOrgUnitIdFld" value={this.state.israOrgUnit} keyfilter="int"
-                                    onChange={(e)=>this.setState({israOrgUnit: e.target.value, israLinkChanged: true})}/>
-                                <label htmlFor="israOrgUnitIdFld"> Введите код магазина</label>
-                            </span>
-                        </div>
-                        {(this.state.israWorker && this.state.israOrgUnit && this.state.israLinkChanged) && 
-                            <div className='p-col'>
-                                <Button className='p-button-success p-button-rounded' icon='pi pi-plus' tooltip="Добавить введенные данные в таблицу связей"
-                                    onClick={()=>this.addNewIsraLink(this, this.updateIsraLinks)}/>
-                            </div>}
+        if (this.state.selectedRow)
+            { return "" };
+        return (
+            <Panel header="Связь с пользователями магазинов">
+                <div className='p-grid'>
+                    <div className='p-col-5'>
+                        <span className="p-float-label">
+                            <InputText id="israUserIdFld" value={this.state.israWorker} keyfilter="int" 
+                                onChange={(e)=>this.setState({israWorker: e.target.value, israLinkChanged: true})}/>
+                            <label htmlFor="israUserIdFld"> Введите код сотрудника</label>
+                        </span>
                     </div>
-                    <DataTable value={this.state.israData} howGridlines>
-                        <Column field="israWorker" header="Код сотрудника"/>
-                        <Column field="israOrgUnit" header="Код магазина" />
-                        <Column body={this.bodyDeleteLink} style={{width:'10%'}}/>
-                    </DataTable>
-                </Panel>
-            )}
-        return "";
+                    <div className='p-col-5'>
+                        <span className="p-float-label">
+                            <InputText id="israOrgUnitIdFld" value={this.state.israOrgUnit} keyfilter="int"
+                                onChange={(e)=>this.setState({israOrgUnit: e.target.value, israLinkChanged: true})}/>
+                            <label htmlFor="israOrgUnitIdFld"> Введите код магазина</label>
+                        </span>
+                    </div>
+                    {(this.state.israWorker && this.state.israOrgUnit && this.state.israLinkChanged) && 
+                        <div className='p-col'>
+                            <Button className='p-button-success p-button-rounded' icon='pi pi-plus' tooltip="Добавить введенные данные в таблицу связей"
+                                onClick={()=>this.addNewIsraLink(this, this.updateIsraLinks)}/>
+                        </div>}
+                </div>
+                <DataTable value={this.state.israData} howGridlines>
+                    <Column field="israWorker" header="Код сотрудника"/>
+                    <Column field="israOrgUnit" header="Код магазина" />
+                    <Column body={this.bodyDeleteLink} style={{width:'10%'}}/>
+                </DataTable>
+            </Panel>
+        )
     }
 
     render() {

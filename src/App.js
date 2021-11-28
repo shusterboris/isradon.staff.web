@@ -29,7 +29,7 @@ import SummaryReport from './components/SummaryReport';
 const App = () => {
 
     const [horizontal, setHorizontal] = useState(true);
-    const [topbarSize, setTopbarSize] = useState('large');
+    const [topbarSize, setTopbarSize] = useState('medium');
     const [topbarColor, setTopbarColor] = useState('layout-topbar-blue');
     const [menuColor, setMenuColor] = useState('layout-menu-light');
     const [menuActive, setMenuActive] = useState(false);

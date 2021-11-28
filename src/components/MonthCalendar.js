@@ -6,7 +6,7 @@ import ruLocale from '@fullcalendar/core/locales/ru';
 import interactionPlugin from '@fullcalendar/interaction';
 import AppSets from '../service/AppSettings'
 import ScheduleService from '../service/ScheduleService'
-import { Messages } from 'primereact/messages';
+import { Toast } from 'primereact/toast';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import {Checkbox} from 'primereact/checkbox';
@@ -206,9 +206,9 @@ export default class MonthCalendar extends Component{
             <div>
                 <div className="content-section implementation">
                     <div className="card">
-                        <Messages ref={(el) => this.messages = el}></Messages>
+                        <Toast ref={(el) => this.messages = el}/>
                         {(user && user.amIhr()) ? this.displayHrHeader() : this.displaySimpleUserHeader()}
-                        <FullCalendar events={this.state.days} initialDate={iniDate} locale={ruLocale}
+                        <FullCalendar events={this.state.days} initialDate={iniDate} locale={ruLocale} id="monthCldr"
                             slotMinTime={AppSets.minStartTime} slotMaxTime={AppSets.maxEndTime} 
                             aspectRatio={2.2}
                             selectable firstDay={0} expandRows
