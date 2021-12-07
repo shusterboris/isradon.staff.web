@@ -65,6 +65,8 @@ export default class ScheduleReportHR extends React.Component{
         //обновление одной строки в таблице
         const index = this.state.days.findIndex(day=>(row.id === day.id));
         let value = this.state.days;
+        const orgUnitName = value[index].orgUnitName;
+        row.orgUnitName = orgUnitName;
         value[index] = row;
         this.updateDaysState(value);
     }
@@ -203,7 +205,8 @@ class ScheduleResultTable extends React.Component{
                 {label:"Приход и уход", command: () => this.acceptTime(3)},
                 {label:"Приход", command: () => this.acceptTime(1)},
                 {label:"Уход", command: () => this.acceptTime(2)},
-                {label:"Все, что по плану", command: () => this.acceptTime(0)}
+                {label:"Все, что по плану", command: () => this.acceptTime(0)},
+                {label:"Отменить утверждение", command: () => this.acceptTime(-1)}
             ]},
             {separator: true},
             {label:"Посчитать по плану:", icon: 'pi pi-thumbs-down',
@@ -211,6 +214,7 @@ class ScheduleResultTable extends React.Component{
                 {label:"Приход и уход", command: () => this.acceptTime(13)},
                 {label:"Приход", command: () => this.acceptTime(11)},
                 {label:"Уход", command: () => this.acceptTime(12)},
+                {label:"Отменить утверждение", command: () => this.acceptTime(-1)}
             ]},
             {separator: true},
             {label:"Отметить невыход как...", icon: 'pi pi-check',
@@ -233,7 +237,7 @@ class ScheduleResultTable extends React.Component{
     }
 
     rowSort(a, b){
-        if (a.comingPlan == b.comingPlan){
+        if (a.comingPlan === b.comingPlan){
             return 0;
         }else if (a.comingPlan < b.comingPlan){
             return -1
@@ -247,12 +251,6 @@ class ScheduleResultTable extends React.Component{
         let end = this.state.selectedRow.leavingPlan;
         let startMoment = this.moment(start);
         let endMoment = this.moment(end);
-        let mode = "create";
-        if (this.state.selectedRow.rowType !== 0){
-            //т.е. мы не создаем новый, а открываем действующий выходной, отпуск и т.д.
-            //это может занимать несколько дней, поэтому ищем начало и конец
-            mode = "edit"
-        }
         const minTime = AppSets.minStartTime.split(":");
         startMoment.hours(minTime[0]);
         startMoment.minute(minTime[1]);
@@ -296,8 +294,9 @@ class ScheduleResultTable extends React.Component{
             if (!this.props.days || this.props.days.length === 0){
                 return;
             }
+            let rows = this.props.days;
             let idsList="";
-            for(let row of this.props.days){
+            for(let row of rows){
                 if (!(row.comingAccepted && row.leavingAccepted)){
                     idsList = (idsList !== "") ? (idsList+","+row.id) : row.id;
                 }
@@ -306,7 +305,12 @@ class ScheduleResultTable extends React.Component{
                 this.messages.show({severity: 'info', summary:'В выбранном периоде нет записей, которые можно так подтвердить'})
                 return;
             }
-            this.dataService.acceptJobTimeByPlan(idsList, this.props.days[0].comingPlan, this.props.days[0].employeeId ,this);            
+            this.dataService.acceptJobTimeByPlan(idsList, rows.days[0].comingPlan, rows.days[0].employeeId ,this);            
+        }else if (mode === -1){
+            const selected = this.state.selectedRow;
+            selected.comingAccepted = null;
+            selected.leavingAccepted = null;
+            this.dataService.acceptJobTime(this.state.selectedRow, mode, this);
         }else{
             this.dataService.acceptJobTime(this.state.selectedRow, mode, this);
         }
@@ -442,7 +446,9 @@ class ScheduleResultTable extends React.Component{
 
     onEditorValueChange(props, value) {
         let updatedSchedule = [...props.value];
-        updatedSchedule[props.rowIndex][props.field] = value;
+        if (value){
+            updatedSchedule[props.rowIndex][props.field] = value;
+        }
         this.props.updateDaysState(updatedSchedule)
     }
 
@@ -475,11 +481,14 @@ class ScheduleResultTable extends React.Component{
         if (val === ''){
             if (fieldName.startsWith('comingAccepted')){
                 val = props.rowData['comingFactDisp'];
+                props.rowData['comingAcceptedDisp'] = val;
             }else{ 
                 val = props.rowData['leavingFactDisp'];
+                props.rowData['leavingAcceptedDisp'] = val;
             }
         }
-        return <InputText type="time" value={val}  onChange={(e) => this.onEditorValueChange(props, e.target.value)} />;
+        return <InputText type="time" value={val}  
+            onChange={(e) => this.onEditorValueChange(props, e.target.value)} />;
     }
 
     onNoteSubmit(data){

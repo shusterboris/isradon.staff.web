@@ -8,11 +8,11 @@ export default class AppSets{
     static timeBound = AppSets.timeBoundMinutes * 60 * 1000; // допустимое время отклонения от запланированного времени прихода/ухода в милисекундах  
     static restTimeLag = 10; //за какое количество дней пользователь может планировать отпуск
     static dayOffTimeLag = 2; //за какое количество дней пользователь может планировать отпуск за свой счет
-    //static host = 'http://localhost:8080';
-    static host = "https://test.sclub.in.ua";
+    static host = 'http://localhost:8080';
+    //static host = "https://test.sclub.in.ua";
     //static host = "https://smart.sclub.in.ua";
-    static version = "ver. 1.8"
-    static timeout = 5000;
+    static version = "ver. 1.9"
+    static timeout = 7000;
     static authList = {'editAll': 'HR', 'manualCheckIn': 'Ручная отметка'};
 
     static constructor(){
@@ -326,7 +326,7 @@ export default class AppSets{
             errMsg = 'Сервер не может обработать запрос(500). Обратитесь в техническую поддержку';
         }else if (err.toString().includes('status code 403')){
             errMsg = 'Недостаточно прав. Обратитесь в IT-службу компании';
-        }else if (err.response.status = 303 && err.response.hasOwnProperty("data")){
+        }else if (err.response.status === 303 && err.response.hasOwnProperty("data")){
             errMsg = err.response.data;
         }else{
             console.log(err.response.data);

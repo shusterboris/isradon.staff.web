@@ -52,8 +52,9 @@ export default class SchedulePlan extends Component {
         this.displayEmployeeInfo = this.displayEmployeeInfo.bind(this);
         this.intervalIsInPast = this.intervalIsInPast.bind(this);
         this.inputSimpleTimes = this.inputSimpleTimes.bind(this);
-        this.clearEnteredShift = this.clearEnteredShift.bind(this);
         this.displayCardHeader = this.displayCardHeader.bind(this);
+        this.clearEnteredShift = this.clearEnteredShift.bind(this);
+        this.clearEnteredData = this.clearEnteredData.bind(this);
         this.history = props.history;
     }
 
@@ -77,9 +78,11 @@ export default class SchedulePlan extends Component {
         let ou = null;
         if (storedOrgUnit != null){
             ou = JSON.parse(storedOrgUnit)
-            this.setState({chosenOrgUnit: ou});
-            valuesRestored = true;
-            this.dataService.getOrgUnitShifts(ou.id, this);
+            if (ou){
+                this.setState({chosenOrgUnit: ou});
+                valuesRestored = true;
+                this.dataService.getOrgUnitShifts(ou.id, this);
+            }
         }else if (storedEmployee != null){
             AppSets.getOrgUnitById(storedEmployee.orgUnitId, this, this.updateCalendar);
             return;
@@ -89,11 +92,15 @@ export default class SchedulePlan extends Component {
     }
 
     updateCalendar(ou){
-        if (!ou){
-            ou = this.state.chosenOrgUnit;
-        }
+//        if (!ou){
+//            ou = this.state.chosenOrgUnit;
+//        }
         if (ou != null && this.startStr != null  && this.endStr != null){
             this.dataService.getWorkCalendar(this.startStr, this.endStr, false, ou, this.chosenEmployee, this);
+        }else if (ou == null && this.chosenEmployee != null){
+            this.dataService.getWorkCalendar(this.startStr, this.endStr, false, null, this.chosenEmployee, this);
+        }else{
+            this.setState({days:[]})
         }
     }
 
@@ -141,7 +148,8 @@ export default class SchedulePlan extends Component {
 
     onOrgUnitChoose(ouInfo){
         this.setState({chosenOrgUnit: ouInfo, chosenShift:null, wasChanged: true});
-        this.dataService.getOrgUnitShifts(ouInfo.id, this);
+        if (ouInfo && ouInfo.hasOwnProperty("id"))
+            this.dataService.getOrgUnitShifts(ouInfo.id, this);
         this.updateCalendar(ouInfo);
         window.sessionStorage.setItem("chosenOrgUnit", JSON.stringify(ouInfo));
     }
@@ -182,8 +190,6 @@ export default class SchedulePlan extends Component {
 
     intervalIsInPast(){
         //проверяет, не приходится ли выбранный интервал на текущий или прошедший месяц
-        const startInt = this.moment(this.startStr);
-        const dayDifs = -1 * (startInt.diff(this.endStr, 'days'));
         return false;
     }
 
@@ -244,6 +250,22 @@ export default class SchedulePlan extends Component {
 
     clearEnteredShift(){
         this.setState({chosenShift: null, timeFrom:null, timeTo:null, wasChanged: true});
+    }
+
+    clearEnteredData(mode){
+        if (mode === 3){
+            //смены
+            this.setState({chosenShift: null, timeFrom:null, timeTo:null, wasChanged: true});
+        }else if (mode === 1){
+            //магазин
+            this.setState({chosenOrgUnit: null});
+            this.onOrgUnitChoose(null);
+        }else if (mode === 2){
+            //сотрудник
+            this.setState({chosenEmployee: null});
+            this.onEmployeeChoose(null);
+            this.updateCalendar(this.state.chosenOrgUnit);
+        }
     }
 
     save(){
@@ -449,7 +471,7 @@ export default class SchedulePlan extends Component {
                             accept={this.confirmAccept} reject={this.confirmReject} messages={this.messages} context={this}/>}
                     <div id="shiftCldrTitle" className='p-card-title p-text-bold p-text-left' style={{fontSize:'large', color: '#1E88E5'}}>
                         {this.state.scheduleAccepted ? 'Планирование графика работы' : 'Планирование графика работы (не утвержден)'}</div>
-                    <FullCalendar id="shiftCalendar"
+                    <FullCalendar
                         initialDate={iniDate}
                         events={this.state.days} locale={ruLocale}
                         slotMinTime={AppSets.minStartTime} slotMaxTime={AppSets.maxEndTime} 
@@ -467,7 +489,7 @@ export default class SchedulePlan extends Component {
                     {amIhr && <div>
                         <span className="card-title p-text-bold">
                             {(this.state.chosenOrgUnit) && <div>
-                                <Menu id="shiftPlanMenu" model={planMenuModel} popup ref={el => this.menu = el} id="popup_menu" />
+                                <Menu model={planMenuModel} popup ref={el => this.menu = el} id="popup_menu" />
                                 <Button id="shiftPlanMenuButton" icon="pi pi-bars" onClick={(event) => this.menu.toggle(event)} aria-controls="popup_menu" aria-haspopup ></Button>
                             </div>}
                             <span style={{marginLeft:'1em'}}> {cardTitle} </span>
@@ -487,6 +509,8 @@ export default class SchedulePlan extends Component {
                             completeMethod={this.searchOrgUnit} field="name" 
                             onChange={(ouInfo) => this.onOrgUnitChoose(ouInfo.value)} />
                         <label htmlFor="orgUnitFld">Подразделение</label>
+                        <i className="pi pi-times-circle" style={{'fontSize': '2em', padding:'0.2em', color:'#1e88e5'}}
+                            onClick={()=>this.clearEnteredData(1)}/>
                     </span>
                     <span className="p-float-label" style={{marginTop: '1em'}}>
                         <AutoComplete id="employeeFld" dropdown
@@ -496,6 +520,8 @@ export default class SchedulePlan extends Component {
                             onChange={empl => this.onEmployeeChoose(empl.value)}
                         />
                         <label htmlFor="employeeFld">Сотрудник</label>
+                        <i className="pi pi-times-circle" style={{'fontSize': '2em', padding:'0.2em', color:'#1e88e5'}} tooltip="Всякое"
+                            onClick={()=>this.clearEnteredData(2)}/>
                     </span>
                     <div className="p-row-6">
                         <span className="p-float-label" style={{marginTop: '1em'}}>
@@ -504,10 +530,8 @@ export default class SchedulePlan extends Component {
                                 options={this.state.shifts} optionLabel="no"
                                 onChange={shft => this.onShiftChange(shft)}/>
                             <label htmlFor="shiftFld">Смена</label>
-                            <Button id="clearShiftData" className='p-button-rounded p-button-info' 
-                                    icon="pi pi-times" style={{margin:'0 0 0 1em'}}
-                                    tooltip="Очистка выбранной смены или интервала времени прихода и ухода"
-                                    onClick={this.clearEnteredShift}/>
+                            <i className="pi pi-times-circle" style={{'fontSize': '2em', padding:'0.2em', color:'#1e88e5'}}
+                            onClick={()=>this.clearEnteredData(3)}/>
                         </span>
                         
                     </div>

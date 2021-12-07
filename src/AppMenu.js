@@ -136,7 +136,7 @@ const AppSubmenu = (props) => {
 export const AppMenu = (props) => {
 
     return (
-        <div className="layout-menu-container" onClick={props.onSidebarClick}>
+        <div id="mainMenu" className="layout-menu-container" onClick={props.onSidebarClick}>
             <div className="layout-menu-wrapper">
                 <AppSubmenu items={props.model} className="layout-menu" mega={false} root={true}
                     isMobile={props.isMobile} menuHoverActive={props.menuHoverActive} onRootMenuItemClick={props.onRootMenuItemClick}

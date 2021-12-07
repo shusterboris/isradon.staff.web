@@ -26,8 +26,8 @@ export default class OrgUnitView extends Component {
         shiftChanged: false,
         chosenShift: null,
         shiftNo: '',
-        start1:'', end1:'', start2:'', end2:'', start3:'', end3:'', start4:'', end4:'', start5:'', end5:'', start6:'', end6:'', start7:'', end7:'', notes:'',
-        waitPlease: true, showConfirm: false, showDeletedUnits: false, shiftNo:'', notes: '', employees: [], israId: null,
+        start1:'', end1:'', start2:'', end2:'', start3:'', end3:'', start4:'', end4:'', start5:'', end5:'', start6:'', end6:'', start7:'', end7:'',
+        waitPlease: true, showConfirm: false, showDeletedUnits: false, notes: '', employees: [], israId: null,
     }
 
     constructor(props) {
@@ -141,13 +141,13 @@ export default class OrgUnitView extends Component {
             today.add(1,'month');
         }
         let interval = [today.startOf('month').format('yyyy-MM-DD HH:mm'), today.endOf('month').format('yyyy-MM-DD HH:mm')]
-        let payload = null;
+        let payload;
         if (employeeIds.length === 0){
             payload = new ScheduleCreateProxy(selRow.id, 0, null, null, interval, null, null)
         }else{
             for (let i=0; i < employeeIds.length; i++ ){
                 let employeeId = employeeIds[i];
-                let payload = new ScheduleCreateProxy(selRow.id, 0, employeeId, null, interval, null, null);
+                payload = new ScheduleCreateProxy(selRow.id, 0, employeeId, null, interval, null, null);
             }
         }
 
@@ -308,7 +308,7 @@ export default class OrgUnitView extends Component {
 
     onCreateShift(){
         const row = this.state.selectedRow;
-        this.setState({selectedRow: row, chosenShift: null, shiftNo: '', start1: '', start2: '', start3: '', start4: '', start5: '', start6: '', start7: '',
+        this.setState({selectedRow: row, chosenShift: null, start1: '', start2: '', start3: '', start4: '', start5: '', start6: '', start7: '',
         end1: '', end2: '', end3: '', end4: '', end5: '', end6: '', end7: '',shiftChanged: false, orgUnitChanged: false, 
         shiftNo: '', notes: '' });
     }
@@ -425,7 +425,7 @@ export default class OrgUnitView extends Component {
             <div className='p-fluid p-grid'>
                 <div className="p-col-12 p-md-4">
                     <ContextMenu model={this.ouMenuModel} ref={el => this.cm = el} onHide={() => this.setState({ selectedRow: null })}/>
-                    <DataTable value={this.state.orgUnits} emptyMessage='Нет сведений'                                
+                    <DataTable value={this.state.orgUnits} 
                                 scrollable scrollHeight='600px' showGridlines
                                 contextMenuSelection={this.state.selectedRow}
                                 onContextMenuSelectionChange={e => this.setState({ selectedRow: e.value })}

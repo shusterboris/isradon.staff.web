@@ -141,7 +141,7 @@ export default class ScheduleService {
             }else if (!(data.rowType ===1 || data.rowType ===2)){
                 totalDays += 1;
             }
-        }
+        }   
         let summary1 = "", summary2 = "", summary3 = "", summary4 = "", summary5 = "";
         let hhmm = "";
         let s = "";
@@ -184,7 +184,7 @@ export default class ScheduleService {
 
     getWorkCalendar(start, end, onlyAbsense, orgUnit, person, _this){
         //должен вернуть данные календаря в зависимости от фильтров: весь магазин, избранный сотрудник, только дни отсутствия
-        if (!(start && end)) { 
+        if (!(start && end) || (!person && !orgUnit)) { 
             _this.setState({ days: []});
             return
         }
@@ -197,7 +197,11 @@ export default class ScheduleService {
             url = url + orgUnitId;    
         }
         if (person){
+            if (personId){
                 url = (orgUnit) ? (url + personId) : (url + "/0"  + personId);
+            }else{
+                return;
+            }
         }
         return axios.get(url,{timeout: AppSets.timeout})
             .then(
@@ -231,7 +235,7 @@ export default class ScheduleService {
             errMsg = 'Сервер не может обработать запрос(500). Обратитесь в техническую поддержку';
         }else if (err.toString().includes('status code 403')){
             errMsg = 'Недостаточно прав. Обратитесь в IT-службу компании';
-        }else if (err.response.status = 303 && err.response.hasOwnProperty("data")){
+        }else if (err.response.status === 303 && err.response.hasOwnProperty("data")){
             errMsg = err.response.data;
         }else{
             console.log(err.response.data);
@@ -495,7 +499,6 @@ export default class ScheduleService {
             .then(res => res.data)
             .then(data => {
                 if (_this && data){
-                    const month = new Date(selected.comingPlan).getMonth();
                     _this.messages.show({ severity: 'success', summary: 'Выполнено успешно'});        
                     _this.props.updateDaysRow(data)
                 }
@@ -622,6 +625,8 @@ export default class ScheduleService {
 
     getOrgUnitShifts(orgunitId, _this) {
         const server = AppSets.host;
+        if (!orgunitId) 
+            {return};
         const url = server + '/schedule/shifts/'+orgunitId
         axios.get(url,{timeout: AppSets.timeout})
             .then(res => res.data)

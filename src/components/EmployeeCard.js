@@ -384,7 +384,7 @@ export default class EmployeeCard extends Component {
             try{
                 const birthday = this.moment(this.state.birthday,"DD/MM/yyyy");
                 if (!birthday.isValid()){
-                    throw "Введена неправильная дата рождения";
+                    return false;
                 }            
                 const minInt = this.moment().subtract(16,'years');
                 const maxInt = this.moment().subtract(80,'years');
