@@ -85,7 +85,8 @@ export default class ScheduleReportHR extends React.Component{
             {chosenPerson: personName, chosenPersonId: personId}
         );
         let month = (!chosenDate) ? this.state.chosenMonth : chosenDate.getMonth()
-        this.updateData(month,personId);
+        let year = (!chosenDate) ? this.state.chosenMonth : chosenDate.getYear()
+        this.updateData(month,personId, year);
         this.coEmployees = coEmployees
     }
 

@@ -8,10 +8,10 @@ export default class AppSets{
     static timeBound = AppSets.timeBoundMinutes * 60 * 1000; // допустимое время отклонения от запланированного времени прихода/ухода в милисекундах  
     static restTimeLag = 10; //за какое количество дней пользователь может планировать отпуск
     static dayOffTimeLag = 2; //за какое количество дней пользователь может планировать отпуск за свой счет
-    static host = 'http://localhost:8080';
+    //static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
-    //static host = "https://smart.sclub.in.ua";
-    static version = "ver. 1.9"
+    static host = "https://smart.sclub.in.ua";
+    static version = "ver. 1.11"
     static timeout = 7000;
     static authList = {'editAll': 'HR', 'manualCheckIn': 'Ручная отметка'};
 
@@ -181,25 +181,25 @@ export default class AppSets{
     }
 
     static loadUserData(_this, userName, employeeId){
-        if (!userName)
-            {return}
-        let token = window.sessionStorage.getItem("token");
-        const headers = {headers: {'Authorization': token}, timeout: AppSets.timeout}
-        // данные о сотруднике и полномочия пользователя
-        let url = AppSets.host + '/user/authorities/'+userName;
-        axios.get(url, headers)
-        .then(userInfo=>{
-            _this.setState({userInfo: userInfo.data});
-        })
-        .catch((err)=>{
-            let errMsg = "";
-            if (!err.response){
-                errMsg = 'Нет связи с сервером!'
-            }else{
-                errMsg = (err.response.data) ? err.response.data : 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку'
-            }
-            _this.messages.show({severity: 'error', summary: errMsg});
-        })
+        if (userName){
+            let token = window.sessionStorage.getItem("token");
+            const headers = {headers: {'Authorization': token}, timeout: AppSets.timeout}
+            // данные о сотруднике и полномочия пользователя
+            let url = AppSets.host + '/user/authorities/'+userName;
+            axios.get(url, headers)
+            .then(userInfo=>{
+                _this.setState({userInfo: userInfo.data});
+            })
+            .catch((err)=>{
+                let errMsg = "";
+                if (!err.response){
+                    errMsg = 'Нет связи с сервером!'
+                }else{
+                    errMsg = (err.response.data) ? err.response.data : 'Непредвиденная ошибка (' + err.response.status + '). Обратитесь в тех. поддержку'
+                }
+                _this.messages.show({severity: 'error', summary: errMsg});
+            })
+        }
         this.loadIsraLinks(_this, employeeId);
     }
 

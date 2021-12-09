@@ -34,12 +34,12 @@ export default class UsersView extends Component {
 
     onRowSelect(row){
         this.setState({selectedRow: row, userName: row.userName ? row.userName : "", password1:'', password2: '', userInfo: {}, selectedRoles:new Set()});
-        if (row.userName){ 
+//        if (row.userName){ 
             AppSets.loadUserData(this, row.userName,row.id);
-        }else{
-            this.setState({userName: row.userName ? row.userName : "", password1:'', password2: '', 
-                israWorker: '', israOrgUnit: '', israLinkChanged: false, israData: []});
-        }
+//        }else{
+//            this.setState({userName: row.userName ? row.userName : "", password1:'', password2: '', 
+//                israWorker: '', israOrgUnit: '', israLinkChanged: false, israData: []});
+//        }
     }
 
     onCheck(event, value){
@@ -108,8 +108,8 @@ export default class UsersView extends Component {
     }
 
     displayIsraLinkPanel(){
-        if (this.state.selectedRow)
-            { return "" };
+        if (!this.state.selectedRow)
+            { return null };
         return (
             <Panel header="Связь с пользователями магазинов">
                 <div className='p-grid'>
@@ -136,7 +136,7 @@ export default class UsersView extends Component {
                 <DataTable value={this.state.israData} howGridlines>
                     <Column field="israWorker" header="Код сотрудника"/>
                     <Column field="israOrgUnit" header="Код магазина" />
-                    <Column body={this.bodyDeleteLink} style={{width:'10%'}}/>
+                    <Column body={this.bodyDeleteLink} style={{width:'15%'}}/>
                 </DataTable>
             </Panel>
         )
