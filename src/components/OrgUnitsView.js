@@ -141,13 +141,12 @@ export default class OrgUnitView extends Component {
             today.add(1,'month');
         }
         let interval = [today.startOf('month').format('yyyy-MM-DD HH:mm'), today.endOf('month').format('yyyy-MM-DD HH:mm')]
-        let payload;
         if (employeeIds.length === 0){
-            payload = new ScheduleCreateProxy(selRow.id, 0, null, null, interval, null, null)
+            new ScheduleCreateProxy(selRow.id, 0, null, null, interval, null, null)
         }else{
             for (let i=0; i < employeeIds.length; i++ ){
                 let employeeId = employeeIds[i];
-                payload = new ScheduleCreateProxy(selRow.id, 0, employeeId, null, interval, null, null);
+                new ScheduleCreateProxy(selRow.id, 0, employeeId, null, interval, null, null);
             }
         }
 

@@ -1,0 +1,13 @@
+{
+    "screen_Home": "Home",
+    "screen_Profile": "Profile",
+    "lbl_details": "Details",
+    "topbarMenuLogin" : "Login",
+    "topbarMenuExit" : "Exit",
+    "topbarMenuChangeUser" : "Change user",
+    "mainMenu_Report" : "Report",
+    "mainMenu_Summary" : "Summary",
+    "mainMenu_WorkSchedule" : "Schedule",
+    "mainMenu_ScheduleShifts" : "Shift's schedule",
+    "summary_hr_notes" : "HR's notes"
+}

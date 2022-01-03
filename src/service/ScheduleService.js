@@ -1,5 +1,6 @@
 import axios from 'axios'
 import AppSets from '../service/AppSettings'
+import axiosRetry from 'axios-retry';
 
 export default class ScheduleService {
     constructor(){
@@ -252,6 +253,7 @@ export default class ScheduleService {
                 console.error(err.toString());
             }
         }
+        return errMsg;
     }
 
     getMonthCalendarByPerson(start, end, person, _this) {
@@ -853,16 +855,47 @@ export default class ScheduleService {
             });
     }
 
-    checkInOut(_this, finalActions){
+    async checkInOut(_this, finalActions, isIn){
+        axiosRetry(axios, { retries: 5 , retryDelay: (retryCount) => {
+            return retryCount * 100;
+          }});
+        const evt = isIn ? 'приход' : 'уход'
         const url = AppSets.host + "/employee/checkInOut/" + AppSets.getUser().employeeId;
-        return axios.put(url, {}, {timeout: AppSets.timeout})
+        await axios.put(url)
             .then(response => {
+                window.localStorage.removeItem('hrLog')
                 if (finalActions)
                     { finalActions() }
             })
             .catch(err=>{
-                this.processRequestsCatch(err,"Отметка прихода-ухода",_this.messages, true);                       
+                if (err.response != null){
+                    const errMsg = this.processRequestsCatch(err,"Отметка прихода-ухода",_this.messages, true);                       
+                    this.saveLog(errMsg);
+                }else{
+                    //timeout
+                    _this.setState({waitPlease: false});
+                    _this.messages.show({severity: 'warn', sticky: true,
+                            summary: 'Нет связи. Не удалось отметить '+evt+'. Повторите или обратитесь в службу поддержки!'})
+                    this.saveLog(evt+" - тайм-аут");
+                }
             });
+    }
+
+    saveLog(item){
+        try{
+            item = this.moment().format("DD-MM-YY HH:mm") + " " + item;
+            let logInfo = window.localStorage.getItem("hrLog");
+            let log = [];
+            if (logInfo) {
+                log = logInfo.split(";")
+            }
+            if (log.length>15) log.shift();
+            log.push(item)
+            window.localStorage.setItem("hrLog", log.join(";"))
+        }catch(err){
+            console.log(err);
+        }
+
     }
 
     getSummaryReport(month, finalActions, _this){

@@ -4,12 +4,19 @@ import AppMenu from './AppMenu';
 import { Ripple } from 'primereact/ripple';
 import AppSets from './service/AppSettings'
 import { useHistory} from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const AppTopbar = (props) => {
 
 	let topbarMenuClassName = classNames('layout-profile-menu fadeInDown ', { 'layout-profile-menu-active': props.topbarUserMenuActive });
 	let menuButtonClassName = classNames('layout-menubutton ', { 'layout-menubutton-active': props.menuActive })
 	const history = useHistory();
+	const [t, i18n] = useTranslation();
+	
+	const getLangData = () => {
+		const lang = i18n.language.toLowerCase();
+		return (lang.includes('ru')) ? {"label":"English", "abbr":"gb"} : {"label":"Русский", "abbr":"ru"}
+	}
 
 	const getInk = (el) => {
         for (let i = 0; i < el.children.length; i++) {
@@ -36,12 +43,23 @@ const AppTopbar = (props) => {
 	}
 
 	const processTopbarMenuClick = (itemNo) =>{
-		if (itemNo === 2){
+		if (itemNo === 1){
+			history.push("/login")
+		}else if (itemNo === 2){
 			window.sessionStorage.clear();
 			AppSets.clearUser();
+			history.push("/login")
+		}else if (itemNo === 3){
+			if (i18n.language.toLowerCase().includes('ru')){
+				i18n.changeLanguage('gb')
+			}else{
+				i18n.changeLanguage('ru')
+			}
 		}
-		history.push("/login")
+		
 	}
+
+	let langData = getLangData();
 
 	return (
 		<div className="layout-topbar">
@@ -69,11 +87,10 @@ const AppTopbar = (props) => {
 						<img src="assets/layout/images/avatar.png" alt="Profile" />
 					</button>
 					<ul className={topbarMenuClassName} onClick={props.onTopbarUserMenuClick}>
-
 						<li role="menuitem">
 							<button type="button" className="p-link p-ripple" onClick={(e)=>onItemClick(e,1)}>
 								<i className="pi pi-key"></i>
-								<span>{AppSets.getUser() ? "Смена пользователя" : "Вход в систему"}</span>
+								<span>{AppSets.getUser() ? t('topbarMenuChangeUser') : t('topbarMenuLogin')}</span>
                                 <Ripple />
 							</button>
 						</li>
@@ -81,10 +98,18 @@ const AppTopbar = (props) => {
 							<li role="menuitem">
 								<button type="button" className="p-link p-ripple" onClick={(e)=>onItemClick(e,2)}>
 									<i className="pi pi-times"></i>
-									<span>Выход</span>
+									<span>{t('topbarMenuExit')}</span>
 									<Ripple />
 								</button>
 							</li>}
+						<li role="menuitem">
+							<button type="button" className="p-link p-ripple" onClick={(e)=>onItemClick(e,3)}>
+								<img src="assets/images/flag_placeholder.png" alt="выбранный язык в виде флажка"
+									className={'flag flag-'+langData.abbr} />
+								<span className='p-ml-1'>{langData.label}</span>
+								<Ripple />
+							</button>
+						</li>
 					</ul>
 				</div>
 			</div>

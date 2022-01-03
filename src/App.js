@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation, withTranslation } from 'react-i18next';
 import classNames from 'classnames';
 import { Route } from 'react-router-dom';
 import AppTopbar from './AppTopbar';
@@ -40,6 +41,7 @@ const App = () => {
     const [themeColor, setThemeColor] = useState('blue');
     const [inputStyle, setInputStyle] = useState('outlined');
     const [ripple, setRipple] = useState(true);
+    const [t] = useTranslation();
 
     PrimeReact.ripple = true;
 
@@ -194,27 +196,27 @@ const App = () => {
 
     const routers = [
         {path: "/" , component: Login, exact: true},
-        {path: "/summary" , component: ScheduleReportHR },
-		{path: "/shed-plan", component: MonthCalendar },
-        {path: "/shed-plan-orgunit", component: SchedulePlan},
+        {path: "/summary" , component: withTranslation()(ScheduleReportHR)},
+		{path: "/shed-plan", component: withTranslation()(MonthCalendar) },
+        {path: "/shed-plan-orgunit", component: withTranslation()(SchedulePlan)},
 		{path: "/shed-fact", component: EmptyPage},
 		{path: "/app-settings", component: EmptyPage},
-		{path: "/employees-all", component: EmployeeView},
-        {path: "/employees-fired", component: EmployeeView},
-		{path: "/employee-edit", component:EmployeeCard},
-		{path: "/employee-edit:id", component:EmployeeCard},
-        {path: "/users", component:UsersView},
-		{path: "/orgunit-list", component:OrgUnitView},
-		{path: "/day-off", component:DayOffForm},
-		{path: "/day-off:type", component:DayOffForm},
+		{path: "/employees-all", component: withTranslation()(EmployeeView)},
+        {path: "/employees-fired", component: withTranslation()(EmployeeView)},
+		{path: "/employee-edit", component: withTranslation()(EmployeeCard)},
+		{path: "/employee-edit:id", component: withTranslation()(EmployeeCard)},
+        {path: "/users", component: withTranslation()(UsersView)},
+		{path: "/orgunit-list", component: withTranslation()(OrgUnitView)},
+		{path: "/day-off", component: withTranslation()(DayOffForm)},
+		{path: "/day-off:type", component: withTranslation()(DayOffForm)},
 		{path: "/create-schedule", component:EmptyPage},
-        {path: "/edit-day:id", component:DayEdit},
-        {path: "/data-download", component:MonthScheduleDownload},
-        {path: "/login", component:Login},
-        {path: "/titles-dictionary", component:DictionaryJT},
-        {path: "/inout", component: InOutPage},
+        {path: "/edit-day:id", component: withTranslation()(DayEdit)},
+        {path: "/data-download", component: withTranslation()(MonthScheduleDownload)},
+        {path: "/login", component: Login},
+        {path: "/titles-dictionary", component: withTranslation()(DictionaryJT)},
+        {path: "/inout", component: withTranslation()(InOutPage)},
         {path: "/test", component:TestPage},
-        {path: "/summary-report", component:SummaryReport},
+        {path: "/summary-report", component: withTranslation()(SummaryReport)},
 		{path: "/public/" },
     ];
 
@@ -225,12 +227,12 @@ const App = () => {
         if (AppSets.getUser().isPortable())    
             {return menu}
         menu = AppSets.getUser().amIhr() ? [
-            {label: 'Отчет', icon: 'pi pi-chart-bar', to: '/summary-report'},
-            {label: 'Сводка', icon: 'pi pi-th-large', to: '/summary'},
+            {label: t('mainMenu_Report'), icon: 'pi pi-chart-bar', to: '/summary-report'},
+            {label: t('mainMenu_Summary'), icon: 'pi pi-th-large', to: '/summary'},
             {
-                label: 'График работы', icon: 'pi pi-list',
+                label: t('mainMenu_WorkSchedule'), icon: 'pi pi-list',
                 items: [
-                    {label: 'Календарь смен', icon: 'pi pi-sitemap', to: '/shed-plan-orgunit'},
+                    {label: t('mainMenu_ScheduleShifts'), icon: 'pi pi-sitemap', to: '/shed-plan-orgunit'},
                     {label: 'Календарь отпусков', icon: 'pi pi-users', to: '/shed-plan'},
                     {label: 'Выгрузка расписания', icon: 'pi pi-download', to: '/data-download'},
                 ]

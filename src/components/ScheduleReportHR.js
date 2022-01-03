@@ -31,6 +31,7 @@ export default class ScheduleReportHR extends React.Component{
     constructor(props){
         super(props);
         this.messages = [];
+        this.t = props.t;
         this.dataService = new ScheduleService();
         this.onCalendarChange = this.onCalendarChange.bind(this);
         this.onSellerChange = this.onSellerChange.bind(this);
@@ -108,6 +109,7 @@ export default class ScheduleReportHR extends React.Component{
                     onCalendarChange = {this.onCalendarChange}
                     onSellerChange = {this.onSellerChange}
                     history = {this.history}
+                    t = {this.t}
                 />
                 <ScheduleResultTable
                     updateData = {this.updateData}
@@ -118,6 +120,7 @@ export default class ScheduleReportHR extends React.Component{
                     days = {this.state.days} 
                     coEmployees = {this.coEmployees}
                     history = {this.history}
+                    t = {this.t}
                 />
             </div>
         );
@@ -131,7 +134,7 @@ class ScheduleResultTable extends React.Component{
         this.history = props.history;
         AppSets.getUser();
         this.messages = props.messages;
-        this.state = {selectedRow: null,errorMsg: null};
+        this.setState({selectedRow: null,errorMsg: null});
         this.getRowClassName = this.getRowBackgroundClassName.bind(this);
         this.bodyComingDif = this.bodyComingDif.bind(this);
         this.bodyLeavingDif = this.bodyLeavingDif.bind(this);
@@ -522,7 +525,7 @@ class ScheduleResultTable extends React.Component{
                 <Column header="Всего, +/-" rowSpan={2}/>
                 <Column header="Раб. время" rowSpan={2}/>
                 <Column header="Примечания сотрудника" rowSpan={2} style={{width: '10%'}}/>
-                <Column header='Примечания HR' rowSpan={2} style={{width: '10%'}}/>
+                <Column header={this.props.t('summary_hr_notes')} rowSpan={2} style={{width: '10%'}}/>
             </Row>
             <Row>
                 <Column header='План'/>
@@ -543,7 +546,7 @@ class ScheduleResultTable extends React.Component{
                         onHide={() => this.setState({ selectedRow: null })}/>
                     <DataTable id="summaryDataTable" value={this.props.days} rowClassName={this.getRowBackgroundClassName} 
                         headerColumnGroup={header}
-                        contextMenuSelection={this.state.selectedRow}
+                        contextMenuSelection={this.state ? this.state.selectedRow : null}
                         onContextMenuSelectionChange={e => this.setState({ selectedRow: e.value })}
                         onContextMenu={e => this.cm.show(e.originalEvent)}
                         emptyMessage='Нет сведений для данного сотрудника за выбранный период'>
@@ -595,7 +598,7 @@ class ScheduleFilter extends React.Component{
     //Панель фильтра, содержащая выбранный месяц года и продавца
     constructor(props){
         super(props);
-        this.state = {filteredSellers: null, employees: []};
+        this.setState({filteredSellers: null, employees: []});
         this.dataService = props.dataService;
         this.sellersSuggestions = [];
         this.messages = props.messages;

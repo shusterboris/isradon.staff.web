@@ -1,0 +1,13 @@
+{
+    "screen_Home": "Главная",
+    "screen_Profile": "Профиль",
+    "lbl_details": "Подробнее",
+    "topbarMenuExit" : "Выход",
+    "topbarMenuLogin" : "Вход в систему",
+    "topbarMenuChangeUser" : "Смена пользователя",
+    "mainMenu_Report" : "Отчет",
+    "mainMenu_Summary" : "Сводка",
+    "mainMenu_WorkSchedule" : "График работы",
+    "mainMenu_ScheduleShifts" : "График смен",
+    "summary_hr_notes" : "Примечания HR"
+}

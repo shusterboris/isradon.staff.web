@@ -5,10 +5,11 @@ import AppSets from '../service/AppSettings';
 import Confirmation from './Confirmation';
 import ScheduleService from '../service/ScheduleService'
 import { InputTextarea } from 'primereact/inputtextarea';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 
 export default class InOutPage extends Component {
-    state = {showConfirm: false, row: {}, note:'', notesChanged: false};
+    state = {showConfirm: false, row: {}, note:'', notesChanged: false, waitPlease: false};
 
     constructor(props) {
         super(props);
@@ -19,6 +20,7 @@ export default class InOutPage extends Component {
         this.checkIn = this.checkIn.bind(this);
         this.checkOut = this.checkOut.bind(this);
         this.moment = require('moment');
+        this.showLog = this.showLog.bind(this);
     }
 
     componentDidMount(){
@@ -66,12 +68,13 @@ export default class InOutPage extends Component {
     }
 
     checkInOut(){
-        this.setState({showConfirm: false});
+        this.setState({showConfirm: false, waitPlease: true});
         if (this.state.notesChanged){
             const data = {"note": this.state.note, "id": this.state.row.id}
             this.dataService.notesUpdate(data, "note", this)
         }
-        this.dataService.checkInOut(this, this.confirmMessage.includes("приход") ? this.checkIn : this.checkOut);
+        const in_event = this.confirmMessage.includes("приход");
+        this.dataService.checkInOut(this, in_event ? this.checkIn : this.checkOut, in_event);
     }
 
     checkIn(){
@@ -81,6 +84,7 @@ export default class InOutPage extends Component {
         AppSets.user = user;
         window.sessionStorage.setItem("user", userString);
         this.getStatus(this);
+        this.setState({waitPlease: false});
         this.messages.show({severity:'info', summary:"Приход на работу зарегистрирован"});
     }
 
@@ -89,11 +93,22 @@ export default class InOutPage extends Component {
         const userString = JSON.stringify(AppSets.user);
         window.sessionStorage.setItem("user", userString);
         this.getStatus(this);
+        this.setState({waitPlease: false});
         this.messages.show({severity:'info', summary:"Отмечен уход с работы"});
     }
 
     hideConfirmDlg(){
         this.setState({showConfirm: false})
+    }
+
+    showLog(){
+        const logStr = window.localStorage.getItem('hrLog');
+        if (!logStr) return null;
+        const 
+        log = logStr.split(";");
+        return <div>
+            {log.map((s) => <p>s</p>)}
+        </div>
     }
 
 
@@ -128,6 +143,7 @@ export default class InOutPage extends Component {
                     </div>}
                 </div>
             }
+            {this.state.waitPlease && <ProgressSpinner/>}
             <div className="p-col-12 ">
                 <span className="p-float-label">
                     <InputTextarea id='inputReasonFld' value={this.state.row.reason} style={{minHeight:'30px', overflow:'auto'}}
@@ -142,6 +158,7 @@ export default class InOutPage extends Component {
                     <label htmlFor='inputNoteFld' style={{width: '90%'}}>Заметки сотрудника (перед уходом, если необходимо)</label>
                 </span>
             </div>
+            {this.showLog()}
         </div>
     }
 }

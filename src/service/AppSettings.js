@@ -8,10 +8,10 @@ export default class AppSets{
     static timeBound = AppSets.timeBoundMinutes * 60 * 1000; // допустимое время отклонения от запланированного времени прихода/ухода в милисекундах  
     static restTimeLag = 10; //за какое количество дней пользователь может планировать отпуск
     static dayOffTimeLag = 2; //за какое количество дней пользователь может планировать отпуск за свой счет
-    //static host = 'http://localhost:8080';
+    static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
-    static host = "https://smart.sclub.in.ua";
-    static version = "ver. 1.11"
+    //static host = "https://smart.sclub.in.ua";
+    static version = "ver. 1.12"
     static timeout = 7000;
     static authList = {'editAll': 'HR', 'manualCheckIn': 'Ручная отметка'};
 

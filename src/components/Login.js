@@ -4,6 +4,7 @@ import { Button } from 'primereact/button';
 import { useHistory} from 'react-router-dom';
 import AppSets from '../service/AppSettings';
 import {Toast} from 'primereact/toast';
+import { useTranslation } from 'react-i18next';
 
 export const Login = (props) => {
 	const history = useHistory();
@@ -13,6 +14,7 @@ export const Login = (props) => {
 	const [newPassword2, setNewPassword2] = useState('');
 	const [changeMode, setChangeMode] = useState(false);	
 	const messages = useRef(null);
+	const [t] = useTranslation();
 
 
     const showMessage = (msgParams) => {
