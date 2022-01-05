@@ -1,5 +1,5 @@
 {
-    "screen_Home": "Home",
+    "appHeader": "HR - портал",
     "screen_Profile": "Profile",
     "lbl_details": "Details",
     "topbarMenuLogin" : "Login",
@@ -9,5 +9,19 @@
     "mainMenu_Summary" : "Summary",
     "mainMenu_WorkSchedule" : "Schedule",
     "mainMenu_ScheduleShifts" : "Shift's schedule",
-    "summary_hr_notes" : "HR's notes"
+    "summary_hr_notes" : "HR's notes",
+    "login_fldUserLabel": "User login",
+    "login_header": "Please, enter the username and login.",
+    "login_fldPassword": "Password",
+    "login_fldNewPassword1Hint": "New password",
+    "login_fldNewPassword2Hint": "New passwort again",
+    "login_btnPasswordChangeLabel" : "Change password",
+    "login_btnPasswordDontChangeLabel" : "Don't change",
+    "login_btnPasswordChangeHint" : "Press to change password",
+    "login_btnPasswordDontChangeHint" : "Press to cancel changing password and still are using old one",
+    "login_btnOkLabel": "Continue",
+    "login_btnOkHint": "Enter to the system",
+    "login_errDifferentPswds": "Different values of password was entered!",
+    "login_errValuesRequired": "Must be entered values: username, old password and twice new password"
+
 }

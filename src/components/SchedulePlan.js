@@ -451,8 +451,6 @@ export default class SchedulePlan extends Component {
     }
 
     render() {
-        if (!AppSets.getUser())
-            { this.history.push("/login")}
         let storedIniDate = window.localStorage.getItem("initalCalDate");
         let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         const amIhr = (AppSets.getUser() && AppSets.getUser().amIhr());

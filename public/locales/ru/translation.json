@@ -1,5 +1,5 @@
 {
-    "screen_Home": "Главная",
+    "appHeader": "HR - портал",
     "screen_Profile": "Профиль",
     "lbl_details": "Подробнее",
     "topbarMenuExit" : "Выход",
@@ -9,5 +9,19 @@
     "mainMenu_Summary" : "Сводка",
     "mainMenu_WorkSchedule" : "График работы",
     "mainMenu_ScheduleShifts" : "График смен",
-    "summary_hr_notes" : "Примечания HR"
+    "summary_hr_notes" : "Примечания HR",
+    "login_fldUserLabel": "Имя (логин) пользователя:",
+    "login_header": "Пожалуйста, введите пользователя и пароль для входа",
+    "login_fldPassword": "Пароль",
+    "login_fldNewPassword1Hint": "Новый пароль",
+    "login_fldNewPassword2Hint": "Повторите новый пароль",
+    "login_btnPasswordChangeLabel" : "Изменить пароль",
+    "login_btnPasswordDontChangeLabel" : "Не менять",
+    "login_btnPasswordChangeHint" : "Нажмите для изменения своего пароля",
+    "login_btnPasswordDontChangeHint" : "Нажмите, чтобы выйти из режима смены пароля, войти со старым",
+    "login_btnOkLabel": "Дальше",
+    "login_btnOkHint": "Вход в систему",
+    "login_errDifferentPswds": "Введены разные значения нового пароля",
+    "login_errValuesRequired": "Должны быть введены: имя пользователя, старый пароль и дважды новый пароль"
+
 }

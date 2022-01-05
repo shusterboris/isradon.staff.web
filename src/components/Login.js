@@ -27,12 +27,12 @@ export const Login = (props) => {
 		}else{
 			if (userName && password && newPassword && newPassword2){
 				if (newPassword2 !== newPassword){
-					showMessage({severity:'error', summary:"Введены разные значения нового пароля"})	
+					showMessage({severity:'error', summary:t('login_errDifferentPswds')})	
 				}else{
 					AppSets.authenticateUser(userName, password, newPassword, showMessage, history);
 				}
 			}else{
-				showMessage({severity:'error', summary:"Должны быть введены: имя пользователя, старый пароль и дважды новый пароль"})
+				showMessage({severity:'error', summary:t('login_errValuesRequired')})
 			}
 		}
 	}
@@ -47,43 +47,43 @@ export const Login = (props) => {
 				<div className="login-panel-content" >
 					<div className="p-grid">
 						<div className="p-col-12">
-							<h1>HR - портал</h1>
+							<h1>{t('appHeader')}</h1>
 							{(props.location.state && props.location.state.hasOwnProperty("reason")) && <h2>{props.location.state.reason}</h2>}
-							<h2>Пожалуйста, введите пользователя и пароль для входа</h2>
+							<h2>{t('login_header')}</h2>
 						</div>
 						<div className="p-col-12">
 							<span className="p-float-label">
 								<InputText id="username" type="text" style={{ width: '100%' }} v-model="username" 
 									value={userName} onChange={(e)=>setUserName(e.target.value)}/>
-								<label htmlFor="username">Имя (логин) пользователя: </label>
+								<label htmlFor="username">{t('login_fldUserLabel')} </label>
 							</span>
 						</div>
 						<div className="p-col-12">
 							<span className="p-float-label">
 								<InputText id="password" type="password" style={{ width: '100%' }} v-model="password" 
 									value={password} onChange={(e)=>setPassword(e.target.value)}/>
-								<label htmlFor="password">Пароль: </label>
+								<label htmlFor="password">{t('login_fldPassword')} </label>
 							</span>
 						</div>
 							<div className="p-col-6">
 								{changeMode && <InputText id="newPassword1"  style={{ width: '100%' }} type="password" 
-										placeholder="Новый пароль" 
+										placeholder={t('login_fldNewPassword1Hint')} 
 										value={newPassword} onChange={(e)=>setNewPassword(e.target.value)}/>}
 							</div>	
 							<div className="p-col-6">
 								{changeMode && <InputText id="newPassword2" type="password" style={{ width: '100%' }} v-model="password" 
-										placeholder="Повторите новый пароль" 
+										placeholder={t('login_fldNewPassword2Hint')} 
 										value={newPassword2} onChange={(e)=>setNewPassword2(e.target.value)}/>}
 							</div>	
 						<div className="p-col-6">
 							<Button id="buttonChangePassw"
-								label={!changeMode ? "Изменить пароль" : "Не менять"}
+								label={!changeMode ? t('login_btnPasswordChangeLabel') : t('login_btnPasswordDontChangeLabel')}
 								className="p-button-help"
-								tooltip={!changeMode ? "Нажмите для изменения своего пароля" : "Нажмите, чтобы выйти из режима смены пароля, войти со старым"}
+								tooltip={!changeMode ? t('login_btnPasswordChangeHint') : t('login_btnPasswordDontChangeHint')}
 								onClick={()=>setChangeMode(!changeMode)}/> 
 						</div>
 						<div className="p-col-6" style={{ textAlign: 'right' }}>
-							<Button id="buttonOk" label="Дальше" tooltip="Вход в систему"
+							<Button id="buttonOk" label={t('login_btnOkLabel')} tooltip={t('login_btnOkHint')}
 							onClick={()=>goForward()} style={{ width: '100%' }} />
 						</div>						
 					</div>

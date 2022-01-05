@@ -223,9 +223,6 @@ export class DayEdit extends Component {
     }
 
     render() {
-        if (!AppSets.getUser())
-            { this.history.push("/login")}
-
         return <div className="card">
             <Messages ref={(el) => this.messages = el}/>
             <div className="card-title">{this.title}</div>

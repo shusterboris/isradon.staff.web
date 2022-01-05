@@ -93,8 +93,8 @@ export default class ScheduleReportHR extends React.Component{
 
     
     render(){
-        if (!AppSets.getUser())
-            { this.history.push("/login") }
+//        if (!AppSets.getUser())
+//            { this.history.push("/login") }
         return(
             <div>
                 <Toast id="toastMsg" ref={(el) => this.messages = el} position="top-left" />

@@ -120,11 +120,10 @@ export class DictionaryJT extends Component {
 
     render() {
         if (!AppSets.getUser()) { 
-            this.history.push("/login")
-        }else if (!AppSets.getUser().amIhr()){
-            this.history.push({pathname: '/employee-edit', state: {reason: 'Эта операция доступна только уполномоченному персоналу'}});
-        }else{
             this.user = AppSets.getUser();
+        }
+        if (this.user.amIhr()){
+            this.history.push({pathname: '/employee-edit', state: {reason: 'Эта операция доступна только уполномоченному персоналу'}});
         }
         const editTools = this.displayEditTools();
                 

@@ -113,6 +113,8 @@ export default class InOutPage extends Component {
 
 
     render() {
+        if (!AppSets.getUser())
+            { this.history.push("/login") }
         return <div className="p-card p-grid p-justify-center" >
             {this.state.showConfirm && 
             <Confirmation id="confirmDlg" visibility={this.state.showConfirm} header={this.confirmHeader} body={this.confirmMessage}

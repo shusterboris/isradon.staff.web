@@ -188,9 +188,7 @@ export default class EmployeeCard extends Component {
     }
 
     render() {
-        if (!AppSets.getUser())
-            { this.history.push("/login")}
-        else if (!AppSets.getUser().amIhr()){
+        if (!AppSets.getUser().amIhr()){
             this.history.push("/access") }
         return<div> 
             <Card title="Карточка сотрудника" >

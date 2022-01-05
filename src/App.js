@@ -277,8 +277,11 @@ const App = () => {
                         if (router.exact) {
                             return <Route key={`router${index}`} path={router.path} exact component={router.component} />
                         }
-
-                        return <Route key={`router${index}`} path={router.path} component={router.component} />
+                        if (!AppSets.getUser()){
+                            return <Route key={0} path={routers[0].path} component={routers[0].component} />
+                        }else{
+                            return <Route key={`router${index}`} path={router.path} component={router.component} />
+                        }
                     })
                 }
             </div>

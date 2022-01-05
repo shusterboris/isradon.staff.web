@@ -84,7 +84,7 @@ const AppTopbar = (props) => {
 
 				<div className="layout-topbar-grid-column layout-topbar-grid-column-fixed">
 					<button type="button" className="p-link profile-menu-button" onClick={props.onTopbarUserMenuButtonClick}>
-						<img src="assets/layout/images/avatar.png" alt="Profile" />
+						<img src="assets/images/login-ava-user.png" alt="Profile" />
 					</button>
 					<ul className={topbarMenuClassName} onClick={props.onTopbarUserMenuClick}>
 						<li role="menuitem">

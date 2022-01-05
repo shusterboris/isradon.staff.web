@@ -34,12 +34,7 @@ export default class UsersView extends Component {
 
     onRowSelect(row){
         this.setState({selectedRow: row, userName: row.userName ? row.userName : "", password1:'', password2: '', userInfo: {}, selectedRoles:new Set()});
-//        if (row.userName){ 
             AppSets.loadUserData(this, row.userName,row.id);
-//        }else{
-//            this.setState({userName: row.userName ? row.userName : "", password1:'', password2: '', 
-//                israWorker: '', israOrgUnit: '', israLinkChanged: false, israData: []});
-//        }
     }
 
     onCheck(event, value){
@@ -143,9 +138,7 @@ export default class UsersView extends Component {
     }
 
     render() {
-        if (!AppSets.getUser())
-            { this.history.push("/login")} 
-        else if (!AppSets.getUser().amIhr())
+        if (!AppSets.getUser().amIhr())
             { this.history.push("/access") }
         return <div className="content-section implementation">
             <Toast ref = {(e) => this.messages = e} position = {"top-left"} life='5000'/>

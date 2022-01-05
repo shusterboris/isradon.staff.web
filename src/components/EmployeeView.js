@@ -76,9 +76,7 @@ export default class EmployeeView extends React.Component{
     }
 
     render(){
-        if (!AppSets.getUser())
-            { this.history.push("/login")} 
-        else if (!AppSets.getUser().amIhr())
+        if (!AppSets.getUser().amIhr())
             { this.history.push("/access") }
         return (
             <div className = 'p-grid'>

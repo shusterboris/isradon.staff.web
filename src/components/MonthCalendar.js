@@ -198,8 +198,6 @@ export default class MonthCalendar extends Component{
 
     render() {
         const user = AppSets.getUser();
-        if (!AppSets.getUser())
-            { this.history.push("/login") }
         let storedIniDate = window.localStorage.getItem("initalCalDate");
         let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         return (

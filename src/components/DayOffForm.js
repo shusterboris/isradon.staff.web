@@ -373,8 +373,6 @@ export default class DayOffForm extends Component {
 
 
     render() {
-        if (!AppSets.getUser()) 
-            { this.history.push("/login")}
         return(
         <div className="card" >
             <Toast ref={(msgE) => this.messages = msgE} style={{marginBottom: '1em'}}/>
