@@ -13,7 +13,7 @@ import { InputText } from 'primereact/inputtext';
 import {Toast} from 'primereact/toast';
 import classNames from 'classnames';
 import './ScheduleReport.css'
-import { ru } from '../service/AppSettings';
+import { ru, gb } from '../service/AppSettings'
 import { addLocale } from 'primereact/api';
 import Confirmation from './Confirmation'
 
@@ -27,7 +27,7 @@ export default class ScheduleReportHR extends React.Component{
         showConfirm: false,
         summary1:'', summary2:'',summary3:'',summary4:'', summary5: '',
     }
-    
+   
     constructor(props){
         super(props);
         this.messages = [];
@@ -40,6 +40,7 @@ export default class ScheduleReportHR extends React.Component{
         this.updateDaysRow = this.updateDaysRow.bind(this);
         this.history = props.history;
         this.moment = require('moment');
+        this.lang = this.props.i18n.language;
         this.restoreInitalDate();
     }
 
@@ -47,6 +48,7 @@ export default class ScheduleReportHR extends React.Component{
         let storedIniDate = window.localStorage.getItem("initalCalDate");
         let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         this.setState({chosenDate: iniDate, chosenMonth: iniDate.getMonth()});
+     
     }
 
     updateData(chosenMonth, chosenPersonId, year){
@@ -195,48 +197,48 @@ class ScheduleResultTable extends React.Component{
 
     createOrdinalMenuModel(){
         return([
-            {label:"Больничный:", icon: 'pi pi-calendar-plus',
+            {label:this.props.t("summary_hr_sick"), icon: 'pi pi-calendar-plus',
             items: [
-                {label:"Отметить день как больничный", icon: 'pi pi-calendar-plus', command: () => this.changeRowType(4)},
-                {label:"Внести скан", icon: 'pi pi-calendar-plus', command: () => this.openDayEditForm()},
+                {label:this.props.t("summary_hr_checkSick"), icon: 'pi pi-calendar-plus', command: () => this.changeRowType(4)},
+                {label:this.props.t("summary_hr_addScan"), icon: 'pi pi-calendar-plus', command: () => this.openDayEditForm()},
             ]}])
     }
 
     createHrMenuModel(){
         return([
-            {label:"Посчитать по факту:", icon: 'pi pi-thumbs-up',
+            {label:this.props.t("summary1_hr_calcFact"), icon: 'pi pi-thumbs-up',
             items: [
-                {label:"Приход и уход", command: () => this.acceptTime(3)},
-                {label:"Приход", command: () => this.acceptTime(1)},
-                {label:"Уход", command: () => this.acceptTime(2)},
-                {label:"Все, что по плану", command: () => this.acceptTime(0)},
-                {label:"Отменить утверждение", command: () => this.acceptTime(-1)}
+                {label:this.props.t("summary1_hr_all"), command: () => this.acceptTime(3)},
+                {label:this.props.t("summary1_hr_arrival"), command: () => this.acceptTime(1)},
+                {label:this.props.t("summary1_hr_leaving"), command: () => this.acceptTime(2)},
+                {label:this.props.t("summary1_hr_toPlan"), command: () => this.acceptTime(0)},
+                {label:this.props.t("summary1_hr_cancel"), command: () => this.acceptTime(-1)}
             ]},
             {separator: true},
-            {label:"Посчитать по плану:", icon: 'pi pi-thumbs-down',
+            {label:this.props.t("summary1_hr_calcPlan"), icon: 'pi pi-thumbs-down',
             items: [
-                {label:"Приход и уход", command: () => this.acceptTime(13)},
-                {label:"Приход", command: () => this.acceptTime(11)},
-                {label:"Уход", command: () => this.acceptTime(12)},
-                {label:"Отменить утверждение", command: () => this.acceptTime(-1)}
+                {label:this.props.t("summary1_hr_all"), command: () => this.acceptTime(13)},
+                {label:this.props.t("summary1_hr_arrival"), command: () => this.acceptTime(11)},
+                {label:this.props.t("summary1_hr_leaving"), command: () => this.acceptTime(12)},
+                {label:this.props.t("summary1_hr_cancel"), command: () => this.acceptTime(-1)}
             ]},
             {separator: true},
-            {label:"Отметить невыход как...", icon: 'pi pi-check',
+            {label:this.props.t("summary1_hr_absense"), icon: 'pi pi-check',
             items: [
-                {label:"Больничный", command: () => this.changeRowType(4)},
-                {label:"Прогул", command: () => this.changeRowType(5)},
-                {label:"За свой счет", command: () => this.changeRowType(3)},
-                {label:"Отменить отметку", command: () => this.changeRowType(0)},
+                {label:this.props.t("summary_hr_sick"), command: () => this.changeRowType(4)},
+                {label:this.props.t("summary1_hr_hooky"), command: () => this.changeRowType(5)},
+                {label:this.props.t("summary1_hr_unpaid"), command: () => this.changeRowType(3)},
+                {label:this.props.t("summary1_hr_unCheck"), command: () => this.changeRowType(0)},
             ]},
             {separator: true},
-            {label:"Больничный:", icon: 'pi pi-calendar-plus',
+            {label:this.props.t("summary_hr_sick:"), icon: 'pi pi-calendar-plus',
             items: [
-                {label:"Получить документ", icon: 'pi pi-download', command: () => this.downloadSickLeaveDocument()},
+                {label:this.props.t("summary1_hr_download"), icon: 'pi pi-download', command: () => this.downloadSickLeaveDocument()},
             ]},
             {separator: true},
-            {label:"Открыть", icon: "pi pi-eye", command: () => this.openDayEditForm()},
+            {label:this.props.t("summary1_hr_open"), icon: "pi pi-eye", command: () => this.openDayEditForm()},
             {separator: true},
-            {label:"Закрыть это меню", icon: 'pi pi-sign-out'},
+            {label:this.props.t("summary1_hr_close"), icon: 'pi pi-sign-out'},
         ]);
     }
 
@@ -517,24 +519,24 @@ class ScheduleResultTable extends React.Component{
     render(){
             let header = <ColumnGroup>
             <Row>
-                <Column header="Дата" rowSpan={2}/>
-                <Column header="ДН" rowSpan={2} />
-                <Column header="Магазин" rowSpan={2} style={{width: '10%'}}/>
-                <Column header="Приход на работу" colSpan={4} />
-                <Column header="Уход с работы" colSpan={4} />
-                <Column header="Всего, +/-" rowSpan={2}/>
-                <Column header="Раб. время" rowSpan={2}/>
-                <Column header="Примечания сотрудника" rowSpan={2} style={{width: '10%'}}/>
+                <Column header={this.props.t("summary_hr_date")} rowSpan={2}/>
+                <Column header={this.props.t("summary_hr_dow")} rowSpan={2} />
+                <Column header={this.props.t("summary_hr_branch")} rowSpan={2} style={{width: '10%'}}/>
+                <Column header={this.props.t("summary_hr_arrival")} colSpan={4} />
+                <Column header={this.props.t("summary_hr_leaving")} colSpan={4} />
+                <Column header={this.props.t("summary_hr_common")} rowSpan={2}/>
+                <Column header={this.props.t("summary_hr_work")} rowSpan={2}/>
+                <Column header={this.props.t("summary_hr_enotes")} rowSpan={2} style={{width: '10%'}}/>
                 <Column header={this.props.t('summary_hr_notes')} rowSpan={2} style={{width: '10%'}}/>
             </Row>
             <Row>
-                <Column header='План'/>
-                <Column header='Факт'/>
-                <Column header='Соглас.' style={{width : '6em'}}/>
+                <Column header={this.props.t('summary_hr_plan')}/>
+                <Column header={this.props.t('summary_hr_fact')}/>
+                <Column header={this.props.t('summary1_hr_approved')} style={{width : '6em'}}/>
                 <Column header='+ / -'/>
-                <Column header='План' />
-                <Column header='Факт' />
-                <Column header='Соглас.' style={{width : '6em'}}/>
+                <Column header={this.props.t('summary_hr_plan')} />
+                <Column header={this.props.t('summary_hr_fact')} />
+                <Column header={this.props.t('summary1_hr_approved')} style={{width : '6em'}}/>
                 <Column header='+ / -'/>
             </Row>
         </ColumnGroup>
@@ -549,7 +551,8 @@ class ScheduleResultTable extends React.Component{
                         contextMenuSelection={this.state ? this.state.selectedRow : null}
                         onContextMenuSelectionChange={e => this.setState({ selectedRow: e.value })}
                         onContextMenu={e => this.cm.show(e.originalEvent)}
-                        emptyMessage='Нет сведений для данного сотрудника за выбранный период'>
+                        //emptyMessage='Нет сведений для данного сотрудника за выбранный период'>
+                        emptyMessage={this.props.t("summary_hr_emptyMessage")}>
                         <Column field='workDate' style={{width : '6em'}}></Column>
                         <Column body={this.bodyDOW} style={{width : '4em'}}> </Column>
                         <Column field="orgUnitName" style={{width: '10%', textAlign: 'left'}}></Column>
@@ -595,6 +598,7 @@ class ScheduleResultTable extends React.Component{
 
 class ScheduleFilter extends React.Component{
     state = {showConfirm:false, jobStatus:0, summary1:'', summary2:'', summary3:'', summary4:'', summary5:''}
+    
     //Панель фильтра, содержащая выбранный месяц года и продавца
     constructor(props){
         super(props);
@@ -618,7 +622,8 @@ class ScheduleFilter extends React.Component{
         this.state.summary4 = props.summary4;
         this.state.summary5 = props.summary5;
         this.moment =  require('moment');
-        addLocale('ru', ru);   
+        addLocale('ru', ru);  
+        addLocale('gb', gb);  
     }
 
     filterSellers(event){
@@ -762,7 +767,7 @@ class ScheduleFilter extends React.Component{
                 <div className = 'p-col-3' style={{margin: '0 0 0.5em 1em'}}>
                     <Calendar id="chooseDateFld"
                         readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" view="month" yearNavigator yearRange="2021:2040"
-                        locale={"ru"}
+                        locale={this.lang}
                         value={this.state.chosenDate}
                         onSelect={(e) => {this.onChangeCalendar(e)}}/>
                 </div>

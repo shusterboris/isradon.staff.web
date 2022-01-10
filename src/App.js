@@ -230,29 +230,29 @@ const App = () => {
             {label: t('mainMenu_Report'), icon: 'pi pi-chart-bar', to: '/summary-report'},
             {label: t('mainMenu_Summary'), icon: 'pi pi-th-large', to: '/summary'},
             {
-                label: t('mainMenu_WorkSchedule'), icon: 'pi pi-list',
+                label: t('mainMenu1_WorkSchedule'), icon: 'pi pi-list',
                 items: [
-                    {label: t('mainMenu_ScheduleShifts'), icon: 'pi pi-sitemap', to: '/shed-plan-orgunit'},
-                    {label: 'Календарь отпусков', icon: 'pi pi-users', to: '/shed-plan'},
-                    {label: 'Выгрузка расписания', icon: 'pi pi-download', to: '/data-download'},
+                    {label: t('mainMenu2_ScheduleShifts'), icon: 'pi pi-sitemap', to: '/shed-plan-orgunit'},
+                    {label: t('mainMenu2_ScheduleVacations'), icon: 'pi pi-users', to: '/shed-plan'},
+                    {label: t('mainMenu2_ScheduleDownpoads'), icon: 'pi pi-download', to: '/data-download'},
                 ]
             },
-            {label: 'Настройки', icon: 'pi pi-cog', 
+            {label: t("mainMenu_Settings"), icon: 'pi pi-cog', 
                 items: [
-                    {label: 'Подразделения', icon: 'pi pi-home', to: '/orgunit-list'},
-                    {label: 'Сотрудники', icon: 'pi pi-user-edit', to: '/employees-all'},
-                    {label: 'Бывшие сотрудники', icon: 'pi pi-user-minus', to: '/employees-fired'},
-                    {label: 'Должности сотрудников', icon: 'pi pi-list', to: '/titles-dictionary'},
-                    {label: 'Пользователи', icon: 'pi pi-users', to: '/users'},
+                    {label: t('mainMenu1_branches'), icon: 'pi pi-home', to: '/orgunit-list'},
+                    {label: t('mainMenu1_employees'), icon: 'pi pi-user-edit', to: '/employees-all'},
+                    {label: t('mainMenu1_notActiveEmployees'), icon: 'pi pi-user-minus', to: '/employees-fired'},
+                    {label: t('mainMenu1_position'), icon: 'pi pi-list', to: '/titles-dictionary'},
+                    {label: t('mainMenu1_users'), icon: 'pi pi-users', to: '/users'},
                 ]
             },
         ] : [
-            {label: 'Сводка', icon: 'pi pi-th-large', to: '/summary'},
+            {label: t('mainMenu_Summary'), icon: 'pi pi-th-large', to: '/summary'},
             {
-                label: 'График работы', icon: 'pi pi-list',
+                label: t('mainMenu1_WorkSchedule'), icon: 'pi pi-list',
                 items: [
-                    {label: 'Календарь смен', icon: 'pi pi-sitemap', to: '/shed-plan-orgunit'},
-                    {label: 'Календарь отпусков', icon: 'pi pi-users', to: '/shed-plan'},
+                    {label: t('mainMenu2_ScheduleShifts'), icon: 'pi pi-sitemap', to: '/shed-plan-orgunit'},
+                    {label: t('mainMenu2_ScheduleVacations'), icon: 'pi pi-users', to: '/shed-plan'},
                 ]
             },
         ];  
