@@ -898,8 +898,8 @@ export default class ScheduleService {
 
     }
 
-    getSummaryReport(month, finalActions, _this){
-        const url = AppSets.host + "/schedule/commonreport/" + month;
+    getSummaryReport(month, year, finalActions, _this){
+        const url = AppSets.host + "/schedule/commonreport/" + month + "/" + year;
         return axios.get(url, {timeout: AppSets.timeout})
             .then(response => {
                 _this.setState({data: response.data});

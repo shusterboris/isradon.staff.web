@@ -379,3 +379,13 @@ export const ru = {
     clear: "Очистить"
 }
 
+export const gb = {
+    firstDayOfWeek: 0,
+    dayNames: ["Sunday", "Monday", "Tuesday", "Wensday", "Thursday", "Friday", "Saturday"],
+    dayNamesShort: ["Sun", "Mon", "Tue", "Wen", "Thu", "Fri", "Sat"],
+    dayNamesMin: ["Sn", "Mn", "Tu", "Wn", "Th", "Fr", "St"],
+    monthNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "Novemer", "December"],
+    monthNamesShort: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    today: "Today",
+    clear: "Clean"
+}

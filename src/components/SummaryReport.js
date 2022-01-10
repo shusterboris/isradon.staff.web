@@ -4,12 +4,12 @@ import ScheduleService from '../service/ScheduleService';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Calendar } from 'primereact/calendar';
-import { ru } from '../service/AppSettings'
+import { ru, gb } from '../service/AppSettings'
 import { addLocale } from 'primereact/api';
 import AppSets from '../service/AppSettings';
 
 export default class SummaryReport extends Component {
-    state = {chosenMonth: null, chosenDate: new Date(), data: []};
+    state = {chosenMonth: null, choosenYear: null, chosenDate: new Date(), data: []};
     constructor(props) {
         super(props);
         this.getStatus = this.getStatus.bind(this);
@@ -20,49 +20,54 @@ export default class SummaryReport extends Component {
         this.moment = require('moment');
         this.history = props.history;
         addLocale('ru', ru); 
+        addLocale('gb', gb); 
     }
 
     componentDidMount(){
         let storedIniDate = window.localStorage.getItem("initalCalDate");
         let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (this.moment().toDate());
         const month = iniDate.getMonth() + 1;
-        this.setState({chosenMonth: month, chosenDate:iniDate});
-        this.getStatus(month);
+        const year = iniDate.getFullYear();
+        this.setState({chosenMonth: month, choosenYear: year, chosenDate:iniDate});
+        this.getStatus(month, year);
     }
 
-    getStatus(month){
+    getStatus(month, year){
         month = (month) ? month : this.state.chosenMonth;
-        this.dataService.getSummaryReport(month, null, this);
+        year = (year) ? year : this.state.choosenYear;
+        this.dataService.getSummaryReport(month, year, null, this);
     }
 
     onChangeCalendar(event){
         if (event){
             const theDate = this.moment(event.value);
             let month = theDate.month() + 1;
+            const year = theDate.year();
             this.setState({chosenMonth: month});
+            this.setState({choosenYear : year})
             window.localStorage.setItem("initalCalDate", theDate.toDate());
-            this.getStatus(month);
+            this.getStatus(month, year);
         }else{
             this.setState({chosenMonth: this.moment.month()});
         }
     }
 
     headerTemplate(){
-        if (!AppSets.getUser())
-            { this.history.push("/login")} 
-        else if (!AppSets.getUser().amIhr())
+        if (!AppSets.getUser().amIhr())
             { this.history.push("/access") }
+
+        let lang = this.props.i18n.language;
 
         let monthName =  ""
         if (this.state.chosenMonth){
-            const monthNames = ru.monthNames;
+            const monthNames = (lang === 'ru') ? ru.monthNames : gb.monthNames;
             monthName = monthNames[this.state.chosenMonth-1];
         }
         return(<div>
             <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" 
                 style = {{margin: '0 1em 0 1em'}}
                 view="month" yearNavigator yearRange="2021:2040"
-                locale={"ru"}
+                locale={lang}
                 value={this.state.chosenDate}
                 onSelect={(e) => {this.onChangeCalendar(e)}}/>
             <span/>
