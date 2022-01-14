@@ -15,6 +15,7 @@ import Confirmation from './Confirmation'
 import ScheduleCreateProxy from '../entities/ScheduleCreateProxy';
 import axios from 'axios'
 import { Toast } from 'primereact/toast';
+import { ru, gb } from '../service/AppSettings'
 
 export default class OrgUnitView extends Component {
     state = {
@@ -70,6 +71,9 @@ export default class OrgUnitView extends Component {
             {label: 'Утвердить план', icon: 'pi pi-calendar', command: () => this.approveSchedule(this.state.selectedRow)},
             {label: 'Отправить', icon: 'pi pi-send', command: () => this.createSheduleReport(this.state.selectedRow)},
         ];
+        this.t = props.t;
+        this.bodyDOW=this.bodyDOW.bind(this);
+        this.lang = props.i18n.language;
     }
 
     componentDidMount(){
@@ -315,15 +319,15 @@ export default class OrgUnitView extends Component {
     displayButtonBar(){
         const leftBar = (<React.Fragment>
             {(this.state.shiftChanged && this.state.selectedRow) && 
-                <Button id="btnShiftSave" label="Сохранить" icon="pi pi-check" style={{marginRight: '1em'}} 
+                <Button id="btnShiftSave" label={this.t("common_save")} icon="pi pi-check" style={{marginRight: '1em'}} 
                         className="p-button-primary p-mr-2"
                         onClick={this.onShiftSavePressed}/>}
-                <Button id="btnShiftCancel" label="Выйти" icon="pi pi-arrow-left" className="p-button-secondary p-mr-2" 
+                <Button id="btnShiftCancel" label={this.t("common_exit")} icon="pi pi-arrow-left" className="p-button-secondary p-mr-2" 
                         onClick={this.props.history.goBack}/>
             </React.Fragment>);
         const rightBar = (<React.Fragment>
             {this.state.shiftNo &&
-                <Button id="btnShiftDelete" label="Удалить" icon="pi pi-thumbs-down" className="p-button-danger"
+                <Button id="btnShiftDelete" label={this.t("common_del")} icon="pi pi-thumbs-down" className="p-button-danger"
                         style={{marginLeft: '1em'}} 
                         onClick={this.onPressRemoveShift}/>
             }
@@ -411,7 +415,19 @@ export default class OrgUnitView extends Component {
             <i className="pi pi-send" placeholder="Дата отправки уведомления"></i>
         )
     }
-
+    bodyDOW(index){
+         let dow;
+        let s= this.lang==false ? 'gb':this.lang;
+       
+      if (s.indexOf('gb')!==-1){
+           dow = gb.dayNamesMin[index];
+      }else{
+           dow = ru.dayNamesMin[index];
+       }
+        return(
+            <div>{dow}</div>
+        );
+    }
     render() {
         if (!AppSets.getUser().amIhr()){
             this.history.push("/access") }
@@ -427,10 +443,10 @@ export default class OrgUnitView extends Component {
                                 contextMenuSelection={this.state.selectedRow}
                                 onContextMenuSelectionChange={e => this.setState({ selectedRow: e.value })}
                                 onContextMenu={e => this.cm.show(e.originalEvent)}
-                                emptyMessage='Нет сведений о подразделениях'       
+                                emptyMessage={this.t('orgUnit_empty')}//'Нет сведений о подразделениях'       
                                 selectionMode="single" selection={this.state.selectedRow} dataKey="id"
                                 onSelectionChange={e => {this.onRowSelect(e.value)}} >
-                        <Column field='name' style={{margin: '1em 0 0 0' }} header="Список подразделений"/>
+                        <Column field='name' style={{margin: '1em 0 0 0' }} header={this.t("orgUnit_list")}/>
                         <Column body={this.ouDateSendBody} header={this.renderOuSendHeader()} 
                             style={{margin: '0 0 0 0', padding: '0 0 0 0'}} 
                             headerStyle={{width: '3em', textAlign: 'center'}} />
@@ -445,19 +461,19 @@ export default class OrgUnitView extends Component {
                 </div>
                 <div className="p-col-12 p-md-2">
                     {this.state.selectedRow ?  
-                    <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}} >Подразделение
+                    <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}} >{this.t("orgUnit_branch")}
                         <Button id="btnCreateOrgUnit" icon="pi pi-plus" className="p-button-rounded" 
                             style={{margin: '0 0 0 1em'}}
                             onClick={this.onCreateOrgUnit} tooltip='Нажмите для создания нового подразделения'/> </div> : 
-                        <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}} >Подразделение </div>
+                        <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}} >{this.t("orgUnit_branch")} </div>
                     }
                     <div className = 'p-field'>
-                        <label htmlFor="orgUnitNameFld" style={{fontWeight:'bold'}}>Название подразделения</label>
-                        <InputText id="orgUnitNameFld" value={this.state.orgUnitName} placeholder="Введите название подразделения"
+                        <label htmlFor="orgUnitNameFld" style={{fontWeight:'bold'}}>{this.t("orgUnit_name")}</label>
+                        <InputText id="orgUnitNameFld" value={this.state.orgUnitName} placeholder={this.t("orgUnit_add")}
                                             onChange={(e) => this.setState({orgUnitName:e.target.value, orgUnitChanged: true})}/>
                     </div>
                     <div className = "p-field">
-                        <InputText id = "orgUnitIsraId" placeholder="Id Исрадон (только ИТ-персонал!)" 
+                        <InputText id = "orgUnitIsraId" placeholder={this.t("orgUnit_israId")} 
                             value = {this.state.israId} keyfilter="int" 
                             onChange={(e) => this.setState({israId:e.target.value, orgUnitChanged: true})}/>
                     </div>
@@ -468,7 +484,7 @@ export default class OrgUnitView extends Component {
                                     onClick={this.onOrgUnitSavePressed}/>
                         </span>
                     </div>}
-                    <label htmlFor="shiftList" style={{fontWeight:'bold'}}>Список смен (шаблонов)</label>
+                    <label htmlFor="shiftList" style={{fontWeight:'bold'}}>{this.t("orgUnit_shiftList")}</label>
                     <ListBox id="shiftList" style={{margin:'0.5em 0 0 0'}} listStyle={{margin:'1em 0 0 0' }}
                         value={this.state.chosenShift}
                         options={this.state.shifts} itemTemplate={this.shiftTemplate} optionValue='no' 
@@ -476,7 +492,7 @@ export default class OrgUnitView extends Component {
                         tooltip="Выберите смену (шаблон)"/>
                     {this.state.waitPlease && <ProgressSpinner/>}
                     {this.state.selectedRow && <div>
-                        <label htmlFor="ouEmployees" style={{fontWeight:'bold'}}>Список сотрудников</label>
+                        <label htmlFor="ouEmployees" style={{fontWeight:'bold'}}>{this.t("orgUnit_empl")}</label>
                         <ListBox id='ouEmployees' style={{margin:'0.5em 0 0 0'}} listStyle={{margin:'1em 0 0 0' }}
                             value={this.choosenEmployee}
                             options={this.state.employees} 
@@ -487,18 +503,18 @@ export default class OrgUnitView extends Component {
 
                 <div className="p-col-12 p-md-6" >                
                     {this.state.chosenShift ? 
-                    <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}}>Расписание смен
+                    <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}}>{this.t("orgUnit_shift")}
                         <Button id="btnCreateShift" icon="pi pi-plus" className="p-button-rounded" style={{margin: '0 0 0 1em'}}
                             onClick={this.onCreateShift} tooltip='Нажмите для создания новой смены'/>
                     </div> :
-                    <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}}>Расписание смен</div>
+                    <div className="card-title" style={{margin:'0.5em 0 2em 0', fontWeight:'bold'}}>{this.t("orgUnit_shift")}</div>
                     }
                     {this.state.showConfirm && 
                         <Confirmation header={this.confirmHeader} body={this.confirmMessage} 
                             accept={this.confirmAccept} reject={this.confirmReject} visibility={true} parentContext={this}> 
                     </Confirmation>}
                     <div className="p-grid form-group">
-                        <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Вс</div>
+                        <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>{this.bodyDOW(0)}</div>
                         <InputMask id='dow0Start' mask='99:99'
                                 style={{width:'5em'}} 
                                 value={this.state.start1} 
@@ -514,7 +530,7 @@ export default class OrgUnitView extends Component {
                     </div>                        
                             
                     <div className="p-grid  form-group" style={{padding:'1em 0 0 0'}}>
-                        <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Пн</div>
+                        <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>{this.bodyDOW(1)}</div>
                         <InputMask id='dow1Start' mask='99:99' 
                             style={{width:'5em'}} 
                             value={this.state.start2} 
@@ -526,7 +542,7 @@ export default class OrgUnitView extends Component {
                     </div>
                             
                     <div className="p-grid  form-group" style={{padding:'1em 0 0 0'}}>
-                        <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Вт</div>
+                        <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>{this.bodyDOW(2)}</div>
                         <InputMask id='dow2Start' mask='99:99' 
                             style={{width:'5em'}} 
                             value={this.state.start3} 
@@ -538,7 +554,7 @@ export default class OrgUnitView extends Component {
                     </div>
                             
                     <div className="p-grid form-group" style={{padding:'1em 0 0 0'}}>
-                    <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Ср</div>
+                    <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>{this.bodyDOW(3)}</div>
                         <InputMask id='dow3Start' mask='99:99' 
                             style={{width:'5em'}} 
                             value={this.state.start4} 
@@ -550,7 +566,7 @@ export default class OrgUnitView extends Component {
                     </div>
 
                         <div className="p-grid form-group" style={{padding:'1em 0 0 0'}}>
-                        <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Чт</div>
+                        <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>{this.bodyDOW(4)}</div>
                             <InputMask id='dow4Start' mask='99:99' 
                                 style={{width:'5em'}} 
                                 value={this.state.start5} 
@@ -562,7 +578,7 @@ export default class OrgUnitView extends Component {
                         </div>
 
                         <div className="p-grid form-group" style={{padding:'1em 0 0 0'}}>
-                            <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Пт</div>
+                            <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>{this.bodyDOW(5)}</div>
                             <InputMask id='dow5Start' mask='99:99' 
                                 style={{width:'5em'}} 
                                 value={this.state.start6} 
@@ -574,7 +590,7 @@ export default class OrgUnitView extends Component {
                         </div>
 
                         <div className="p-grid form-group" style={{padding:'1em 0 0 0'}}>
-                            <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>Сб</div>
+                            <div className="p-text-left" style={{margin: '0 1em 0 1em'}}>{this.bodyDOW(6)}</div>
                             <InputMask id='dow6Start' mask='99:99' 
                                 style={{width:'5em'}} 
                                 value={this.state.start7} 
@@ -591,7 +607,7 @@ export default class OrgUnitView extends Component {
                                 style={{width:'3em'}}
                                 value={this.state.shiftNo} 
                                 onChange={(e) => this.setState({shiftNo: e.target.value, shiftChanged: true})}/>
-                            <InputText id='shiftNotesFld'  placeholder='доп.информация о смене'
+                            <InputText id='shiftNotesFld'  placeholder={this.t('orgUnit_shiftInfo')}
                                 value={this.state.notes}
                                 style={{width: '60%', margin: '0 0 0 1em'}}
                                 onChange={(e) => this.setState({notes: e.target.value, shiftChanged: true})}/>

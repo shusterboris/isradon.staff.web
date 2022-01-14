@@ -1,4 +1,8 @@
 {
+    "common_save":"Save",
+    "common_exit":"Exit",
+    "common_del":"Delete",
+    "common_empty":"server doesn't respond",
     "appHeader": "HR - портал",
     "screen_Profile": "Profile",
     "lbl_details": "Details",
@@ -33,8 +37,8 @@
     "summary1_hr_sick": "Sick leave",
     "summary1_hr_checkSick":"Check Sick leave",
     "summary1_hr_addScan": "Add scan", 
-    "summary1_hr_calcFact":"Сalculation according to fact",
-    "summary1_hr_calcPlan":"Сalculation according to plan",
+    "summary1_hr_calcFact":"According to fact",
+    "summary1_hr_calcPlan":"According to plan",
     "summary1_hr_arrival" :"Arrival",
     "summary1_hr_leaving" :"Leaving",
     "summary1_hr_all": "Arrival & leaving",
@@ -50,6 +54,9 @@
     "summary1_hr_close": "Close",
 
     "scheduleServ_workDays":"Working days: ",
+    "scheduleServ_worked":"Days worked:  ",
+    "scheduleServ_hours":"Planned hours: ",
+    "scheduleServ_apprHours":"Approved hours:  ",
 
     "login_fldUserLabel": "User login",
     "login_header": "Please, enter the username and login.",
@@ -63,6 +70,17 @@
     "login_btnOkLabel": "Continue",
     "login_btnOkHint": "Enter to the system",
     "login_errDifferentPswds": "Different values of password was entered!",
-    "login_errValuesRequired": "Must be entered values: username, old password and twice new password"
+    "login_errValuesRequired": "Must be entered values: username, old password and twice new password",
+
+    "orgUnit_empty":"Empty list",
+    "orgUnit_list":"Branch list",
+    "orgUnit_branch":"Branch",
+    "orgUnit_name":"Branch name",
+    "orgUnit_add":"Add branch name",
+    "orgUnit_israId": "Id in Isradon(service)",
+    "orgUnit_shiftList":"Shift list",
+    "orgUnit_shiftInfo":"Comment",
+    "orgUnit_shift":"Shift",
+    "orgUnit_empl":"Employee list"
 
 }

@@ -1,4 +1,8 @@
 {
+    "common_save":"Сохранить",
+    "common_exit":"Выйти",
+    "common_del":"Удалить",
+    "common_empty":"Не удалось получить данные с сервера.",
     "appHeader": "HR - портал",
     "screen_Profile": "Профиль",
     "lbl_details": "Подробнее",
@@ -50,6 +54,9 @@
     "summary1_hr_close": "Закрыть",
 
     "scheduleServ_workDays":"Рабочих дней: ",
+    "scheduleServ_worked":"Отработано дней: ",
+    "scheduleServ_hours":"Планировалось, часов: ",
+    "scheduleServ_apprHours":"Утверждено факт, часов: ",
 
     "login_fldUserLabel": "Имя (логин) пользователя:",
     "login_header": "Пожалуйста, введите пользователя и пароль для входа",
@@ -63,6 +70,16 @@
     "login_btnOkLabel": "Дальше",
     "login_btnOkHint": "Вход в систему",
     "login_errDifferentPswds": "Введены разные значения нового пароля",
-    "login_errValuesRequired": "Должны быть введены: имя пользователя, старый пароль и дважды новый пароль"
+    "login_errValuesRequired": "Должны быть введены: имя пользователя, старый пароль и дважды новый пароль",
 
+    "orgUnit_empty":"Нет сведений о подразделениях",
+    "orgUnit_list":"Список подразделений",
+    "orgUnit_branch":"Подразделение",
+    "orgUnit_name":"Название подразделения",
+    "orgUnit_add": "Введите название подразделения",
+    "orgUnit_israId": "Id Исрадон (только ИТ-персонал!)",
+    "orgUnit_shiftList":"Список смен (шаблонов)",
+    "orgUnit_shiftInfo":  "доп.информация о смене",
+    "orgUnit_shift":"Смена",
+    "orgUnit_empl":"Список сотрудников"
 }

@@ -21,6 +21,7 @@ export default class EmployeeView extends React.Component{
         this.dataService = new ScheduleService();
         this.displayHeader1 = this.displayHeader1.bind(this);
         this.startEditEmployee = this.startEditEmployee.bind(this);
+        this.t = props.t;
     }
 
 

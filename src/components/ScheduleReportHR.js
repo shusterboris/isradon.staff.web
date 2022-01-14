@@ -32,7 +32,7 @@ export default class ScheduleReportHR extends React.Component{
         super(props);
         this.messages = [];
         this.t = props.t;
-        this.dataService = new ScheduleService();
+        this.dataService = new ScheduleService(props.t);
         this.onCalendarChange = this.onCalendarChange.bind(this);
         this.onSellerChange = this.onSellerChange.bind(this);
         this.updateData = this.updateData.bind(this);
@@ -40,7 +40,7 @@ export default class ScheduleReportHR extends React.Component{
         this.updateDaysRow = this.updateDaysRow.bind(this);
         this.history = props.history;
         this.moment = require('moment');
-        this.lang = this.props.i18n.language;
+        this.lang = props.i18n.language;
         this.restoreInitalDate();
     }
 
@@ -112,6 +112,7 @@ export default class ScheduleReportHR extends React.Component{
                     onSellerChange = {this.onSellerChange}
                     history = {this.history}
                     t = {this.t}
+                    lang={this.lang}
                 />
                 <ScheduleResultTable
                     updateData = {this.updateData}
@@ -123,6 +124,7 @@ export default class ScheduleReportHR extends React.Component{
                     coEmployees = {this.coEmployees}
                     history = {this.history}
                     t = {this.t}
+                    lang={this.lang}
                 />
             </div>
         );
@@ -167,6 +169,8 @@ class ScheduleResultTable extends React.Component{
         this.contextMenuMode = null;
         this.downloadSickLeaveDocument = this.downloadSickLeaveDocument.bind(this);
         this.moment = require('moment');
+        this.lang = props.lang;
+        this.bodyDOW = this.bodyDOW.bind(this);
     }
 
     downloadSickLeaveDocument(){
@@ -223,9 +227,9 @@ class ScheduleResultTable extends React.Component{
                 {label:this.props.t("summary1_hr_cancel"), command: () => this.acceptTime(-1)}
             ]},
             {separator: true},
-            {label:this.props.t("summary1_hr_absense"), icon: 'pi pi-check',
+            {label:this.props.t("summary1_hr_absence"), icon: 'pi pi-check',
             items: [
-                {label:this.props.t("summary_hr_sick"), command: () => this.changeRowType(4)},
+                {label:this.props.t("summary1_hr_sick"), command: () => this.changeRowType(4)},
                 {label:this.props.t("summary1_hr_hooky"), command: () => this.changeRowType(5)},
                 {label:this.props.t("summary1_hr_unpaid"), command: () => this.changeRowType(3)},
                 {label:this.props.t("summary1_hr_unCheck"), command: () => this.changeRowType(0)},
@@ -426,7 +430,14 @@ class ScheduleResultTable extends React.Component{
 
     bodyDOW(rowData){
         const index = rowData.dow !== 7 ? rowData.dow : 0;
-        const dow = ru.dayNamesMin[index];
+        let dow;
+        let s= this.lang==false ? 'gb':this.lang;
+       
+      if (s.indexOf('gb')!==-1){
+           dow = gb.dayNamesMin[index];
+      }else{
+           dow = ru.dayNamesMin[index];
+       }
         return(
             <div>{dow}</div>
         );
@@ -624,6 +635,7 @@ class ScheduleFilter extends React.Component{
         this.moment =  require('moment');
         addLocale('ru', ru);  
         addLocale('gb', gb);  
+        this.lang=props.lang;
     }
 
     filterSellers(event){

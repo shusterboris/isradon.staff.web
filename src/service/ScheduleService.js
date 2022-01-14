@@ -3,11 +3,12 @@ import AppSets from '../service/AppSettings'
 import axiosRetry from 'axios-retry';
 
 export default class ScheduleService {
-    constructor(){
+    constructor(translation){
         axios.defaults.baseURL = AppSets.host;
         axios.defaults.headers.common['Authorization'] = window.sessionStorage.getItem('token');
         axios.defaults.headers.post['Content-Type'] = 'application/json';
         this.moment = require('moment');
+        this.t=translation;
     }    
 
     getScheduleRecordById(id, _this, processResult){
@@ -147,10 +148,10 @@ export default class ScheduleService {
         let hhmm = "";
         let s = "";
         if (totalDays !== 0){
-            summary1 = "Рабочих дней: " + totalDays
-            summary2 = "Отработано дней: " + totalDaysFact
-            summary3 = "Планировалось, часов: "+this.minutesToTimeStr(difPlanMinutes);
-            summary4 = "Утверждено факт, часов: "+this.minutesToTimeStr(difFactMinutes) + " (утверждено)";
+            summary1 = this.t("scheduleServ_workDays") + totalDays
+            summary2 =  this.t("scheduleServ_worked") + totalDaysFact
+            summary3 = this.t("scheduleServ_hours")+this.minutesToTimeStr(difPlanMinutes);
+            summary4 = this.t("scheduleServ_apprHours") +this.minutesToTimeStr(difFactMinutes);
             if (latenessTime !== 0){
                 hhmm = this.minutesToTimeStr(latenessTime).split(":");
                 s = (hhmm[0] === "00") ? (hhmm[1] + " минут ") : (hhmm[0] + " часов "+hhmm[1] + " минут ")
