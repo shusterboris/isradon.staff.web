@@ -21,7 +21,7 @@
     "mainMenu1_notActiveEmployees" : "Бывшие сотрудники",
     "mainMenu1_position":"Должности сотрудников",
     "mainMenu1_users":"Пользователи",
-
+    "summary_hr_sick" : "Больничный",
     "summary_hr_date" : "Дата",
     "summary_hr_dow" :"ДН",
     "summary_hr_branch" :"Магазин",

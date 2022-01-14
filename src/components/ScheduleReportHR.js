@@ -95,8 +95,6 @@ export default class ScheduleReportHR extends React.Component{
 
     
     render(){
-//        if (!AppSets.getUser())
-//            { this.history.push("/login") }
         return(
             <div>
                 <Toast id="toastMsg" ref={(el) => this.messages = el} position="top-left" />
@@ -431,7 +429,7 @@ class ScheduleResultTable extends React.Component{
     bodyDOW(rowData){
         const index = rowData.dow !== 7 ? rowData.dow : 0;
         let dow;
-        let s= this.lang==false ? 'gb':this.lang;
+        let s = (!this.lang) ? 'gb':this.lang;
        
       if (s.indexOf('gb')!==-1){
            dow = gb.dayNamesMin[index];
@@ -779,7 +777,7 @@ class ScheduleFilter extends React.Component{
                 <div className = 'p-col-3' style={{margin: '0 0 0.5em 1em'}}>
                     <Calendar id="chooseDateFld"
                         readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" view="month" yearNavigator yearRange="2021:2040"
-                        locale={this.lang}
+                        locale={this.lang.includes('ru') ? 'ru' : 'gb'}
                         value={this.state.chosenDate}
                         onSelect={(e) => {this.onChangeCalendar(e)}}/>
                 </div>

@@ -21,7 +21,7 @@
     "mainMenu1_notActiveEmployees":"inactive Employees",
     "mainMenu1_position":"Position",
     "mainMenu1_users":"Users",
-
+    "summary_hr_sick" : "sick-leave",
     "summary_hr_date" : "Date",
     "summary_hr_dow" :"DOW",
     "summary_hr_branch" :"Branch",

@@ -417,7 +417,7 @@ export default class OrgUnitView extends Component {
     }
     bodyDOW(index){
          let dow;
-        let s= this.lang==false ? 'gb':this.lang;
+        let s = (!this.lang) ? 'gb':this.lang;
        
       if (s.indexOf('gb')!==-1){
            dow = gb.dayNamesMin[index];
