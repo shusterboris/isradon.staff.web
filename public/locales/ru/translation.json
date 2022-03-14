@@ -81,5 +81,16 @@
     "orgUnit_shiftList":"Список смен (шаблонов)",
     "orgUnit_shiftInfo":  "доп.информация о смене",
     "orgUnit_shift":"Смена",
-    "orgUnit_empl":"Список сотрудников"
+    "orgUnit_empl":"Список сотрудников",
+
+    "filter_byName":"Поиск по имени",
+    "filter_byPost":"Поиск по должности",
+    "filter_byOrg":"Поиск по подразделению",
+     
+   "empl_fullName" : "Полное имя",
+    "empl_jobTitle":"Должность" ,
+    "empl_orgUnit":"Место работы" ,
+    "empl_phone":"Телефон"
+
+    
 }
