@@ -23,6 +23,7 @@ import MonthScheduleDownload from './components/MonthScheduleDownload';
 import UsersView from './components/UsersView'
 import TestPage from './components/TestPage'
 import { DictionaryJT } from './components/DictionaryJT';
+import { Transit } from './components/Transit';
 import AppSets from './service/AppSettings';
 import InOutPage from './components/InOutPage';
 import SummaryReport from './components/SummaryReport';
@@ -213,6 +214,7 @@ const App = () => {
         {path: "/edit-day:id", component: withTranslation()(DayEdit)},
         {path: "/data-download", component: withTranslation()(MonthScheduleDownload)},
         {path: "/login", component: Login},
+        {path: "transit/:id", component: Transit},
         {path: "/titles-dictionary", component: withTranslation()(DictionaryJT)},
         {path: "/inout", component: withTranslation()(InOutPage)},
         {path: "/test", component:TestPage},

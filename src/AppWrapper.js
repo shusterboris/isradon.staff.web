@@ -4,6 +4,7 @@ import App from './App';
 import {Error} from './pages/Error';
 import { NotFound } from './pages/NotFound';
 import { Access } from './pages/Access';
+import { Transit } from './components/Transit';
 
 const AppWrapper = () => {
 
@@ -21,7 +22,11 @@ const AppWrapper = () => {
         case '/access':
             return <Route path="/access" component={Access} />
         default:
-            return <App/>;
+            if (location.pathname.startsWith("/transit")){
+                return <Route path="/transit" component={Transit} />
+            } else{
+                return <App/>;
+            }
     }
 }
 

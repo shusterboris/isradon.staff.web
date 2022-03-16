@@ -21,7 +21,7 @@ export const Error = (props) => {
 			</div>
 
 			<div className="exception-detail">
-				<h1>Ошибка вышла!</h1>
+				<h1>Ошибка!</h1>
 				<p>{props.reason}</p>
 				<Button label="На главную страницу" onClick={goDashboard} />
 				<Button label="Назад" onClick={goBack} style={{margin:'0 0 0 1em'}}/></div>

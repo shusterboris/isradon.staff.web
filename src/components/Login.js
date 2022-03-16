@@ -1,4 +1,5 @@
-import React, { useState, useRef }  from 'react';
+import React, { useState, useRef, useEffect }  from 'react';
+import { useLocation } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { useHistory} from 'react-router-dom';
@@ -15,7 +16,19 @@ export const Login = (props) => {
 	const [changeMode, setChangeMode] = useState(false);	
 	const messages = useRef(null);
 	const [t] = useTranslation();
+	const location = useLocation()
+	const transitMode = useRef(false)
 
+
+	useEffect(()=>{
+		if (!location || !location.state) 
+			{ return}
+		const params = location.state
+		if (params){ 
+			setUserName(params)		
+			transitMode.current = true	
+		}
+	},[])
 
     const showMessage = (msgParams) => {
         messages.current.show(msgParams)
@@ -23,6 +36,8 @@ export const Login = (props) => {
 
 	const goForward = () => {
 		if (! changeMode){
+			if (transitMode)
+				{window.localStorage.setItem(userName, password)}
 			AppSets.authenticateUser(userName, password, null, showMessage, history);
 		}else{
 			if (userName && password && newPassword && newPassword2){
@@ -60,7 +75,7 @@ export const Login = (props) => {
 						</div>
 						<div className="p-col-12">
 							<span className="p-float-label">
-								<InputText id="password" type="password" style={{ width: '100%' }} v-model="password" 
+								<InputText id="password" type="password" style={{ width: '100%' }} v-model="password" 									
 									value={password} onChange={(e)=>setPassword(e.target.value)}/>
 								<label htmlFor="password">{t('login_fldPassword')} </label>
 							</span>
@@ -76,7 +91,7 @@ export const Login = (props) => {
 										value={newPassword2} onChange={(e)=>setNewPassword2(e.target.value)}/>}
 							</div>	
 						<div className="p-col-6">
-							<Button id="buttonChangePassw"
+							<Button id="buttonChangePassw" 
 								label={!changeMode ? t('login_btnPasswordChangeLabel') : t('login_btnPasswordDontChangeLabel')}
 								className="p-button-help"
 								tooltip={!changeMode ? t('login_btnPasswordChangeHint') : t('login_btnPasswordDontChangeHint')}
