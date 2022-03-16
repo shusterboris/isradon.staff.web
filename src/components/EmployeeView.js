@@ -84,15 +84,15 @@ export default class EmployeeView extends React.Component{
                 <Toast id="toastMsg" ref={(el) => this.messages = el} style={{marginBottom: '1em'}} />
                 <div className = 'p-col-12 datatable-style-sched-repo'></div>
                 <DataTable id="employeeDataTable" value={this.state.employees} 
-                    header={this.hideAddBtn ?  "Уволенные сотрудники" : "Работники предприятия"} headerStyle={{fontWeight: '500'}}
+                    header={this.hideAddBtn ?  this.t("mainMenu1_notActiveEmployees") : this.t("mainMenu1_notActiveEmployees")} headerStyle={{fontWeight: '500'}}
                     scrollable scrollHeight="500px" sortField="fullName" 
-                    emptyMessage='Нет сведений для данного сотрудника за выбранный период' >
+                    emptyMessage={this.t('summary_hr_emptyMessage')} >
                         <Column body={this.actionBodyTemplate} header={this.displayHeader1()} 
                             headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}></Column>
-                        <Column field='fullName' header="Полное имя" filter filterPlaceholder="Поиск по имени" filterMatchMode="contains" sortable></Column>
-                        <Column field="jobTitle" header="Должность" filter filterPlaceholder="Поиск по должности" sortable></Column>
-                        <Column field="orgUnit" header="Место работы" filter filterPlaceholder="Поиск по подразделению" sortable></Column>
-                        <Column field="phone" header="Телефон"></Column>
+                        <Column field='fullName' header={this.t("empl_fullName")} filter filterPlaceholder={this.t("filter_byName")} filterMatchMode="contains" sortable></Column>
+                        <Column field="jobTitle" header={this.t("empl_jobTitle")} filter filterPlaceholder={this.t("filter_byPost")} sortable></Column>
+                        <Column field="orgUnit" header={this.t("empl_orgUnite")}  filter filterPlaceholder={this.t("filter_byOrg")}  sortable></Column>
+                        <Column field="phone" header={this.t("empl_phone")} ></Column>
                 </DataTable>
             </div>
         )

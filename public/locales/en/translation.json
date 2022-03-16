@@ -81,6 +81,14 @@
     "orgUnit_shiftList":"Shift list",
     "orgUnit_shiftInfo":"Comment",
     "orgUnit_shift":"Shift",
-    "orgUnit_empl":"Employee list"
+    "orgUnit_empl":"Employee list",
+
+    "filter_byName":"Search by name",
+    "filter_byPost":"Search by position",
+    "filter_byOrg":"Search by unit",
+    "empl_fullName" : "Full name",
+    "empl_jobTitle":"Job title" ,
+    "empl_orgUnit":"Org unit" ,
+    "empl_phone":"Phone "
 
 }
