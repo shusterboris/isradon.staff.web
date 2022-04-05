@@ -51,6 +51,10 @@ export default class ScheduleReportHR extends React.Component{
      
     }
 
+    componentDidMount(){
+        this.updateData(this.state.chosenMonth, AppSets.getUser().employeeId)
+    }
+
     updateData(chosenMonth, chosenPersonId, year){
         if (chosenPersonId && chosenMonth > -1){
             this.dataService.getMonthScheduleByPerson(chosenMonth + 1, chosenPersonId, this, year);
@@ -88,7 +92,7 @@ export default class ScheduleReportHR extends React.Component{
             {chosenPerson: personName, chosenPersonId: personId}
         );
         let month = (!chosenDate) ? this.state.chosenMonth : chosenDate.getMonth()
-        let year = (!chosenDate) ? this.state.chosenMonth : chosenDate.getYear()
+        let year = (!chosenDate) ? (new Date()).getFullYear() : chosenDate.getFullYear()
         this.updateData(month,personId, year);
         this.coEmployees = coEmployees
     }
@@ -129,7 +133,7 @@ export default class ScheduleReportHR extends React.Component{
     }
 }
 
-class ScheduleResultTable extends React.Component{
+export class ScheduleResultTable extends React.Component{
 
     constructor(props){
         super(props);
@@ -605,7 +609,7 @@ class ScheduleResultTable extends React.Component{
     }
 }
 
-class ScheduleFilter extends React.Component{
+export class ScheduleFilter extends React.Component{
     state = {showConfirm:false, jobStatus:0, summary1:'', summary2:'', summary3:'', summary4:'', summary5:''}
     
     //Панель фильтра, содержащая выбранный месяц года и продавца
