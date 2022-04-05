@@ -5,6 +5,7 @@ import { Button } from 'primereact/button';
 import { useHistory} from 'react-router-dom';
 import AppSets from '../service/AppSettings';
 import {Toast} from 'primereact/toast';
+import {Checkbox} from 'primereact/checkbox';
 import { useTranslation } from 'react-i18next';
 
 export const Login = (props) => {
@@ -18,6 +19,7 @@ export const Login = (props) => {
 	const [t] = useTranslation();
 	const location = useLocation()
 	const transitMode = useRef(false)
+	const [savePswd, setSavePswd] = useState(false)
 
 
 	useEffect(()=>{
@@ -36,7 +38,7 @@ export const Login = (props) => {
 
 	const goForward = () => {
 		if (! changeMode){
-			if (transitMode)
+			if (transitMode.current)
 				{window.localStorage.setItem(userName, password)}
 			AppSets.authenticateUser(userName, password, null, showMessage, history);
 		}else{
@@ -50,6 +52,23 @@ export const Login = (props) => {
 				showMessage({severity:'error', summary:t('login_errValuesRequired')})
 			}
 		}
+	}
+
+	const changeSavePasswordStatus = (isChecked) => {
+		if (!isChecked){
+			window.localStorage.removeItem(userName)
+		}else{
+			window.localStorage.setItem(userName, password)
+		}
+		setSavePswd(isChecked)
+	}
+
+	const onPasswordChange = (username) => {
+		setUserName(username)
+		let savedPassword = window.localStorage.getItem(username)
+		if (savedPassword) 
+			{setPassword(savedPassword)}
+
 	}
 
 	return (
@@ -68,28 +87,35 @@ export const Login = (props) => {
 						</div>
 						<div className="p-col-12">
 							<span className="p-float-label">
-								<InputText id="username" type="text" style={{ width: '100%' }} v-model="username" 
-									value={userName} onChange={(e)=>setUserName(e.target.value)}/>
+								<InputText id="username" type="text" style={{ width: '100%' }} autoComplete = {true}
+									value={userName} onChange={(e)=>onPasswordChange(e.target.value)}/>
 								<label htmlFor="username">{t('login_fldUserLabel')} </label>
 							</span>
 						</div>
 						<div className="p-col-12">
 							<span className="p-float-label">
-								<InputText id="password" type="password" style={{ width: '100%' }} v-model="password" 									
+								<InputText id="password" type="password" style={{ width: '100%' }} 
 									value={password} onChange={(e)=>setPassword(e.target.value)}/>
 								<label htmlFor="password">{t('login_fldPassword')} </label>
 							</span>
 						</div>
-							<div className="p-col-6">
-								{changeMode && <InputText id="newPassword1"  style={{ width: '100%' }} type="password" 
-										placeholder={t('login_fldNewPassword1Hint')} 
-										value={newPassword} onChange={(e)=>setNewPassword(e.target.value)}/>}
-							</div>	
-							<div className="p-col-6">
-								{changeMode && <InputText id="newPassword2" type="password" style={{ width: '100%' }} v-model="password" 
-										placeholder={t('login_fldNewPassword2Hint')} 
-										value={newPassword2} onChange={(e)=>setNewPassword2(e.target.value)}/>}
-							</div>	
+						{(userName && password) && 
+							<div className='p-col-12 '>
+								<Checkbox id='chkb' inputId='chkb' value={savePswd} checked={savePswd} 
+									onChange={(e)=>changeSavePasswordStatus(e.checked)}
+								/>
+								<label htmlFor="chkb" className="p-checkbox-label"> Запомнить пароль</label>
+							</div>}
+						<div className="p-col-6">
+							{changeMode && <InputText id="newPassword1"  style={{ width: '100%' }} type="password" 
+									placeholder={t('login_fldNewPassword1Hint')} 
+									value={newPassword} onChange={(e)=>setNewPassword(e.target.value)}/>}
+						</div>	
+						<div className="p-col-6">
+							{changeMode && <InputText id="newPassword2" type="password" style={{ width: '100%' }} v-model="password" 
+									placeholder={t('login_fldNewPassword2Hint')} 
+									value={newPassword2} onChange={(e)=>setNewPassword2(e.target.value)}/>}
+						</div>	
 						<div className="p-col-6">
 							<Button id="buttonChangePassw" 
 								label={!changeMode ? t('login_btnPasswordChangeLabel') : t('login_btnPasswordDontChangeLabel')}

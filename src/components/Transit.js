@@ -7,14 +7,15 @@ export const  Transit = (props) => {
 
     useEffect(()=>{
         transmitToPage()
-    })
+    },[])
 
     const transmitToPage = async () => {
-        const keys = props.location.pathname.split("/")
-        if (keys.length !== 3)
+        //const keys = props.location.pathname.split("/")
+        const param = props.location.search
+        if (!param || !param.startsWith("?"))
             {props.history.push({pathname: '/error', state:'Неправильные данные для входа в систему'})}
-        let userKey = keys[2]
-        let url = AppSets.host+"/user/key/" + userKey
+        const keys = param.slice(1)
+        let url = AppSets.host+"/user/key/" + keys
         await axios.get(url, {timeout: AppSets.timeout})
         .then(response => {
             let userName = response.data
@@ -30,13 +31,12 @@ export const  Transit = (props) => {
                 props.history.push(props.history.push({pathname: '/error', state: err.response.data})) :
                 props.history.push(props.history.push({pathname: '/error', state: "Сервер не отвечает, возможно проблемы с Интернет. Попробуйте позже или обратитесь в техническую поддержку"}))
         })
-
     }
 
     return(
         <div className="p-d-flex p-flex-column p-jc-center">
             <div className="p-card-title p-mx-auto" >Подождите...</div>
-            <ProgressSpinner style={{width: '100px', height: '50px'}} strokeWidth="8"/>
+            <ProgressSpinner style={{width: '100px', height: '100px'}} strokeWidth="8"/>
             <div className="p-card-title p-mx-auto">Аутентификация пользователя</div>
         </div>
     )
