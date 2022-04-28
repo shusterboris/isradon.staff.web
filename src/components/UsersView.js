@@ -51,6 +51,7 @@ export default class UsersView extends Component {
 
     updateEmployee(){
         AppSets.getEmployees(this);
+        this.setState({password1:"", password2:"", userName: ""})
     }
 
     save(){
@@ -148,12 +149,12 @@ export default class UsersView extends Component {
                                 scrollable scrollHeight='600px' showGridlines
                                 selectionMode="single" selection={this.state.selectedRow} dataKey="id"
                                 onSelectionChange={e => {this.onRowSelect(e.value)}} >
-                        <Column field='fullName' style={{width: '45%', margin: '1em 0 0 0' }} header="Сотрудник"/>
-                        <Column field='userName' header='Пользователь' 
+                        <Column field='fullName' style={{width: '45%', margin: '1em 0 0 0' }} header="Сотрудник" filter/>
+                        <Column field='userName' header='Пользователь' filter 
                             style={{margin: '0 0 0 0', padding: '0 0 0 0'}} 
                             headerStyle={{textAlign: 'center'}} />
-                        <Column field='orgUnit' header='Подразд.' 
-                            headerStyle={{width: '25%',textAlign: 'center'}} 
+                        <Column field='orgUnit' header='Подразд.' filter
+                            headerStyle={{width: '25%',textAlign: 'center' }} 
                             style={{margin: '0 0 0 0', padding: '0 0 0 0', color:'#1E88E5'}}/>
                     </DataTable>
                 </div>
@@ -197,10 +198,11 @@ export default class UsersView extends Component {
                                 label=  'Выйти'
                                 style={{margin: '1em 1em 1em 1em', width:"40%"}}
                                 onClick={this.props.history.goBack}/>
-                            <Button className="p-button-info" icon="pi pi-check" label="Сохранить" iconPos="right"
-                                style={{margin: '1em 1em 1em 1em', width:"40%"}}
-                                onClick={()=>this.save()}>
-                            </Button>
+                            {(this.state.password1 && this.state.password2 && this.state.userName) && 
+                                <Button className="p-button-info" icon="pi pi-check" label="Сохранить" iconPos="right"
+                                    style={{margin: '1em 1em 1em 1em', width:"40%"}}
+                                    onClick={()=>this.save()}>
+                                </Button>}
                         </span>
                         {this.displayIsraLinkPanel()}
                     </div>}

@@ -14,6 +14,7 @@ export const Error = (props) => {
 		history.goBack();
 	}
 
+	let reason = props.reason ? props.reason : ((history.location.state && history.location.state.reason) ? history.location.state.reason : "")
 	return <div className="exception-body  error" id="errorPage">
 		<div className="exception-panel">
 			<div className="exception-image">
@@ -22,7 +23,7 @@ export const Error = (props) => {
 
 			<div className="exception-detail">
 				<h1>Ошибка!</h1>
-				<p>{props.reason}</p>
+				<p>{reason}</p>
 				<Button label="На главную страницу" onClick={goDashboard} />
 				<Button label="Назад" onClick={goBack} style={{margin:'0 0 0 1em'}}/></div>
 			</div>

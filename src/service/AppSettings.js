@@ -11,7 +11,7 @@ export default class AppSets{
     //static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
     static host = "https://api.comandaisradon.com";
-    static version = "ver. 1.17"
+    static version = "ver. 1.2"
     static timeout = 7000;
     static authList = {'editAll': 'HR', 'manualCheckIn': 'Ручная отметка'};
         

@@ -25,7 +25,7 @@ export default class SummaryReport extends Component {
 
     componentDidMount(){
         let storedIniDate = window.localStorage.getItem("initalCalDate");
-        let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (this.moment().toDate());
+        let iniDate = (storedIniDate) ? this.moment(storedIniDate).toDate() : (new Date());
         const month = iniDate.getMonth() + 1;
         const year = iniDate.getFullYear();
         this.setState({chosenMonth: month, choosenYear: year, chosenDate:iniDate});
@@ -67,7 +67,7 @@ export default class SummaryReport extends Component {
             <Calendar readOnly={true} dateFormat="mm/yy" placeholder="Выберите месяц" 
                 style = {{margin: '0 1em 0 1em'}}
                 view="month" yearNavigator yearRange="2021:2040"
-                locale={lang}
+                locale={lang.includes('ru') ? 'ru' : 'gb'}
                 value={this.state.chosenDate}
                 onSelect={(e) => {this.onChangeCalendar(e)}}/>
             <span/>

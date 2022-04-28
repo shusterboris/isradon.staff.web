@@ -122,8 +122,8 @@ export class DictionaryJT extends Component {
         if (!AppSets.getUser()) { 
             this.user = AppSets.getUser();
         }
-        if (this.user.amIhr()){
-            this.history.push({pathname: '/employee-edit', state: {reason: 'Эта операция доступна только уполномоченному персоналу'}});
+        if (!AppSets.getUser().amIhr()){
+            this.history.push({pathname: '/error', state: {reason: 'Эта операция доступна только уполномоченному персоналу'}});
         }
         const editTools = this.displayEditTools();
                 

@@ -91,7 +91,7 @@ export default class EmployeeView extends React.Component{
                             headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}></Column>
                         <Column field='fullName' header={this.t("empl_fullName")} filter filterPlaceholder={this.t("filter_byName")} filterMatchMode="contains" sortable></Column>
                         <Column field="jobTitle" header={this.t("empl_jobTitle")} filter filterPlaceholder={this.t("filter_byPost")} sortable></Column>
-                        <Column field="orgUnit" header={this.t("empl_orgUnite")}  filter filterPlaceholder={this.t("filter_byOrg")}  sortable></Column>
+                        <Column field="orgUnit" header={this.t("empl_orgUnit")}  filter filterPlaceholder={this.t("filter_byOrg")}  sortable></Column>
                         <Column field="phone" header={this.t("empl_phone")} ></Column>
                 </DataTable>
             </div>
