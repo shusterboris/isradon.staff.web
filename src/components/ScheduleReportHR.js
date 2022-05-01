@@ -237,7 +237,7 @@ export class ScheduleResultTable extends React.Component{
                 {label:this.props.t("summary1_hr_unCheck"), command: () => this.changeRowType(0)},
             ]},
             {separator: true},
-            {label:this.props.t("summary_hr_sick:"), icon: 'pi pi-calendar-plus',
+            {label:this.props.t("summary_hr_sick"), icon: 'pi pi-calendar-plus',
             items: [
                 {label:this.props.t("summary1_hr_download"), icon: 'pi pi-download', command: () => this.downloadSickLeaveDocument()},
             ]},

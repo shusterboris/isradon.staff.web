@@ -11,7 +11,7 @@ export default class AppSets{
     //static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
     static host = "https://api.comandaisradon.com";
-    static version = "ver. 1.2"
+    static version = "ver. 1.3"
     static timeout = 7000;
     static authList = {'editAll': 'HR', 'manualCheckIn': 'Ручная отметка'};
         
@@ -296,6 +296,17 @@ export default class AppSets{
             });
     }
 
+    static getHolidays(_this){
+        return axios.get(AppSets.host+'/schedule/getHolidays', {timeout: AppSets.timeout})
+            .then(
+                res => res.data)
+            .then(data => {
+                _this.setState({ values : data });
+            }).catch(err=>{
+                AppSets.processRequestsCatch(err, 'Список праздников.', this.messages, false)
+            });
+    }
+    
     static saveJobTitle(data, _this){
         return axios.post(AppSets.host+'dictionary/titles/save', data)
             .then(() => {

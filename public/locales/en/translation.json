@@ -20,6 +20,7 @@
     "mainMenu1_employees" : "Employees",
     "mainMenu1_notActiveEmployees":"inactive Employees",
     "mainMenu1_position":"Position",
+    "mainMenu1_holidays":"Holidays",
     "mainMenu1_users":"Users",
     "summary_hr_sick" : "sick-leave",
     "summary_hr_date" : "Date",

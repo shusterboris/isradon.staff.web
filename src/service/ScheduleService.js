@@ -785,6 +785,32 @@ export default class ScheduleService {
         });
     }
 
+    saveHoliday(data, _this, finalProcedure){
+        const server = AppSets.host;
+        const url = server + '/schedule/saveHoliday'
+        axios.post(url, data, {timeout: AppSets.timeout})
+            .then(() => {
+                finalProcedure();
+                _this.messages.show({severity: 'success', summary: 'Запись успешно сохранена'})
+            })
+            .catch(err=>{
+                this.processRequestsCatch(err, "Сохранение данных о празднике", _this.messages, true);
+        });    
+    }
+
+    removeHolidaysItem(data, _this, finalProcedure){
+        const server = AppSets.host;
+        const url = server + '/schedule/removeHoliday' + "/" + data
+        axios.post(url, {timeout: AppSets.timeout})
+            .then(() => {
+                finalProcedure();
+                _this.messages.show({severity: 'success', summary: 'Запись успешно удалена'})
+            })
+            .catch(err=>{
+                this.processRequestsCatch(err, "Удаление данных о празднике", _this.messages, true);
+        });    
+    }
+
     saveDictionaryItem(data, _this, finalProcedure){
         const server = AppSets.host;
         const url = server + '/dictionary/item/save'

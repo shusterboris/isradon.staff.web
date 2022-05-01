@@ -23,6 +23,7 @@ import MonthScheduleDownload from './components/MonthScheduleDownload';
 import UsersView from './components/UsersView'
 import TestPage from './components/TestPage'
 import { DictionaryJT } from './components/DictionaryJT';
+import { DictionaryHolidays } from './components/DictionaryHolidays';
 import { Transit } from './components/Transit';
 import AppSets from './service/AppSettings';
 import InOutPage from './components/InOutPage';
@@ -216,6 +217,7 @@ const App = () => {
         {path: "/login", component: Login},
         {path: "transit/:id", component: Transit},
         {path: "/titles-dictionary", component: withTranslation()(DictionaryJT)},
+        {path: "/holidays-dictionary", component: withTranslation()(DictionaryHolidays)},
         {path: "/inout", component: withTranslation()(InOutPage)},
         {path: "/test", component:TestPage},
         {path: "/summary-report", component: withTranslation()(SummaryReport)},
@@ -245,6 +247,7 @@ const App = () => {
                     {label: t('mainMenu1_employees'), icon: 'pi pi-user-edit', to: '/employees-all'},
                     {label: t('mainMenu1_notActiveEmployees'), icon: 'pi pi-user-minus', to: '/employees-fired'},
                     {label: t('mainMenu1_position'), icon: 'pi pi-list', to: '/titles-dictionary'},
+                    {label: t('mainMenu1_holidays'), icon: 'pi pi-calendar', to: '/holidays-dictionary'},
                     {label: t('mainMenu1_users'), icon: 'pi pi-users', to: '/users'},
                 ]
             },
