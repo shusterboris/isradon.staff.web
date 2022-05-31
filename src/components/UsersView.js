@@ -47,11 +47,12 @@ export default class UsersView extends Component {
         }
         userInfo.authorities = authorities;
         this.setState({userInfo: userInfo});
+        this.save()
     }
 
     updateEmployee(){
         AppSets.getEmployees(this);
-        this.setState({password1:"", password2:"", userName: ""})
+        this.setState({password1:"", password2:""})
     }
 
     save(){

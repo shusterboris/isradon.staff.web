@@ -168,6 +168,7 @@ export class ScheduleResultTable extends React.Component{
         this.onNoteSubmit = this.onNoteSubmit.bind(this);
         this.actionBodyReason = this.actionBodyReason.bind(this);
         this.openDayOffForm = this.openDayEditForm.bind(this);
+        this.acceptAll = this.acceptAll.bind(this);
         this.contextMenuMode = null;
         this.downloadSickLeaveDocument = this.downloadSickLeaveDocument.bind(this);
         this.moment = require('moment');
@@ -226,7 +227,8 @@ export class ScheduleResultTable extends React.Component{
                 {label:this.props.t("summary1_hr_all"), command: () => this.acceptTime(13)},
                 {label:this.props.t("summary1_hr_arrival"), command: () => this.acceptTime(11)},
                 {label:this.props.t("summary1_hr_leaving"), command: () => this.acceptTime(12)},
-                {label:this.props.t("summary1_hr_cancel"), command: () => this.acceptTime(-1)}
+                {label:this.props.t("summary1_hr_cancel"), command: () => this.acceptTime(-1)},
+                {label:this.props.t("summary1_hr_approveAllPlan"), command: () => this.acceptAll()}
             ]},
             {separator: true},
             {label:this.props.t("summary1_hr_absence"), icon: 'pi pi-check',
@@ -299,6 +301,14 @@ export class ScheduleResultTable extends React.Component{
 
     changeRowType(rowType){
         this.dataService.changeRowType(rowType, this);
+    }
+
+    acceptAll(){
+        if (!this.props.days || this.props.days.length === 0){
+            return;
+        }
+        const rowData = this.state.selectedRow
+        this.dataService.acceptAllByPlan(rowData.comingPlan, rowData.employeeId, this)
     }
 
     acceptTime(mode){   
@@ -559,12 +569,14 @@ export class ScheduleResultTable extends React.Component{
                     <Toast ref={(el) => this.messages = el} position="top-left"/>
                     <ContextMenu id="summaryContextMenu" model={this.getContextMenuModel()} ref={el => this.cm = el} 
                         onHide={() => this.setState({ selectedRow: null })}/>
-                    <DataTable id="summaryDataTable" value={this.props.days} rowClassName={this.getRowBackgroundClassName} 
+                    <DataTable id="summaryDataTable" value={this.props.days} 
+                        rowClassName={this.getRowBackgroundClassName} 
+                        selectionMode="single"
+                        selection={this.state ? this.state.selectedRow : null}
                         headerColumnGroup={header}
                         contextMenuSelection={this.state ? this.state.selectedRow : null}
                         onContextMenuSelectionChange={e => this.setState({ selectedRow: e.value })}
                         onContextMenu={e => this.cm.show(e.originalEvent)}
-                        //emptyMessage='Нет сведений для данного сотрудника за выбранный период'>
                         emptyMessage={this.props.t("summary_hr_emptyMessage")}>
                         <Column field='workDate' style={{width : '6em'}}></Column>
                         <Column body={this.bodyDOW} style={{width : '4em'}}> </Column>

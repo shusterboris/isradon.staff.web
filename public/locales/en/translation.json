@@ -43,6 +43,7 @@
     "summary1_hr_arrival" :"Arrival",
     "summary1_hr_leaving" :"Leaving",
     "summary1_hr_all": "Arrival & leaving",
+    "summary1_hr_approveAllPlan": "Approve all as planned",
     "summary_hr_emptyMessage" :"There is no information for this employee for the selected period",
     "summary1_hr_cancel" :"Cancel approval",
     "summary1_hr_absence" :"Мark absence as",

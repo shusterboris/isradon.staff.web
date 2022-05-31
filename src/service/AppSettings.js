@@ -11,7 +11,7 @@ export default class AppSets{
     //static host = 'http://localhost:8080';
     //static host = "https://test.sclub.in.ua";
     static host = "https://api.comandaisradon.com";
-    static version = "ver. 1.3"
+    static version = "ver. 1.4"
     static timeout = 7000;
     static authList = {'editAll': 'HR', 'manualCheckIn': 'Ручная отметка'};
         
@@ -131,16 +131,19 @@ export default class AppSets{
             });
     }
 
-    static createEmployeeProxy(edata){
-        const data = {"addConditions": edata.addConditions, "birtday": edata.birtday, "daysInWeek": edata.daysInWeek, 
+    static createEmployeeProxy(edata, _this){
+        const birthday = _this.moment(edata.birthday,"DD/MM/yyyy").format("yyyy-MM-DD")
+        const data = {"addConditions": edata.addConditions, "birthday": birthday, "daysInWeek": edata.daysInWeek, 
             "email": edata.email, "firstName": edata.firstName, "lastName": edata.lastName, "id": edata.id, 
             "jobTitle": edata.jobTitle, "nickName": edata.nickName, "photoFile": edata.photoFile, "shiftLength": edata.shiftLength,
-            "shiftLengthOnFriday": edata.shiftLengthOnFriday, "working": edata.working, "phone": edata.phone, "orgUnit": edata.orgUnit }
+            "shiftLengthOnFriday": edata.shiftLengthOnFriday, "working": edata.working, "phone": edata.phone, "orgUnit": edata.orgUnit, 
+            "authorUserName": AppSets.user.userName, "authorEmployeeId": AppSets.user.employeeId
+        }
         return data;
     }
 
     static saveEmployee(edata, _this, finalize){
-        const data = AppSets.createEmployeeProxy(edata);
+        const data = AppSets.createEmployeeProxy(edata, _this);
         if (data.orgUnit){
             if (Number.isInteger(data.orgUnit)){
                 data.orgUnitId = data.orgUnit;
@@ -163,7 +166,7 @@ export default class AppSets{
             .then((result) => {
                 if (data.birtday){
                     const classic = data.birtday;
-                    const birthday = this.moment(classic,"DD/MM/yyyy").format("yyyy-MM-DD")
+                    const birthday = _this.moment(classic,"DD/MM/yyyy").format("yyyy-MM-DD")
                     data.birthday = birthday;
                 }
                 _this.setState({id: result.data});
@@ -260,10 +263,15 @@ export default class AppSets{
         })
     }
 
+    static addAuthorToObj(obj){
+        return {...obj, "authorUserName": AppSets.user.userName, "authorEmployeeId": AppSets.user.employeeId}
+    }
+
     static saveUserData(userToSave, _this, finalActions){
         let token = window.sessionStorage.getItem("token");
         const headers = {headers: {'Authorization': token}, timeout: AppSets.timeout}
         let url = AppSets.host+'/user/save'
+        userToSave = this.addAuthorToObj(userToSave)
         axios.post(url, userToSave, headers)
         .then(()=>{
             if (finalActions)

@@ -453,16 +453,34 @@ export default class ScheduleService {
             })
     }
 
+    acceptAllByPlan(startDate, employeeId, _this){
+        const server = AppSets.host;
+        const month = new Date(startDate).getMonth();
+        const year = new Date(startDate).getFullYear();
+        const query = "/schedule/acceptAllMonth/" + employeeId  + "/" + (month + 1) + "/" + year;
+        const url = server + query;
+        axios.put(url,{timeout: AppSets.timeout})
+        .then(()=>{
+            _this.props.updateData(month, employeeId, year);
+            _this.messages.show({ severity: 'success', summary: 'Выполнено успешно'})
+        })
+        .catch(err => {                
+            const errMsg = err.toString().includes(': Network') ? 'Подтверждение прихода или ухода. Сервер не отвечает.' :  'Не удалось записать изменение в графике прихода и ухода'
+            _this.messages.show({ severity: 'warn', summary: errMsg})
+        })
+    }
+
     acceptJobTimeByPlan(ids, startDate, employeeId, _this){
         const server = AppSets.host;
         const month = new Date(startDate).getMonth();
+        const year = new Date(startDate).getFullYear();
         const query = "/schedule/acceptTimeMonth/" + ids + "/" + AppSets.timeBoundMinutes;
         const url = server + query;
         axios.put(url,{timeout: AppSets.timeout})
             .then(res => res.data)
             .then(data => {
                 if (_this && data){
-                    _this.props.updateData(month, employeeId);        
+                    _this.props.updateData(month, employeeId, year);        
                     _this.messages.show({ severity: 'success', summary: 'Выполнено успешно'});
                 }
             })
@@ -482,7 +500,8 @@ export default class ScheduleService {
             .then(data => {
                 if (_this && data){
                     const month = new Date(selected.comingPlan).getMonth();
-                    _this.props.updateData(month, selected.employeeId);        
+                    const year = new Date(selected.comingPlan).getFullYear();
+                    _this.props.updateData(month, selected.employeeId, year);        
                     _this.messages.show({ severity: 'success', summary: 'Выполнено успешно'});
                 }
             })

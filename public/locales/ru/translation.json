@@ -43,6 +43,7 @@
     "summary1_hr_arrival" :"Приход",
     "summary1_hr_leaving" :"Уход", 
     "summary1_hr_all": "Приход и уход",
+    "summary1_hr_approveAllPlan": "Утвердить все, как в плане",
     "summary_hr_emptyMessage" :"Нет сведений для данного сотрудника за выбранный период",
     "summary1_hr_cancel" :"Отменить утверждение",
     "summary1_hr_absence" :"Отметить невыход как...",
